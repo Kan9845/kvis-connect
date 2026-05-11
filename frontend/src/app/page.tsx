@@ -1,6 +1,7 @@
 import { LandingClient } from "./LandingClient";
 import type { GlobePin, Summary, BlogRead } from "@/lib/types";
 
+// Revalidate every 5 minutes — alumni data changes slowly
 export const revalidate = 300;
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";

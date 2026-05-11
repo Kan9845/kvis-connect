@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { summaryApi, searchApi, userApi } from "@/lib/api";
 import { SearchFilters } from "@/components/search/SearchFilters";
-import type { SearchParams, GlobePin, Summary } from "@/lib/types";
+import type { SearchParams, GlobePin, Summary, BlogRead } from "@/lib/types";
 import { useState } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
 
@@ -12,9 +12,10 @@ const AlumniGlobe = dynamic(() => import("@/components/globe/AlumniGlobe"), { ss
 interface Props {
   initialPins: GlobePin[];
   initialSummary: Summary | null;
+  initialPosts: BlogRead[];
 }
 
-export function LandingClient({ initialPins, initialSummary }: Props) {
+export function LandingClient({ initialPins, initialSummary, initialPosts }: Props) {
   const [searchParams, setSearchParams] = useState<SearchParams>({});
   const [panelOpen, setPanelOpen] = useState(true);
 
@@ -60,7 +61,7 @@ export function LandingClient({ initialPins, initialSummary }: Props) {
           onClick={() => setPanelOpen(true)}
           className="absolute z-20 flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-white"
           style={{
-            top: 52,
+            top: 76,
             left: 20,
             background: "transparent",
             border: "1.5px solid rgba(255,255,255,0.5)",
@@ -76,7 +77,7 @@ export function LandingClient({ initialPins, initialSummary }: Props) {
         <div
           className="absolute z-20 w-72 rounded-2xl overflow-y-auto"
           style={{
-            top: 52,
+            top: 76,
             left: 20,
             maxHeight: "calc(100vh - 72px)",
             background: "#ffffff",
