@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState, forwardRef } from "react";
+import { useRef, useEffect, useState, forwardRef, useId } from "react";
 import Link from "next/link";
 import type { Summary, BlogRead } from "@/lib/types";
 
@@ -44,8 +44,13 @@ const RING_C = 2 * Math.PI * RING_R;
 export const BentoSection = forwardRef<HTMLDivElement, Props>(
   function BentoSection({ summary, posts }, forwardedRef) {
     const innerRef = useRef<HTMLDivElement>(null);
-    const resolvedRef = (forwardedRef as React.RefObject<HTMLDivElement> | null) ?? innerRef;
-    const entered = useOnEnter(resolvedRef as React.RefObject<HTMLElement>);
+    const mergeRef = (node: HTMLDivElement | null) => {
+      (innerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      if (typeof forwardedRef === "function") forwardedRef(node);
+      else if (forwardedRef) (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    };
+    const entered = useOnEnter(innerRef);
+    const gradId = useId();
 
     const total = summary?.total ?? 0;
     const abroadPct =
@@ -70,7 +75,7 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div
-        ref={forwardedRef ?? innerRef}
+        ref={mergeRef}
         className="relative w-screen flex-shrink-0"
         style={{
           height: "100vh",
@@ -83,6 +88,10 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
           padding: "0 clamp(16px, 4vw, 56px)",
         }}
       >
+        <style>{`
+  @keyframes kvis-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
+  @keyframes kvis-bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(5px); } }
+`}</style>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", maxWidth: 920, width: "100%", margin: "0 auto 20px" }}>
           <div>
@@ -169,9 +178,9 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
               <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
                 <svg width="56" height="56" viewBox="0 0 56 56" style={{ transform: "rotate(-90deg)" }}>
                   <circle cx="28" cy="28" r={RING_R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="5" />
-                  <circle cx="28" cy="28" r={RING_R} fill="none" stroke="url(#ringGrad)" strokeWidth="5" strokeLinecap="round" strokeDasharray={RING_C} strokeDashoffset={entered ? ringOffset : RING_C} style={{ transition: "stroke-dashoffset 1.5s ease 0.3s" }} />
+                  <circle cx="28" cy="28" r={RING_R} fill="none" stroke={`url(#${gradId})`} strokeWidth="5" strokeLinecap="round" strokeDasharray={RING_C} strokeDashoffset={entered ? ringOffset : RING_C} style={{ transition: "stroke-dashoffset 1.5s ease 0.3s" }} />
                   <defs>
-                    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="#3b82f6" />
                       <stop offset="100%" stopColor="#60a5fa" />
                     </linearGradient>
@@ -242,13 +251,12 @@ function PulseDot() {
     <span style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 10, height: 10 }}>
       <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#34d399", display: "block", position: "relative", zIndex: 1 }} />
       <span style={{ position: "absolute", inset: -2, borderRadius: "50%", background: "rgba(52,211,153,0.35)", animation: "kvis-pulse 1.8s ease-out infinite" }} />
-      <style>{`@keyframes kvis-pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2.4);opacity:0}}`}</style>
     </span>
   );
 }
 
 function AuthorAvatar({ post, size = 32 }: { post: BlogRead; size?: number }) {
-  const initials = `${post.author.first_name[0] ?? ""}${post.author.last_name[0] ?? ""}`.toUpperCase();
+  const initials = `${post.author.first_name.charAt(0)}${post.author.last_name.charAt(0)}`.toUpperCase();
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", background: "#1e3a5f", border: "2px solid #3b82f6", fontSize: size * 0.34, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
       {post.author.profile_pic_url
