@@ -51,8 +51,9 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
   }, []);
 
   const scrollToSection = (idx: number) => {
-    const targets = [section1Ref.current, section2Ref.current];
-    targets[idx]?.scrollIntoView({ behavior: "smooth" });
+    const container = containerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: idx * container.clientHeight, behavior: "smooth" });
   };
 
   const { data: pins = initialPins } = useQuery({

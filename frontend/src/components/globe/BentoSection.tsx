@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useEffect, useState, forwardRef, useId } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { Summary, BlogRead } from "@/lib/types";
 
 interface Props {
@@ -90,7 +91,6 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
       >
         <style>{`
   @keyframes kvis-pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.4); opacity: 0; } }
-  @keyframes kvis-bounce { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(5px); } }
 `}</style>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", maxWidth: 920, width: "100%", margin: "0 auto 20px" }}>
@@ -258,9 +258,9 @@ function PulseDot() {
 function AuthorAvatar({ post, size = 32 }: { post: BlogRead; size?: number }) {
   const initials = `${post.author.first_name.charAt(0)}${post.author.last_name.charAt(0)}`.toUpperCase();
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: "#1e3a5f", border: "2px solid #3b82f6", fontSize: size * 0.34, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden" }}>
+    <div style={{ width: size, height: size, borderRadius: "50%", background: "#1e3a5f", border: "2px solid #3b82f6", fontSize: size * 0.34, fontWeight: 700, color: "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, overflow: "hidden", position: "relative" }}>
       {post.author.profile_pic_url
-        ? <img src={post.author.profile_pic_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ? <Image src={post.author.profile_pic_url} alt={`${post.author.first_name} ${post.author.last_name}`} fill style={{ objectFit: "cover" }} />
         : initials}
     </div>
   );
