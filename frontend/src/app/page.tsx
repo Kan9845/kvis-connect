@@ -1,7 +1,6 @@
 import { LandingClient } from "./LandingClient";
-import type { GlobePin, Summary } from "@/lib/types";
+import type { GlobePin, Summary, BlogRead } from "@/lib/types";
 
-// Revalidate every 5 minutes — alumni data changes slowly
 export const revalidate = 300;
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -26,8 +25,28 @@ async function getSummary(): Promise<Summary | null> {
   }
 }
 
-export default async function HomePage() {
-  const [pins, summary] = await Promise.all([getPins(), getSummary()]);
+async function getInitialPosts(): Promise<BlogRead[]> {
+  try {
+    const res = await fetch(`${API}/api/blogs?limit=2`, { next: { revalidate: 300 } });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
 
-  return <LandingClient initialPins={pins} initialSummary={summary} />;
+export default async function HomePage() {
+  const [pins, summary, initialPosts] = await Promise.all([
+    getPins(),
+    getSummary(),
+    getInitialPosts(),
+  ]);
+
+  return (
+    <LandingClient
+      initialPins={pins}
+      initialSummary={summary}
+      initialPosts={initialPosts}
+    />
+  );
 }
