@@ -7,6 +7,7 @@ import { BentoSection } from "@/components/globe/BentoSection";
 import type { SearchParams, GlobePin, Summary, BlogRead } from "@/lib/types";
 import { useState, useRef, useEffect } from "react";
 import { SlidersHorizontal, X, ChevronDown } from "lucide-react";
+import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
 
 const AlumniGlobe = dynamic(() => import("@/components/globe/AlumniGlobe"), { ssr: false });
 
@@ -21,6 +22,7 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
   const [panelOpen, setPanelOpen] = useState(true);
   const [arrowVisible, setArrowVisible] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
+  const { setVariant } = useNavbarVariant();
 
   const containerRef = useRef<HTMLDivElement>(null);
   const section1Ref = useRef<HTMLDivElement>(null);
@@ -32,7 +34,7 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
     return () => clearTimeout(t);
   }, []);
 
-  // Track active section for side dots
+  // Track active section for side dots + navbar variant
   useEffect(() => {
     const sections = [section1Ref.current, section2Ref.current];
     const obs = new IntersectionObserver(
@@ -40,7 +42,10 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const idx = sections.indexOf(entry.target as HTMLDivElement);
-            if (idx !== -1) setActiveSection(idx);
+            if (idx !== -1) {
+              setActiveSection(idx);
+              setVariant(idx === 0 ? "dark" : "light");
+            }
           }
         });
       },
@@ -48,7 +53,7 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
     );
     sections.forEach((s) => s && obs.observe(s));
     return () => obs.disconnect();
-  }, []);
+  }, [setVariant]);
 
   const scrollToSection = (idx: number) => {
     const container = containerRef.current;
@@ -97,7 +102,7 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
   return (
     <div
       ref={containerRef}
-      style={{ width: "100vw", height: "100vh", overflowY: "scroll", scrollSnapType: "y mandatory", maxWidth: "100vw" }}
+      style={{ width: "100%", maxWidth: "100%", height: "100%", overflowY: "scroll", overflowX: "hidden", scrollSnapType: "y mandatory" }}
     >
       {/* ── SECTION 1: Globe ── */}
       <div
@@ -183,22 +188,28 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
 
       {/* ── Side navigation dots ── */}
       <div style={{ position: "fixed", right: 20, top: "50%", transform: "translateY(-50%)", zIndex: 50, display: "flex", flexDirection: "column", gap: 10 }}>
-        {[0, 1].map((i) => (
-          <button
-            key={i}
-            onClick={() => scrollToSection(i)}
-            aria-label={`Go to section ${i + 1}`}
-            style={{
-              width: i === activeSection ? 8 : 6,
-              height: i === activeSection ? 8 : 6,
-              borderRadius: "50%",
-              background: i === activeSection ? "white" : "rgba(255,255,255,0.35)",
-              border: "none", cursor: "pointer", padding: 0,
-              transition: "all 0.25s ease",
-              boxShadow: i === activeSection ? "0 0 6px rgba(255,255,255,0.5)" : "none",
-            }}
-          />
-        ))}
+        {[0, 1].map((i) => {
+          const onBento = activeSection === 1;
+          const isActive = i === activeSection;
+          return (
+            <button
+              key={i}
+              onClick={() => scrollToSection(i)}
+              aria-label={`Go to section ${i + 1}`}
+              style={{
+                width: isActive ? 8 : 6,
+                height: isActive ? 8 : 6,
+                borderRadius: "50%",
+                background: isActive
+                  ? (onBento ? "oklch(44% 0.26 294)" : "white")
+                  : (onBento ? "oklch(44% 0.26 294 / 0.3)" : "rgba(255,255,255,0.35)"),
+                border: "none", cursor: "pointer", padding: 0,
+                transition: "all 0.25s ease",
+                boxShadow: isActive ? (onBento ? "0 0 6px oklch(44% 0.26 294 / 0.4)" : "0 0 6px rgba(255,255,255,0.5)") : "none",
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );

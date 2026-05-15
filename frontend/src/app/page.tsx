@@ -1,14 +1,13 @@
 import { LandingClient } from "./LandingClient";
 import type { GlobePin, Summary, BlogRead } from "@/lib/types";
 
-// Revalidate every 5 minutes — alumni data changes slowly
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function getPins(): Promise<GlobePin[]> {
   try {
-    const res = await fetch(`${API}/api/users/globe/pins`, { next: { revalidate: 300 } });
+    const res = await fetch(`${API}/api/users/globe/pins`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch {
@@ -18,7 +17,7 @@ async function getPins(): Promise<GlobePin[]> {
 
 async function getSummary(): Promise<Summary | null> {
   try {
-    const res = await fetch(`${API}/api/summary`, { next: { revalidate: 300 } });
+    const res = await fetch(`${API}/api/summary`, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -28,7 +27,7 @@ async function getSummary(): Promise<Summary | null> {
 
 async function getInitialPosts(): Promise<BlogRead[]> {
   try {
-    const res = await fetch(`${API}/api/blogs?limit=2`, { next: { revalidate: 300 } });
+    const res = await fetch(`${API}/api/blogs?limit=2`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch {
