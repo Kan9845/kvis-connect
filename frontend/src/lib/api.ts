@@ -26,6 +26,7 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const url: string = error.config?.url ?? "";
     const isAuthEndpoint = url.includes("/api/auth/");
+    const isMeProbe = url.includes("/api/users/me");
     const onAuthPage =
       typeof window !== "undefined" &&
       window.location.pathname.startsWith("/auth/");
@@ -51,7 +52,7 @@ api.interceptors.response.use(
       return api({ ...error.config, _retry: true });
     } catch {
       onRefreshDone(false);
-      if (!onAuthPage) window.location.href = "/auth/login";
+      if (!onAuthPage && !isMeProbe) window.location.href = "/auth/login";
       return Promise.reject(error);
     } finally {
       isRefreshing = false;

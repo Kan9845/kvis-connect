@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { GraduationCap, Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 
@@ -83,8 +83,7 @@ export default function VerifyKvisPage() {
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-6">
-          <div className="flex items-center gap-2 text-primary font-bold text-xl">
-            <GraduationCap className="h-7 w-7" />
+          <div className="text-primary font-bold text-xl">
             KVIS Connect
           </div>
         </div>

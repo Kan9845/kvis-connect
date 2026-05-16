@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { searchApi } from "@/lib/api";
 import { SearchFilters } from "@/components/search/SearchFilters";
@@ -7,9 +8,19 @@ import { SortBar } from "@/components/search/SortBar";
 import { UserCard } from "@/components/profile/ProfileCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Users } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import type { SearchParams } from "@/lib/types";
 
 export default function SearchPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/auth/login?next=/search");
+    }
+  }, [authLoading, user, router]);
+
   const [params, setParams] = useState<SearchParams>({});
   const [sort, setSort] = useState<SearchParams["sort"]>("name");
   const [order, setOrder] = useState<SearchParams["order"]>("asc");
@@ -19,8 +30,22 @@ export default function SearchPage() {
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["search", params, sort, order],
     queryFn: () => searchApi.search({ ...params, sort, order }),
-    enabled: hasSearch,
+    enabled: hasSearch && !!user,
   });
+
+  if (authLoading || !user) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Skeleton className="h-8 w-48 mb-6" />
+        <div className="flex flex-col lg:flex-row gap-6">
+          <Skeleton className="w-full lg:w-72 h-96 rounded-xl shrink-0" />
+          <div className="flex-1 grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-52 rounded-xl" />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

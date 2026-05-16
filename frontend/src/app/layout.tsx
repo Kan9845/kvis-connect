@@ -22,6 +22,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://unpkg.com" crossOrigin="" />
+        <link rel="preconnect" href="https://raw.githubusercontent.com" crossOrigin="" />
+        <link rel="preconnect" href="https://flagcdn.com" crossOrigin="" />
+        <link
+          rel="preload"
+          as="image"
+          href="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+          crossOrigin=""
+        />
+      </head>
       <body className={`${inter.className} ${beVietnamPro.variable}`}>
         <Providers>
           <NavbarVariantProvider>

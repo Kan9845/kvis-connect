@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Search, BookOpen, BarChart2, Users, User, LogOut, Settings, Sun, Moon, ShieldCheck } from "lucide-react";
+import { Search, BookOpen, BarChart2, Users, User, LogOut, Settings, Sun, Moon, ShieldCheck } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -16,7 +16,7 @@ import { userApi } from "@/lib/api";
 import type { GlobePin } from "@/lib/types";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
 
-function AlumniSearch({ solid = false }: { solid?: boolean }) {
+function AlumniSearch({ solid = false, dark = false }: { solid?: boolean; dark?: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -45,23 +45,21 @@ function AlumniSearch({ solid = false }: { solid?: boolean }) {
   return (
     <div ref={wrapRef} className="relative flex-1">
       <div className="flex items-center gap-2 px-4">
-        <Search className="h-4 w-4 text-gray-400 shrink-0" />
+        <Search className={`h-4 w-4 shrink-0 ${dark ? "text-white/70" : "text-muted-foreground"}`} />
         <input
           value={query}
           onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           placeholder="Search alumni..."
-          className="flex-1 py-2.5 text-sm text-gray-800 bg-transparent outline-none placeholder:text-gray-400 w-full"
+          className={`flex-1 py-2.5 text-sm bg-transparent outline-none w-full ${dark ? "text-white placeholder:text-white/60" : "text-foreground placeholder:text-muted-foreground"}`}
         />
       </div>
 
       {open && results.length > 0 && (
         <div
-          className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden"
+          className="absolute top-full left-0 right-0 mt-2 rounded-2xl overflow-hidden bg-popover text-popover-foreground border border-border"
           style={{
-            background: "#fff",
             boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-            border: "1px solid #e2e8f0",
             zIndex: 999,
           }}
         >
@@ -69,7 +67,7 @@ function AlumniSearch({ solid = false }: { solid?: boolean }) {
             <button
               key={p.user_id}
               onMouseDown={() => { router.push(`/profile/${p.user_id}`); setOpen(false); setQuery(""); }}
-              className="flex items-center gap-3 w-full px-4 py-2.5 transition-all text-left group border-l-2 border-transparent hover:border-blue-500 hover:bg-blue-50"
+              className="flex items-center gap-3 w-full px-4 py-2.5 transition-all text-left group hover:bg-accent hover:text-accent-foreground"
             >
               <div
                 className="w-8 h-8 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold text-white"
@@ -80,8 +78,8 @@ function AlumniSearch({ solid = false }: { solid?: boolean }) {
                   : `${p.first_name[0]}${p.last_name[0]}`}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900 group-hover:text-blue-700 transition-colors truncate">{p.first_name} {p.last_name}</p>
-                <p className="text-xs text-gray-400 truncate">{[p.current_job, p.country].filter(Boolean).join(" · ")}</p>
+                <p className="text-sm font-medium text-foreground transition-colors truncate">{p.first_name} {p.last_name}</p>
+                <p className="text-xs text-muted-foreground truncate">{[p.current_job, p.country].filter(Boolean).join(" · ")}</p>
               </div>
             </button>
           ))}
@@ -100,7 +98,7 @@ function ThemeToggle({ dark }: { dark: boolean }) {
     <button
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       className={`p-2 rounded-full transition-colors pointer-events-auto ${
-        dark ? "text-white hover:bg-white/10" : "text-gray-700 hover:bg-gray-100"
+        dark ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
       }`}
       aria-label="Toggle theme"
     >
@@ -108,6 +106,49 @@ function ThemeToggle({ dark }: { dark: boolean }) {
         ? resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />
         : <Moon className="h-4 w-4 opacity-0" />}
     </button>
+  );
+}
+
+const PURPLE = "oklch(44% 0.26 294)";
+
+function NavLink({
+  href,
+  icon: Icon,
+  label,
+  pathname,
+  dark,
+}: {
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  pathname: string;
+  dark: boolean;
+}) {
+  const active = pathname === href || pathname.startsWith(href + "/");
+  const base =
+    "flex items-center gap-1.5 px-4 py-2.5 text-sm transition-colors whitespace-nowrap";
+
+  let cls: string;
+  let style: React.CSSProperties = {};
+  if (dark) {
+    cls = active
+      ? "text-white font-semibold"
+      : "text-white/90 hover:text-white font-medium";
+    if (active) style.boxShadow = "inset 0 -2px 0 0 rgba(255,255,255,0.9)";
+  } else {
+    cls = active
+      ? "font-semibold"
+      : "text-muted-foreground hover:text-foreground font-medium";
+    if (active) {
+      style.color = PURPLE;
+      style.boxShadow = `inset 0 -2px 0 0 ${PURPLE}`;
+    }
+  }
+
+  return (
+    <Link href={href} className={`${base} ${cls}`} style={style}>
+      <Icon className="h-4 w-4" /> {label}
+    </Link>
   );
 }
 
@@ -166,41 +207,33 @@ export function Navbar() {
         style={{
           background: dark ? "transparent" : "rgba(255,255,255,0.95)",
           backdropFilter: dark ? "none" : "blur(12px)",
-          borderBottom: dark ? "none" : "1px solid oklch(90% 0.007 294)",
-          transition: "background 0.3s ease, border-color 0.3s ease",
+          transition: "background 0.3s ease",
         }}
       >
         <Link
           href="/"
-          className="flex items-center gap-2 font-bold text-lg pointer-events-auto shrink-0"
+          className="font-bold text-lg pointer-events-auto shrink-0"
           style={{ color: dark ? "white" : "oklch(22% 0.18 294)", filter: dark ? "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" : "none" }}
         >
-          <GraduationCap className="h-5 w-5" />
           KVIS Connect
         </Link>
 
         <div className="flex items-center gap-3 pointer-events-auto">
           <div
             className="flex items-center rounded-full overflow-visible w-64"
-            style={{ background: dark ? "white" : "oklch(95% 0.005 294)", boxShadow: dark ? "0 4px 16px rgba(0,0,0,0.2)" : "none", border: dark ? "none" : "1px solid oklch(88% 0.008 294)" }}
+            style={{ background: dark ? "transparent" : "oklch(95% 0.005 294)", border: dark ? "1px solid rgba(255,255,255,0.6)" : "1px solid oklch(88% 0.008 294)" }}
           >
-            <AlumniSearch />
+            <AlumniSearch dark={dark} />
           </div>
           <div
             className="flex items-center rounded-full overflow-hidden shrink-0"
-            style={{ background: dark ? "white" : "oklch(95% 0.005 294)", boxShadow: dark ? "0 4px 16px rgba(0,0,0,0.2)" : "none", border: dark ? "none" : "1px solid oklch(88% 0.008 294)" }}
+            style={{ background: dark ? "transparent" : "oklch(95% 0.005 294)", border: dark ? "1px solid rgba(255,255,255,0.6)" : "1px solid oklch(88% 0.008 294)" }}
           >
-            <Link href="/blog" className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">
-              <BookOpen className="h-4 w-4" /> Blog
-            </Link>
-            <div className="w-px h-4 bg-gray-200" />
-            <Link href="/stats" className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">
-              <BarChart2 className="h-4 w-4" /> Stats
-            </Link>
-            <div className="w-px h-4 bg-gray-200" />
-            <Link href="/search" className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">
-              <Users className="h-4 w-4" /> Alumni
-            </Link>
+            <NavLink href="/blog" icon={BookOpen} label="Blog" pathname={pathname} dark={dark} />
+            <div className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`} />
+            <NavLink href="/stats" icon={BarChart2} label="Stats" pathname={pathname} dark={dark} />
+            <div className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`} />
+            <NavLink href="/search" icon={Users} label="Alumni" pathname={pathname} dark={dark} />
           </div>
         </div>
 
@@ -211,7 +244,7 @@ export function Navbar() {
               <Button variant="ghost" size="sm" className={dark ? "text-white hover:text-white hover:bg-white/10" : "text-gray-700"} asChild>
                 <Link href="/auth/login">Sign in</Link>
               </Button>
-              <Button size="sm" className={dark ? "bg-white text-gray-900 hover:bg-gray-100" : "text-white"} style={dark ? {} : { background: "oklch(44% 0.26 294)" }} asChild>
+              <Button size="sm" className={dark ? "bg-transparent text-white border border-white/60 hover:bg-white/10" : "text-white"} style={dark ? {} : { background: "oklch(44% 0.26 294)" }} asChild>
                 <Link href="/auth/register">Join</Link>
               </Button>
             </>
@@ -222,34 +255,27 @@ export function Navbar() {
   }
 
   return (
-    <header className="relative z-50 flex items-center justify-between gap-4 px-6 h-16 w-full bg-white border-b border-gray-100">
-      <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900 shrink-0">
-        <GraduationCap className="h-5 w-5" style={{ color: "oklch(44% 0.26 294)" }} />
+    <header className="relative z-50 flex items-center justify-between gap-4 px-6 h-16 w-full bg-background">
+      <Link href="/" className="font-bold text-lg text-foreground shrink-0">
         KVIS Connect
       </Link>
       <div className="flex items-center gap-3">
-        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-full overflow-visible w-64">
+        <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-visible w-64">
           <AlumniSearch solid />
         </div>
-        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-full overflow-hidden shrink-0">
-          <Link href="/blog" className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">
-            <BookOpen className="h-4 w-4" /> Blog
-          </Link>
-          <div className="w-px h-4 bg-gray-200" />
-          <Link href="/stats" className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">
-            <BarChart2 className="h-4 w-4" /> Stats
-          </Link>
-          <div className="w-px h-4 bg-gray-200" />
-          <Link href="/search" className="flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap">
-            <Users className="h-4 w-4" /> Alumni
-          </Link>
+        <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-hidden shrink-0">
+          <NavLink href="/blog" icon={BookOpen} label="Blog" pathname={pathname} dark={false} />
+          <div className="w-px h-4 bg-border" />
+          <NavLink href="/stats" icon={BarChart2} label="Stats" pathname={pathname} dark={false} />
+          <div className="w-px h-4 bg-border" />
+          <NavLink href="/search" icon={Users} label="Alumni" pathname={pathname} dark={false} />
         </div>
       </div>
       <div className="flex items-center gap-3 shrink-0">
         <ThemeToggle dark={false} />
         {user ? userMenu("focus:ring-2 focus:ring-blue-200") : (
           <>
-            <Button variant="ghost" size="sm" className="text-gray-600" asChild>
+            <Button variant="ghost" size="sm" className="text-muted-foreground" asChild>
               <Link href="/auth/login">Sign in</Link>
             </Button>
             <Button size="sm" className="text-white" style={{ background: "oklch(44% 0.26 294)" }} asChild>

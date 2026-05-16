@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState, forwardRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { PieChart, Pie, Cell } from "recharts";
@@ -49,13 +49,13 @@ const P = {
   purpleSoft: "oklch(95% 0.035 294)",
   green: "oklch(40% 0.16 148)",
   greenDark: "oklch(28% 0.14 148)",
-  bg: "oklch(96% 0.005 294)",
-  surface: "#ffffff",
-  surface2: "oklch(94% 0.007 294)",
-  text1: "oklch(12% 0.015 294)",
-  text2: "oklch(45% 0.008 294)",
-  text3: "oklch(65% 0.005 294)",
-  border: "oklch(90% 0.007 294)",
+  bg: "hsl(var(--background))",
+  surface: "hsl(var(--card))",
+  surface2: "hsl(var(--muted))",
+  text1: "hsl(var(--foreground))",
+  text2: "hsl(var(--muted-foreground))",
+  text3: "hsl(var(--muted-foreground) / 0.7)",
+  border: "hsl(var(--border))",
 } as const;
 
 const PAD = 20;
@@ -364,10 +364,10 @@ function DonutChart({
               pointerEvents: "none",
             }}
           >
-            <p className="text-4xl font-black text-gray-900 leading-none tracking-tight tabular-nums">
+            <p className="text-4xl font-black text-foreground leading-none tracking-tight tabular-nums">
               {total}
             </p>
-            <p className="text-xs font-bold text-gray-400 tracking-widest uppercase mt-1">
+            <p className="text-xs font-bold text-muted-foreground tracking-widest uppercase mt-1">
               Alumni
             </p>
           </div>
@@ -375,11 +375,11 @@ function DonutChart({
           {/* Other hover popover */}
           {otherHovered && rest.length > 0 && (
             <div
+              className="bg-card dark:bg-secondary"
               style={{
                 position: "absolute",
                 bottom: 0,
                 right: 0,
-                background: P.surface,
                 borderRadius: 12,
                 padding: "10px 13px",
                 boxShadow:
@@ -389,15 +389,15 @@ function DonutChart({
                 pointerEvents: "none",
               }}
             >
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Other fields</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Other fields</p>
               {rest.map((seg) => (
                 <div key={seg.field} className="flex items-center gap-1.5 mb-1">
                   <span
                     className="w-1.5 h-1.5 rounded-sm flex-shrink-0"
                     style={{ background: FIELD_COLORS[seg.field] ?? P.text3 }}
                   />
-                  <span className="flex-1 text-xs font-medium text-gray-600">{seg.field}</span>
-                  <span className="text-xs font-bold tabular-nums text-gray-400">
+                  <span className="flex-1 text-xs font-medium text-muted-foreground">{seg.field}</span>
+                  <span className="text-xs font-bold tabular-nums text-muted-foreground">
                     {Math.round(seg.fraction * 100)}%
                   </span>
                 </div>
@@ -447,18 +447,18 @@ function FlagList({
           <div key={country} className="flex items-center gap-2">
             <div className="flex items-center gap-2 flex-shrink-0" style={{ width: 128 }}>
               {isOther ? (
-                <span className="text-sm font-medium text-gray-600">Other</span>
+                <span className="text-sm font-medium text-muted-foreground">Other</span>
               ) : (
                 <>
                   <div className="flex-shrink-0 rounded-sm overflow-hidden" style={{ boxShadow: "0 0 0 1px rgba(0,0,0,0.1)" }}>
                     <FlagImg country={country} size={22} />
                   </div>
-                  <span className="text-sm font-medium truncate text-gray-600">{country}</span>
+                  <span className="text-sm font-medium truncate text-muted-foreground">{country}</span>
                 </>
               )}
             </div>
 
-            <div className="flex-1 h-[8px] rounded-full overflow-hidden bg-[oklch(93%_0.006_294)]">
+            <div className="flex-1 h-[8px] rounded-full overflow-hidden bg-muted">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -482,18 +482,8 @@ function FlagList({
   );
 }
 
-export const BentoSection = forwardRef<HTMLDivElement, Props>(
-  function BentoSection({ summary, posts }, forwardedRef) {
+export function BentoSection({ summary, posts }: Props) {
     const innerRef = useRef<HTMLDivElement>(null);
-    const mergeRef = (node: HTMLDivElement | null) => {
-      (innerRef as React.MutableRefObject<HTMLDivElement | null>).current =
-        node;
-      if (typeof forwardedRef === "function") forwardedRef(node);
-      else if (forwardedRef)
-        (
-          forwardedRef as React.MutableRefObject<HTMLDivElement | null>
-        ).current = node;
-    };
     const entered = useOnEnter(innerRef);
 
     const total = summary?.total ?? 0;
@@ -524,13 +514,11 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div
-        ref={mergeRef}
-        className="flex-shrink-0"
+        ref={innerRef}
+        className="bg-muted dark:bg-background"
         style={{
           width: "100%",
-          height: "100vh",
-          scrollSnapAlign: "start",
-          background: P.bg,
+          minHeight: "100%",
           overflowX: "hidden",
           display: "flex",
           flexDirection: "column",
@@ -556,10 +544,10 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
         >
           {/* ── DONUT CHART ── 2x2 top left */}
           <div
+            className="bg-card dark:bg-secondary"
             style={{
               gridColumn: "1/3",
               gridRow: "1/3",
-              background: P.surface,
               borderRadius: 18,
               padding: 10,
               display: "flex",
@@ -577,10 +565,10 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
 
           {/* ── FLAG LIST ── 2x2 bottom left, centered */}
           <div
+            className="bg-card dark:bg-secondary"
             style={{
               gridColumn: "1/3",
               gridRow: "3/5",
-              background: P.surface,
               borderRadius: 18,
               padding: PAD,
               display: "flex",
@@ -592,7 +580,7 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
               overflow: "hidden",
             }}
           >
-            <p className="text-base font-semibold text-gray-900 mb-4 text-center">
+            <p className="text-base font-semibold text-foreground mb-4 text-center">
               Where alumni live
             </p>
             <FlagList countries={countries} total={total} entered={entered} />
@@ -602,10 +590,10 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
           {post1 ? (
             <Link
               href={`/blog/${post1.slug}`}
+              className="bg-card dark:bg-secondary"
               style={{
                 gridColumn: "3/5",
                 gridRow: "1/4",
-                background: P.surface,
                 borderRadius: 18,
                 padding: PAD,
                 display: "flex",
@@ -653,12 +641,12 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
                 </div>
               )}
 
-              <p className="text-lg font-bold text-gray-900 leading-snug tracking-tight mb-3">
+              <p className="text-lg font-bold text-foreground leading-snug tracking-tight mb-3">
                 {post1.title}
               </p>
 
               {post1.excerpt && (
-                <p className="text-sm text-gray-600 leading-relaxed flex-1 overflow-hidden">
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1 overflow-hidden">
                   {post1.excerpt}
                 </p>
               )}
@@ -675,11 +663,11 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
               >
                 <AuthorAvatar post={post1} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="text-sm font-bold text-gray-900 truncate">
+                  <p className="text-sm font-bold text-foreground truncate">
                     {post1.author.first_name} {post1.author.last_name}
                   </p>
                   {post1.author.kvis_year && (
-                    <p className="text-xs text-gray-400 font-medium">
+                    <p className="text-xs text-muted-foreground font-medium">
                       Gen {post1.author.kvis_year}
                     </p>
                   )}
@@ -694,10 +682,10 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
             </Link>
           ) : (
             <div
+              className="bg-card dark:bg-secondary"
               style={{
                 gridColumn: "3/5",
                 gridRow: "1/4",
-                background: P.surface,
                 borderRadius: 18,
                 padding: PAD,
                 boxShadow: shadow,
@@ -802,5 +790,4 @@ export const BentoSection = forwardRef<HTMLDivElement, Props>(
         </div>
       </div>
     );
-  },
-);
+}

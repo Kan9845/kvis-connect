@@ -1264,6 +1264,335 @@ let MOCK_BLOGS = [
   },
 ];
 
+// ─── Cohort normalization + procedural backfill ──────────────────────────────
+// KVIS only has 9 cohorts (K1–K9). The 50 hand-written profiles above use
+// legacy class codes (10–24); collapse them into K1–K9 so the almanac/stats
+// page reflects reality, then backfill each cohort to ~71 students using
+// procedural data sampled from realistic pools.
+
+(function generateCohortPopulation() {
+  // ── 1. Squeeze legacy years into 1..9
+  for (const u of MOCK_ALUMNI) {
+    if (typeof u.kvis_year === "number") {
+      u.kvis_year = ((u.kvis_year - 10 + 900) % 9) + 1;
+    }
+  }
+  for (const b of MOCK_BLOGS) {
+    const a = MOCK_ALUMNI.find((u) => u.id === b.author_id);
+    if (a && b.author) b.author.kvis_year = a.kvis_year;
+  }
+
+  // ── 2. Data pools
+  const FIRSTS = [
+    "Anan","Apirak","Arthit","Boonmee","Chai","Chakrit","Chanin","Decha",
+    "Ekarat","Issara","Jakkrit","Kasem","Kittipong","Korn","Krit","Manop",
+    "Narongchai","Nattapong","Nirun","Pakorn","Panya","Phanuwat","Pongsak",
+    "Prasert","Rapeepan","Sakda","Sangchai","Sirichai","Somkid","Sompong",
+    "Suchart","Sunan","Surapong","Tanin","Thanawat","Thira","Veerapol",
+    "Wachira","Wanchai","Worawit","Yongyuth","Anuwat","Boonsong","Chaiyan",
+    "Danai","Niran","Pisit","Rachan","Saksit","Theerapong","Wisut",
+    "Anong","Apinya","Aporn","Benjawan","Boonsri","Chalisa","Chanika",
+    "Chompoo","Dao","Duangporn","Hathaichanok","Jiraporn","Kanchana",
+    "Kanya","Kessaree","Lalita","Malee","Mananchaya","Manee","Napaporn",
+    "Narisara","Nirada","Nittaya","Nuengruethai","Orawan","Pakwan",
+    "Patcharin","Phailin","Piyaporn","Pornthip","Praweena","Ratchada",
+    "Rinrada","Saichon","Sasipim","Siriporn","Somying","Sunisa",
+    "Suphanida","Tarisa","Thanaporn","Thidarat","Uraiwan","Wannisa",
+    "Warangkana","Wilai","Yupin","Kanyarat","Pattaraporn","Supitcha",
+    "Tippawan","Wanida",
+  ];
+  const LASTS = [
+    "Suwannathat","Tangkijvanich","Phongphaew","Srisaard","Wattanapong",
+    "Sukphanthawee","Chaisongkhram","Phakdiphisut","Limthongkul",
+    "Ngamthanachoti","Bunyaviroch","Suphawat","Prasertdee","Khamwan",
+    "Klaybor","Tinnirat","Pongdee","Inthanon","Kaewkamnerd","Kanchanaporn",
+    "Lertphol","Maneesin","Naowarat","Onsuwan","Phromsiri","Phongtongkam",
+    "Rattanaphol","Saetang","Sangtong","Siribut","Subin","Suttiwan",
+    "Tantibanchachai","Thaweesak","Vongkitisin","Watthanachai",
+    "Wongsanee","Yindee","Pannarunothai","Saengthong","Jindaprasert",
+    "Kraisin","Mongkolchai","Nopachai","Phantharak","Rachatabordeesakul",
+    "Sangkaroen","Termpong","Thanasit","Vivathana","Wasinwattana",
+    "Yotsuwankul","Charoenpong","Boriboon","Chumphon","Dechawat",
+    "Inthanin","Jaroensri","Khamsuk","Lertsiri","Moonsri","Norachit",
+    "Polchart","Ratanakul","Suttisak","Theerasak","Udomchai","Visetpong",
+    "Wongchai","Yothin","Bunyasarn","Chuenchom",
+  ];
+  const MBTIS = [
+    "INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP",
+    "ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP",
+  ];
+
+  // Country pool — Thailand-dominant (most stay), then common destinations
+  const COUNTRY_W = [
+    { w: 58, v: "Thailand" },
+    { w: 8,  v: "USA" },
+    { w: 6,  v: "UK" },
+    { w: 5,  v: "Japan" },
+    { w: 4,  v: "Singapore" },
+    { w: 3,  v: "Germany" },
+    { w: 2,  v: "Australia" },
+    { w: 2,  v: "Canada" },
+    { w: 2,  v: "Switzerland" },
+    { w: 2,  v: "South Korea" },
+    { w: 1,  v: "Netherlands" },
+    { w: 1,  v: "Hong Kong" },
+    { w: 1,  v: "France" },
+    { w: 1,  v: "Taiwan" },
+    { w: 1,  v: "Sweden" },
+    { w: 1,  v: "China" },
+  ];
+
+  // Faculty / field of study — STEM-heavy reflecting KVIS's science focus
+  const MAJOR_W = [
+    { w: 16, v: "Computer Science" },
+    { w: 9,  v: "Software Engineering" },
+    { w: 5,  v: "Data Science" },
+    { w: 9,  v: "Mechanical Engineering" },
+    { w: 8,  v: "Electrical Engineering" },
+    { w: 6,  v: "Chemical Engineering" },
+    { w: 5,  v: "Civil Engineering" },
+    { w: 3,  v: "Aerospace Engineering" },
+    { w: 5,  v: "Biomedical Engineering" },
+    { w: 4,  v: "Materials Science" },
+    { w: 7,  v: "Physics" },
+    { w: 5,  v: "Mathematics" },
+    { w: 5,  v: "Chemistry" },
+    { w: 5,  v: "Biology" },
+    { w: 4,  v: "Biochemistry" },
+    { w: 3,  v: "Microbiology" },
+    { w: 3,  v: "Neuroscience" },
+    { w: 7,  v: "Medicine" },
+    { w: 3,  v: "Pharmacy" },
+    { w: 2,  v: "Dentistry" },
+    { w: 5,  v: "Economics" },
+    { w: 4,  v: "Business Administration" },
+    { w: 3,  v: "Finance" },
+    { w: 2,  v: "Architecture" },
+    { w: 2,  v: "Industrial Design" },
+    { w: 2,  v: "Environmental Science" },
+    { w: 2,  v: "Agricultural Science" },
+  ];
+
+  const UNI_BY_COUNTRY = {
+    Thailand: [
+      "Chulalongkorn University","Mahidol University","Kasetsart University",
+      "Thammasat University","King Mongkut's University of Technology Thonburi",
+      "King Mongkut's Institute of Technology Ladkrabang",
+      "King Mongkut's University of Technology North Bangkok",
+      "Chiang Mai University","Khon Kaen University","Prince of Songkla University",
+      "Silpakorn University","Srinakharinwirot University","Naresuan University",
+      "VISTEC","SIIT, Thammasat","Burapha University",
+    ],
+    USA: [
+      "MIT","Harvard University","Stanford University","Carnegie Mellon University",
+      "UC Berkeley","Caltech","Cornell University","Yale University",
+      "Princeton University","Columbia University","University of Michigan",
+      "University of Washington","Georgia Tech","Johns Hopkins University",
+      "UIUC","UCLA","University of Chicago","Purdue University","Brown University",
+    ],
+    UK: [
+      "University of Cambridge","University of Oxford","Imperial College London",
+      "UCL","LSE","University of Edinburgh","King's College London",
+      "University of Warwick","University of Manchester","University of Bristol",
+    ],
+    Singapore: ["NUS","NTU","SMU","SUTD"],
+    Japan: [
+      "University of Tokyo","Kyoto University","Osaka University",
+      "Tokyo Institute of Technology","Tohoku University","Waseda University",
+      "Hokkaido University",
+    ],
+    Germany: [
+      "TU Munich","RWTH Aachen","TU Berlin","Heidelberg University",
+      "LMU Munich","Karlsruhe Institute of Technology",
+    ],
+    Canada: [
+      "University of Toronto","McGill University","University of British Columbia",
+      "University of Waterloo",
+    ],
+    Australia: [
+      "University of Melbourne","University of Sydney","ANU","UNSW",
+      "Monash University",
+    ],
+    Switzerland: ["ETH Zurich","EPFL"],
+    "South Korea": ["KAIST","Seoul National University","POSTECH","Yonsei University"],
+    Netherlands: ["Delft University of Technology","TU Eindhoven","University of Amsterdam"],
+    "Hong Kong": ["HKUST","University of Hong Kong","CUHK"],
+    France: ["École Polytechnique","Sciences Po","Sorbonne University","ENS Paris"],
+    Taiwan: ["National Taiwan University"],
+    Sweden: ["KTH Royal Institute of Technology","Lund University"],
+    China: ["Tsinghua University","Peking University","Fudan University"],
+  };
+
+  const PLACES = {
+    Thailand: [
+      ["Bangkok, Thailand", 13.7563, 100.5018],
+      ["Chiang Mai, Thailand", 18.7883, 98.9853],
+      ["Khon Kaen, Thailand", 16.4419, 102.8350],
+      ["Phuket, Thailand", 7.8804, 98.3923],
+      ["Hat Yai, Thailand", 7.0086, 100.4747],
+      ["Rayong, Thailand", 12.6802, 101.2870],
+      ["Pathum Thani, Thailand", 14.0208, 100.5251],
+      ["Nakhon Ratchasima, Thailand", 14.9799, 102.0978],
+    ],
+    USA: [
+      ["Cambridge, USA", 42.3736, -71.1097],
+      ["Berkeley, USA", 37.8715, -122.2730],
+      ["Stanford, USA", 37.4275, -122.1697],
+      ["New York, USA", 40.7128, -74.0060],
+      ["Pittsburgh, USA", 40.4406, -79.9959],
+      ["Seattle, USA", 47.6062, -122.3321],
+      ["Ann Arbor, USA", 42.2808, -83.7430],
+      ["Atlanta, USA", 33.7490, -84.3880],
+      ["Pasadena, USA", 34.1478, -118.1445],
+      ["Ithaca, USA", 42.4440, -76.5019],
+    ],
+    UK: [
+      ["London, UK", 51.5074, -0.1278],
+      ["Cambridge, UK", 52.2053, 0.1218],
+      ["Oxford, UK", 51.7520, -1.2577],
+      ["Edinburgh, UK", 55.9533, -3.1883],
+      ["Manchester, UK", 53.4808, -2.2426],
+    ],
+    Singapore: [["Singapore", 1.3521, 103.8198]],
+    Japan: [
+      ["Tokyo, Japan", 35.6762, 139.6503],
+      ["Kyoto, Japan", 35.0116, 135.7681],
+      ["Osaka, Japan", 34.6937, 135.5023],
+      ["Sendai, Japan", 38.2682, 140.8694],
+    ],
+    Germany: [
+      ["Munich, Germany", 48.1351, 11.5820],
+      ["Berlin, Germany", 52.5200, 13.4050],
+      ["Aachen, Germany", 50.7753, 6.0839],
+      ["Heidelberg, Germany", 49.3988, 8.6724],
+    ],
+    Canada: [
+      ["Toronto, Canada", 43.6532, -79.3832],
+      ["Vancouver, Canada", 49.2827, -123.1207],
+      ["Waterloo, Canada", 43.4643, -80.5204],
+      ["Montreal, Canada", 45.5017, -73.5673],
+    ],
+    Australia: [
+      ["Melbourne, Australia", -37.8136, 144.9631],
+      ["Sydney, Australia", -33.8688, 151.2093],
+      ["Canberra, Australia", -35.2809, 149.1300],
+    ],
+    Switzerland: [
+      ["Zurich, Switzerland", 47.3769, 8.5417],
+      ["Lausanne, Switzerland", 46.5197, 6.6323],
+    ],
+    "South Korea": [
+      ["Seoul, South Korea", 37.5665, 126.9780],
+      ["Daejeon, South Korea", 36.3504, 127.3845],
+    ],
+    Netherlands: [
+      ["Delft, Netherlands", 52.0116, 4.3571],
+      ["Amsterdam, Netherlands", 52.3676, 4.9041],
+      ["Eindhoven, Netherlands", 51.4416, 5.4697],
+    ],
+    "Hong Kong": [["Hong Kong", 22.3193, 114.1694]],
+    France: [["Paris, France", 48.8566, 2.3522]],
+    Taiwan: [["Taipei, Taiwan", 25.0330, 121.5654]],
+    Sweden: [
+      ["Stockholm, Sweden", 59.3293, 18.0686],
+      ["Lund, Sweden", 55.7047, 13.1910],
+    ],
+    China: [
+      ["Beijing, China", 39.9042, 116.4074],
+      ["Shanghai, China", 31.2304, 121.4737],
+    ],
+  };
+
+  const SCHOLARSHIPS = [
+    null,null,null,null,null,null,
+    "DPST","DPST","DPST",
+    "Royal Thai Government","Royal Thai Government",
+    "MEXT","ASEAN Scholarship","Chevening",
+    "Fulbright","Royal Golden Jubilee","Anandamahidol",
+    "King's Scholarship","JPA","DAAD",
+  ];
+
+  // ── 3. Deterministic RNG (mulberry32) keeps generated data stable per run
+  function makeRng(seed) {
+    let a = (seed >>> 0) || 1;
+    return () => {
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const R = makeRng(42);
+  const pick = (arr) => arr[Math.floor(R() * arr.length)];
+  const wpick = (items) => {
+    const total = items.reduce((s, i) => s + i.w, 0);
+    let r = R() * total;
+    for (const i of items) if ((r -= i.w) <= 0) return i.v;
+    return items[items.length - 1].v;
+  };
+
+  // ── 4. Backfill each cohort to ~71 students (70-73 range)
+  let nextId = MOCK_ALUMNI.reduce((m, u) => Math.max(m, u.id), 0) + 1;
+  let nextEduId = MOCK_ALUMNI
+    .flatMap((u) => u.education || [])
+    .reduce((m, e) => Math.max(m, e.id || 0), 0) + 1;
+
+  for (let cohort = 1; cohort <= 9; cohort++) {
+    const have = MOCK_ALUMNI.filter((u) => u.kvis_year === cohort).length;
+    const target = 70 + Math.floor(R() * 4); // 70..73
+    const need = Math.max(0, target - have);
+    for (let i = 0; i < need; i++) {
+      const country = wpick(COUNTRY_W);
+      const major = wpick(MAJOR_W);
+      const unis = UNI_BY_COUNTRY[country] || UNI_BY_COUNTRY.Thailand;
+      const uni = pick(unis);
+      const places = PLACES[country] || PLACES.Thailand;
+      const [place, lat, lng] = pick(places);
+      const first = pick(FIRSTS);
+      const last = pick(LASTS);
+      const id = nextId++;
+      const startYear = 2014 + cohort + 2; // approx undergrad start
+      MOCK_ALUMNI.push({
+        id,
+        email: `${first.toLowerCase()}.${last[0].toLowerCase()}${id}@kvis.ac.th`,
+        first_name: first,
+        last_name: last,
+        kvis_year: cohort,
+        place,
+        latitude: lat + (R() - 0.5) * 0.18,
+        longitude: lng + (R() - 0.5) * 0.18,
+        country,
+        profile_pic_url: null,
+        bio: null,
+        mbti: pick(MBTIS),
+        interests: null,
+        facebook_url: null,
+        linkedin_url: null,
+        website_url: null,
+        line_id: null,
+        email_verified: true,
+        is_verified: true,
+        created_at: `2024-${String(1 + Math.floor(R() * 12)).padStart(2, "0")}-${String(1 + Math.floor(R() * 28)).padStart(2, "0")}T08:00:00Z`,
+        updated_at: "2024-06-01T08:00:00Z",
+        education: [
+          {
+            id: nextEduId++,
+            uni_name: uni,
+            degree: "Bachelor",
+            major,
+            country,
+            state: null,
+            scholarship: pick(SCHOLARSHIPS),
+            start_year: startYear,
+            end_year: null,
+          },
+        ],
+        career: [],
+      });
+    }
+  }
+})();
+
 // Logged-in mock user (id=1)
 const MOCK_ME = MOCK_ALUMNI[0];
 

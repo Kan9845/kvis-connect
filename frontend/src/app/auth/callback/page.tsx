@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { Loader2, GraduationCap } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function AuthCallbackPage() {
@@ -28,8 +28,7 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="min-h-[calc(100vh-64px)] flex flex-col items-center justify-center gap-4">
-      <div className="flex items-center gap-2 text-primary font-bold text-xl">
-        <GraduationCap className="h-7 w-7" />
+      <div className="text-primary font-bold text-xl">
         KVIS Connect
       </div>
       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

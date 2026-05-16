@@ -2,18 +2,20 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { GraduationCap, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const { user, loading, refetch } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next") || "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,8 +23,8 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!loading && user?.email_verified) router.replace("/");
-  }, [user, loading, router]);
+    if (!loading && user?.email_verified) router.replace(next);
+  }, [user, loading, router, next]);
 
   if (loading) {
     return (
@@ -39,7 +41,7 @@ export default function LoginPage() {
     try {
       await authApi.login({ email, password });
       await refetch();
-      router.replace("/");
+      router.replace(next);
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
@@ -53,8 +55,7 @@ export default function LoginPage() {
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="flex justify-center mb-6">
-          <div className="flex items-center gap-2 text-primary font-bold text-xl">
-            <GraduationCap className="h-7 w-7" />
+          <div className="text-primary font-bold text-xl">
             KVIS Connect
           </div>
         </div>
