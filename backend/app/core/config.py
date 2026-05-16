@@ -7,9 +7,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
-    MICROSOFT_CLIENT_ID: str = ""
-    MICROSOFT_CLIENT_SECRET: str = ""
-    MICROSOFT_TENANT_ID: str = "e9c554b7-2aec-4238-9b8e-372753d596ae"
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
 
     S3_ENDPOINT_URL: str = ""
     S3_ACCESS_KEY: str = ""
@@ -17,6 +16,12 @@ class Settings(BaseSettings):
     S3_BUCKET: str = "kvis-connect"
 
     FRONTEND_URL: str = "http://localhost:3000"
+
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = "noreply@kvis.ac.th"
 
     class Config:
         env_file = ".env"

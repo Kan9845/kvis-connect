@@ -1,10 +1,8 @@
-from __future__ import annotations
 from sqlmodel import SQLModel, Field, Relationship
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from datetime import datetime
 
-if TYPE_CHECKING:
-    from app.models.user import User
+from app.models.user import User
 
 
 class Blog(SQLModel, table=True):

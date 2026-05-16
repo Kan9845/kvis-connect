@@ -17,10 +17,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Upload, Loader2, Check } from "lucide-react";
+import { Plus, Trash2, Upload, Loader2, Check, ShieldCheck, ShieldAlert } from "lucide-react";
 import { DEGREES, JOB_FIELDS, MAJORS, MBTI_TYPES, KVIS_YEARS } from "@/lib/constants/options";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Education, Career } from "@/lib/types";
 
 const generalSchema = z.object({
@@ -144,6 +145,32 @@ export default function EditPage() {
                 <Upload className="h-4 w-4 mr-2" /> Change photo
               </Button>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePicChange} />
+            </CardContent>
+          </Card>
+
+          {/* KVIS Verification */}
+          <Card className="mb-4">
+            <CardHeader><CardTitle className="text-sm">KVIS Verification</CardTitle></CardHeader>
+            <CardContent>
+              {me.is_verified ? (
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-green-600 dark:text-green-400">KVIS-Verified</p>
+                    <p className="text-xs text-muted-foreground">{me.kvis_email}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <ShieldAlert className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <p className="text-sm text-muted-foreground">Not verified — confirm your @kvis.ac.th email to get the KVIS-Verified badge</p>
+                  </div>
+                  <Button asChild variant="outline" size="sm" className="shrink-0">
+                    <Link href="/auth/verify-email">Verify</Link>
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 

@@ -51,6 +51,7 @@ export interface UserMe extends UserPublic {
   line_id?: string;
   email_verified: boolean;
   is_verified: boolean;
+  kvis_email?: string;
 }
 
 export interface GlobePin {

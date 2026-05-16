@@ -7,7 +7,8 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, Search, BookOpen, BarChart2, Users, User, LogOut, Settings } from "lucide-react";
+import { GraduationCap, Search, BookOpen, BarChart2, Users, User, LogOut, Settings, Sun, Moon, ShieldCheck } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -33,7 +34,6 @@ function AlumniSearch({ solid = false }: { solid?: boolean }) {
     return name.includes(q) || p.country?.toLowerCase().includes(q) || p.current_job?.toLowerCase().includes(q);
   }).slice(0, 8);
 
-  // Close on outside click
   useEffect(() => {
     function handle(e: MouseEvent) {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
@@ -91,6 +91,26 @@ function AlumniSearch({ solid = false }: { solid?: boolean }) {
   );
 }
 
+function ThemeToggle({ dark }: { dark: boolean }) {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  return (
+    <button
+      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+      className={`p-2 rounded-full transition-colors pointer-events-auto ${
+        dark ? "text-white hover:bg-white/10" : "text-gray-700 hover:bg-gray-100"
+      }`}
+      aria-label="Toggle theme"
+    >
+      {mounted
+        ? resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />
+        : <Moon className="h-4 w-4 opacity-0" />}
+    </button>
+  );
+}
+
 export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
@@ -114,7 +134,10 @@ export function Navbar() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52">
         <div className="px-2 py-1.5">
-          <p className="text-sm font-medium">{user.first_name} {user.last_name}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="text-sm font-medium">{user.first_name} {user.last_name}</p>
+            {user.is_verified && <ShieldCheck className="h-3.5 w-3.5 text-green-500 shrink-0" />}
+          </div>
           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
         </div>
         <DropdownMenuSeparator />
@@ -136,7 +159,6 @@ export function Navbar() {
     </DropdownMenu>
   ) : null;
 
-  // ── Globe page: absolute overlay navbar, switches dark↔light ──
   if (isGlobe) {
     return (
       <header
@@ -148,7 +170,6 @@ export function Navbar() {
           transition: "background 0.3s ease, border-color 0.3s ease",
         }}
       >
-        {/* Logo */}
         <Link
           href="/"
           className="flex items-center gap-2 font-bold text-lg pointer-events-auto shrink-0"
@@ -158,7 +179,6 @@ export function Navbar() {
           KVIS Connect
         </Link>
 
-        {/* Center */}
         <div className="flex items-center gap-3 pointer-events-auto">
           <div
             className="flex items-center rounded-full overflow-visible w-64"
@@ -184,8 +204,8 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Auth */}
         <div className="flex items-center gap-3 pointer-events-auto shrink-0">
+          <ThemeToggle dark={dark} />
           {user ? userMenu("focus:ring-2 focus:ring-white/50") : (
             <>
               <Button variant="ghost" size="sm" className={dark ? "text-white hover:text-white hover:bg-white/10" : "text-gray-700"} asChild>
@@ -201,7 +221,6 @@ export function Navbar() {
     );
   }
 
-  // ── Solid white navbar for all other pages ──
   return (
     <header className="relative z-50 flex items-center justify-between gap-4 px-6 h-16 w-full bg-white border-b border-gray-100">
       <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900 shrink-0">
@@ -227,6 +246,7 @@ export function Navbar() {
         </div>
       </div>
       <div className="flex items-center gap-3 shrink-0">
+        <ThemeToggle dark={false} />
         {user ? userMenu("focus:ring-2 focus:ring-blue-200") : (
           <>
             <Button variant="ghost" size="sm" className="text-gray-600" asChild>

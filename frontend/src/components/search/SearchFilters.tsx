@@ -131,7 +131,7 @@ export function SearchFilters({ values, onChange }: Props) {
           </Section>
 
           <div className="flex gap-2 pt-4">
-            <Button type="submit" variant="outline" className="flex-1 border-gray-800 text-gray-800 hover:bg-gray-800 hover:text-white transition-colors">Search</Button>
+            <Button type="submit" variant="outline" className="flex-1">Search</Button>
             <Button type="button" variant="outline" size="icon" onClick={handleClear} title="Clear filters">
               <X className="h-4 w-4" />
             </Button>

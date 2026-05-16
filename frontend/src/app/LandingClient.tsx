@@ -127,19 +127,19 @@ export function LandingClient({ initialPins, initialSummary, initialPosts }: Pro
         {/* Floating filter panel */}
         {panelOpen && (
           <div
-            className="absolute z-20 w-72 rounded-2xl overflow-y-auto"
-            style={{ top: 76, left: 20, maxHeight: "calc(100vh - 72px)", background: "#ffffff", border: "1px solid #e2e8f0", boxShadow: "0 12px 48px rgba(0,0,0,0.35)" }}
+            className="absolute z-20 w-72 rounded-2xl overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
+            style={{ top: 76, left: 20, maxHeight: "calc(100vh - 72px)", boxShadow: "0 12px 48px rgba(0,0,0,0.35)" }}
           >
-            <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-100">
+            <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-gray-100 dark:border-slate-700">
               <div>
-                <p className="font-semibold text-sm text-gray-900">Filter Alumni</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="font-semibold text-sm text-gray-900 dark:text-slate-100">Filter Alumni</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400 mt-0.5">
                   {hasFilter ? `${resultCount} found` : `${pins.length} worldwide`}
                 </p>
               </div>
               <button
                 onClick={() => setPanelOpen(false)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                className="p-1.5 rounded-lg text-gray-400 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>

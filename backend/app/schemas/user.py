@@ -75,6 +75,7 @@ class UserMe(UserPublic):
     line_id: Optional[str]
     email_verified: bool
     is_verified: bool
+    kvis_email: Optional[str]
 
 
 class UserUpdate(BaseModel):

@@ -41,9 +41,10 @@ class User(SQLModel, table=True):
     # Auth
     email: str = Field(unique=True, index=True)
     hashed_password: Optional[str] = None
-    microsoft_id: Optional[str] = Field(default=None, index=True)
+    google_id: Optional[str] = Field(default=None, index=True)
     email_verified: bool = False
-    is_verified: bool = False  # manually verified by admin
+    is_verified: bool = False  # KVIS-Verified: confirmed @kvis.ac.th email ownership
+    kvis_email: Optional[str] = None  # the verified @kvis.ac.th email
 
     # Basic info
     first_name: str

@@ -173,4 +173,5 @@ def _user_to_public(user: User) -> dict:
 
 def _user_to_me(user: User) -> dict:
     return {**_user_to_public(user), "email": user.email, "line_id": user.line_id,
-            "email_verified": user.email_verified, "is_verified": user.is_verified}
+            "email_verified": user.email_verified, "is_verified": user.is_verified,
+            "kvis_email": user.kvis_email}

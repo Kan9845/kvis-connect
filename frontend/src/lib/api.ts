@@ -10,6 +10,55 @@ const api = axios.create({
   withCredentials: true,
 });
 
+let isRefreshing = false;
+let refreshQueue: Array<(ok: boolean) => void> = [];
+
+function onRefreshDone(ok: boolean) {
+  refreshQueue.forEach((resolve) => resolve(ok));
+  refreshQueue = [];
+}
+
+// On 401: attempt a silent token refresh, then retry the original request once.
+// Skip refresh for auth-related endpoints to avoid infinite loops.
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const status = error.response?.status;
+    const url: string = error.config?.url ?? "";
+    const isAuthEndpoint = url.includes("/api/auth/");
+    const onAuthPage =
+      typeof window !== "undefined" &&
+      window.location.pathname.startsWith("/auth/");
+
+    if (status !== 401 || isAuthEndpoint || error.config?._retry) {
+      return Promise.reject(error);
+    }
+
+    if (isRefreshing) {
+      // Queue this request until the ongoing refresh settles
+      return new Promise((resolve, reject) => {
+        refreshQueue.push((ok) => {
+          if (ok) resolve(api({ ...error.config, _retry: true }));
+          else reject(error);
+        });
+      });
+    }
+
+    isRefreshing = true;
+    try {
+      await api.post("/api/auth/refresh");
+      onRefreshDone(true);
+      return api({ ...error.config, _retry: true });
+    } catch {
+      onRefreshDone(false);
+      if (!onAuthPage) window.location.href = "/auth/login";
+      return Promise.reject(error);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
+
 // Auth
 export const authApi = {
   register: (data: { email: string; password: string; first_name: string; last_name: string }) =>
@@ -17,9 +66,19 @@ export const authApi = {
   login: (data: { email: string; password: string }) =>
     api.post("/api/auth/login", data),
   logout: () => api.post("/api/auth/logout"),
-  microsoftLogin: () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/microsoft`;
+  googleLogin: () => {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
   },
+  requestPasswordReset: (email: string) =>
+    api.post("/api/auth/password-reset/request", { email }),
+  confirmPasswordReset: (token: string, new_password: string) =>
+    api.post("/api/auth/password-reset/confirm", { token, new_password }),
+  requestOtp: (email: string) =>
+    api.post("/api/auth/otp/request", { email }),
+  verifyOtp: (email: string, otp: string) =>
+    api.post("/api/auth/otp/verify", { email, otp }),
+  verifyKvis: (kvis_email: string, otp: string) =>
+    api.post("/api/auth/kvis/verify", { kvis_email, otp }),
 };
 
 // Users
