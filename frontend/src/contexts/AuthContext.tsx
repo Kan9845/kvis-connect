@@ -13,13 +13,35 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const AUTH_DISABLED =
+  process.env.NODE_ENV !== "production" &&
+  process.env.NEXT_PUBLIC_DISABLE_AUTH === "true";
+
+const DEV_MOCK_USER: UserMe = {
+  id: 1,
+  first_name: "Dev",
+  last_name: "User",
+  email: "dev@kvis.local",
+  email_verified: true,
+  is_verified: true,
+  education: [],
+  career: [],
+  created_at: new Date().toISOString(),
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserMe | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<UserMe | null>(AUTH_DISABLED ? DEV_MOCK_USER : null);
+  const [loading, setLoading] = useState(!AUTH_DISABLED);
   // Track whether the initial session check has completed
   const initialised = useRef(false);
 
   const fetchMe = async () => {
+    if (AUTH_DISABLED) {
+      setUser(DEV_MOCK_USER);
+      setLoading(false);
+      initialised.current = true;
+      return;
+    }
     try {
       const me = await userApi.getMe();
       setUser(me);
@@ -40,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { fetchMe(); }, []);
 
   const logout = async () => {
+    if (AUTH_DISABLED) return;
     await authApi.logout();
     setUser(null);
   };

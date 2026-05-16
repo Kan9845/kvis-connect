@@ -67,8 +67,8 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
   const tags = parseTags(blog.tags);
   return (
     <Link href={`/blog/${blog.slug}`} className="group block py-10 border-b" style={{ borderColor: P.rule }}>
-      <div className="text-[11px] font-bold uppercase tracking-[0.24em] mb-5" style={{ color: P.green }}>
-        Lead story{tags[0] ? <span style={{ color: P.text3 }}>{`  ·  ${tags[0]}`}</span> : null}
+      <div className="text-xs font-bold uppercase tracking-[0.24em] mb-5" style={{ color: P.green }}>
+        Featured{tags[0] ? <span style={{ color: P.text3 }}>{`  ·  ${tags[0]}`}</span> : null}
       </div>
       <h2
         className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.02] tracking-[-0.02em] text-foreground mb-5 max-w-[20ch] group-hover:underline decoration-[3px] underline-offset-[6px]"
@@ -106,14 +106,14 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
       style={{ borderColor: P.rule }}
     >
       <span
-        className="text-[11px] font-mono font-semibold tabular-nums pt-1.5"
+        className="text-xs font-mono font-semibold tabular-nums pt-1.5"
         style={{ color: P.text3 }}
       >
         {String(index + 1).padStart(2, "0")}
       </span>
       <div className="min-w-0">
         {tags[0] && (
-          <div className="text-[10px] font-bold uppercase tracking-[0.22em] mb-2" style={{ color: P.purple }}>
+          <div className="text-xs font-bold uppercase tracking-[0.22em] mb-2" style={{ color: P.purple }}>
             {tags[0]}
           </div>
         )}
@@ -176,10 +176,6 @@ export default function BlogPage() {
 
   const now = new Date();
   const issueLabel = now.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
-  const issueNum = Math.max(
-    1,
-    Math.floor((now.getTime() - new Date("2024-01-01").getTime()) / (1000 * 60 * 60 * 24 * 30)),
-  );
 
   return (
     <div className="min-h-full bg-background">
@@ -188,34 +184,32 @@ export default function BlogPage() {
         <header className="pb-7 border-b border-foreground/60">
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.3em] mb-3" style={{ color: P.purple }}>
-                KVIS Connect · Vol. 01
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: P.purple }}>
+                KVIS Connect · Stories
               </p>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
-                The Bulletin
+                Stories
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
-                Field notes, essays, and dispatches from the KVIS alumni network — at home and abroad.
+                Essays, updates, and reflections from KVIS alumni — at home and abroad.
               </p>
             </div>
             {user && (
               <Button asChild className="shrink-0 rounded-none bg-foreground text-background hover:bg-foreground/90">
                 <Link href="/blog/new">
-                  <PenLine className="h-4 w-4 mr-2" /> Write a piece
+                  <PenLine className="h-4 w-4 mr-2" /> Write a post
                 </Link>
               </Button>
             )}
           </div>
           <div
-            className="flex items-center gap-3 md:gap-4 mt-6 text-[11px] tabular-nums uppercase tracking-[0.22em] flex-wrap"
+            className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
             style={{ color: P.text3 }}
           >
-            <span>Issue No. {String(issueNum).padStart(3, "0")}</span>
-            <span aria-hidden>·</span>
             <span>{issueLabel}</span>
             <span aria-hidden>·</span>
             <span>
-              {blogs.length} {blogs.length === 1 ? "piece" : "pieces"} filed
+              {blogs.length} {blogs.length === 1 ? "post" : "posts"}
             </span>
           </div>
         </header>
@@ -223,40 +217,45 @@ export default function BlogPage() {
         {/* Sections / tag rail */}
         {allTags.length > 0 && (
           <nav
-            className="flex items-center gap-x-6 gap-y-2 flex-wrap py-5 border-b"
+            className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b"
             style={{ borderColor: P.rule }}
           >
             <span
-              className="text-[10px] uppercase tracking-[0.24em] font-bold"
+              className="text-xs uppercase tracking-[0.26em] font-bold"
               style={{ color: P.text3 }}
             >
-              Sections
+              Tags
             </span>
-            {[{ name: "All", count: blogs.length, key: "" } as { name: string; count: number; key: string }]
-              .concat(allTags.map(([t, c]) => ({ name: t, count: c, key: t })))
-              .map(({ name, count, key }) => {
-                const active = activeTag === key;
-                return (
-                  <button
-                    key={key || "all"}
-                    onClick={() => setActiveTag(active ? "" : key)}
-                    className={`group/tag text-sm font-semibold uppercase tracking-[0.14em] transition-colors ${active ? "" : "text-muted-foreground"}`}
-                    style={{
-                      color: active ? P.purple : undefined,
-                      textDecoration: active ? "underline" : "none",
-                      textDecorationThickness: 2,
-                      textUnderlineOffset: 6,
-                    }}
-                  >
-                    <span className="group-hover/tag:text-foreground transition-colors text-muted-foreground" style={active ? { color: P.purple } : undefined}>
-                      {name}
-                    </span>
-                    <sup className="ml-1 text-[10px] font-mono tabular-nums" style={{ color: P.text3 }}>
-                      {count}
-                    </sup>
-                  </button>
-                );
-              })}
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
+              {[{ name: "All", count: blogs.length, key: "" } as { name: string; count: number; key: string }]
+                .concat(allTags.map(([t, c]) => ({ name: t, count: c, key: t })))
+                .map(({ name, count, key }) => {
+                  const active = activeTag === key;
+                  return (
+                    <button
+                      key={key || "all"}
+                      onClick={() => setActiveTag(active ? "" : key)}
+                      className="group/tag text-sm font-semibold uppercase tracking-[0.14em] transition-colors leading-none"
+                      style={{
+                        color: active ? P.purple : undefined,
+                        textDecoration: active ? "underline" : "none",
+                        textDecorationThickness: 2,
+                        textUnderlineOffset: 6,
+                      }}
+                    >
+                      <span
+                        className={active ? "" : "text-muted-foreground group-hover/tag:text-foreground transition-colors"}
+                        style={active ? { color: P.purple } : undefined}
+                      >
+                        {name}
+                      </span>
+                      <sup className="ml-1 text-xs font-mono tabular-nums" style={{ color: P.text3 }}>
+                        {count}
+                      </sup>
+                    </button>
+                  );
+                })}
+            </div>
           </nav>
         )}
 
@@ -286,21 +285,21 @@ export default function BlogPage() {
         {!isLoading && filtered.length === 0 && (
           <div className="py-24 text-center">
             <p
-              className="text-[11px] uppercase tracking-[0.28em] font-bold mb-4"
+              className="text-xs uppercase tracking-[0.28em] font-bold mb-4"
               style={{ color: P.text3 }}
             >
-              The press is quiet
+              Nothing here yet
             </p>
             <p className="text-3xl font-black tracking-tight text-foreground mb-2">
-              {activeTag ? `Nothing filed under "${activeTag}"` : "No pieces yet"}
+              {activeTag ? `No posts tagged "${activeTag}"` : "No posts yet"}
             </p>
             <p className="text-sm text-muted-foreground">
               {activeTag ? (
                 <button onClick={() => setActiveTag("")} className="underline" style={{ color: P.purple }}>
-                  Browse all sections
+                  See all posts
                 </button>
               ) : user ? (
-                "Be the first to file a story."
+                "Be the first to share something."
               ) : (
                 "Check back soon."
               )}
@@ -315,10 +314,10 @@ export default function BlogPage() {
         {!isLoading && rest.length > 0 && (
           <section>
             <h2
-              className="pt-10 pb-4 text-[11px] uppercase tracking-[0.26em] font-bold"
+              className="pt-10 pb-4 text-xs uppercase tracking-[0.26em] font-bold"
               style={{ color: P.text3 }}
             >
-              More from the desk
+              More posts
             </h2>
             <div>
               {rest.map((b, i) => (
@@ -328,14 +327,13 @@ export default function BlogPage() {
           </section>
         )}
 
-        {/* Colophon */}
         {!isLoading && filtered.length > 0 && (
           <footer
-            className="mt-16 pt-6 border-t border-foreground/60 text-muted-foreground text-[11px] uppercase tracking-[0.22em] flex items-center justify-between"
+            className="mt-16 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between"
           >
-            <span>— end of issue —</span>
+            <span>— end —</span>
             <span className="tabular-nums">
-              Printed digitally, {now.getFullYear()}
+              KVIS Connect · {now.getFullYear()}
             </span>
           </footer>
         )}

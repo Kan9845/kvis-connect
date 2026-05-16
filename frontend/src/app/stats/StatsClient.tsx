@@ -114,7 +114,7 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
           }}
         >
           <span
-            className="text-[11px] font-mono tabular-nums font-semibold"
+            className="text-xs font-mono tabular-nums font-semibold"
             style={{ color: P.text3 }}
           >
             {String(it.rank).padStart(2, "0")}
@@ -156,7 +156,7 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
       {!showAll && hidden > 0 && (
         <button
           onClick={() => setShowAll(true)}
-          className="mt-5 text-[11px] uppercase tracking-[0.22em] font-bold hover:underline"
+          className="mt-5 text-xs uppercase tracking-[0.22em] font-bold hover:underline"
           style={{
             color: P.purple,
             textDecorationColor: P.purple,
@@ -169,7 +169,7 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
       {showAll && hidden > 0 && (
         <button
           onClick={() => setShowAll(false)}
-          className="mt-5 text-[11px] uppercase tracking-[0.22em] font-bold hover:underline"
+          className="mt-5 text-xs uppercase tracking-[0.22em] font-bold hover:underline"
           style={{ color: P.text3, textUnderlineOffset: 4 }}
         >
           ← Collapse
@@ -200,7 +200,7 @@ function SectionHead({
           {numeral}
         </span>
         <span
-          className="text-[11px] uppercase tracking-[0.28em] font-bold"
+          className="text-xs uppercase tracking-[0.28em] font-bold"
           style={{ color: P.text3 }}
         >
           {kicker}
@@ -222,7 +222,7 @@ function EmptyRow({ label }: { label: string }) {
   return (
     <div className="py-12 border-t" style={{ borderColor: P.rule }}>
       <p className="text-sm text-muted-foreground italic">
-        No {label} on file for this selection.
+        No {label} recorded for this selection.
       </p>
     </div>
   );
@@ -242,7 +242,7 @@ function CohortPill({
   return (
     <button
       onClick={onClick}
-      className="group/c text-sm font-semibold uppercase tracking-[0.14em] transition-colors"
+      className="group/c text-sm font-semibold uppercase tracking-[0.14em] transition-colors leading-none"
       style={
         active
           ? {
@@ -261,7 +261,7 @@ function CohortPill({
         {children}
       </span>
       <sup
-        className="ml-1 text-[10px] font-mono tabular-nums"
+        className="ml-1 text-xs font-mono tabular-nums"
         style={{ color: P.text3 }}
       >
         {count}
@@ -354,13 +354,6 @@ export default function StatsClient() {
   const dateline = now
     .toLocaleDateString("en-US", { month: "long", year: "numeric" })
     .toUpperCase();
-  const issueNum = Math.max(
-    1,
-    Math.floor(
-      (now.getTime() - new Date("2024-01-01").getTime()) /
-        (1000 * 60 * 60 * 24 * 90),
-    ),
-  );
 
   return (
     <div className="min-h-full bg-background">
@@ -368,29 +361,27 @@ export default function StatsClient() {
         {/* Masthead */}
         <header className="pb-7 border-b border-foreground/60">
           <p
-            className="text-[11px] font-bold uppercase tracking-[0.3em] mb-3"
+            className="text-xs font-bold uppercase tracking-[0.3em] mb-3"
             style={{ color: P.purple }}
           >
-            KVIS Connect · The Almanac
+            KVIS Connect · Stats
           </p>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
             By the Numbers
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
-            A record of where KVIS alumni went to study after graduation — the
-            faculties they chose, the universities that took them in, and the
-            corners of the world they now write home from.
+            Where KVIS alumni went to study after graduation — the faculties
+            they chose, the universities that took them in, and the countries
+            they ended up in.
           </p>
           <div
-            className="flex items-center gap-3 md:gap-4 mt-6 text-[11px] tabular-nums uppercase tracking-[0.22em] flex-wrap"
+            className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
             style={{ color: P.text3 }}
           >
-            <span>Edition No. {String(issueNum).padStart(3, "0")}</span>
-            <span aria-hidden>·</span>
             <span>{dateline}</span>
             <span aria-hidden>·</span>
             <span>
-              {alumni.length} alumni on file
+              {alumni.length} alumni
             </span>
             <span aria-hidden>·</span>
             <span>{cohorts.length} cohorts</span>
@@ -400,33 +391,35 @@ export default function StatsClient() {
         {/* Cohort selector */}
         {cohorts.length > 0 && (
           <nav
-            className="flex items-center gap-x-6 gap-y-2 flex-wrap py-5 border-b"
+            className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b"
             style={{ borderColor: P.rule }}
             aria-label="Cohort filter"
           >
             <span
-              className="text-[10px] uppercase tracking-[0.24em] font-bold"
+              className="text-xs uppercase tracking-[0.26em] font-bold"
               style={{ color: P.text3 }}
             >
               Cohort
             </span>
-            <CohortPill
-              active={cohort === null}
-              count={alumni.length}
-              onClick={() => setCohort(null)}
-            >
-              All
-            </CohortPill>
-            {cohorts.map((y) => (
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
               <CohortPill
-                key={y}
-                active={cohort === y}
-                count={cohortCounts.get(y) ?? 0}
-                onClick={() => setCohort(cohort === y ? null : y)}
+                active={cohort === null}
+                count={alumni.length}
+                onClick={() => setCohort(null)}
               >
-                K{y}
+                All
               </CohortPill>
-            ))}
+              {cohorts.map((y) => (
+                <CohortPill
+                  key={y}
+                  active={cohort === y}
+                  count={cohortCounts.get(y) ?? 0}
+                  onClick={() => setCohort(cohort === y ? null : y)}
+                >
+                  K{y}
+                </CohortPill>
+              ))}
+            </div>
           </nav>
         )}
 
@@ -446,7 +439,7 @@ export default function StatsClient() {
               style={i > 0 ? { borderColor: P.rule } : undefined}
             >
               <p
-                className="text-[10px] uppercase tracking-[0.24em] font-bold mb-2"
+                className="text-xs uppercase tracking-[0.24em] font-bold mb-2"
                 style={{ color: P.text3 }}
               >
                 {s.label}
@@ -458,7 +451,7 @@ export default function StatsClient() {
                 {s.value}
               </p>
               <p
-                className="mt-2 text-[11px] uppercase tracking-[0.18em]"
+                className="mt-2 text-xs uppercase tracking-[0.18em]"
                 style={{ color: P.text3 }}
               >
                 {cohortLabel}
@@ -557,15 +550,14 @@ export default function StatsClient() {
               )}
             </section>
 
-            {/* Colophon */}
             <footer
-              className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-[11px] uppercase tracking-[0.22em] flex items-center justify-between flex-wrap gap-2"
+              className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between flex-wrap gap-2"
             >
               <span>
-                — Compiled from {alumni.length} alumni profiles · {cohortLabel} —
+                — Based on {alumni.length} alumni profiles · {cohortLabel} —
               </span>
               <span className="tabular-nums">
-                Last set in type, {now.getFullYear()}
+                Updated {now.getFullYear()}
               </span>
             </footer>
           </>

@@ -117,16 +117,18 @@ function NavLink({
   label,
   pathname,
   dark,
+  isActive,
 }: {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   pathname: string;
   dark: boolean;
+  isActive?: boolean;
 }) {
-  const active = pathname === href || pathname.startsWith(href + "/");
+  const active = isActive ?? (pathname === href || pathname.startsWith(href + "/"));
   const base =
-    "flex items-center gap-1.5 px-4 py-2.5 text-sm transition-colors whitespace-nowrap";
+    "flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm transition-colors whitespace-nowrap w-28";
 
   let cls: string;
   let style: React.CSSProperties = {};
@@ -220,7 +222,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-3 pointer-events-auto">
           <div
-            className="flex items-center rounded-full overflow-visible w-64"
+            className="flex items-center rounded-full overflow-visible w-[338px]"
             style={{ background: dark ? "transparent" : "oklch(95% 0.005 294)", border: dark ? "1px solid rgba(255,255,255,0.6)" : "1px solid oklch(88% 0.008 294)" }}
           >
             <AlumniSearch dark={dark} />
@@ -233,7 +235,7 @@ export function Navbar() {
             <div className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`} />
             <NavLink href="/stats" icon={BarChart2} label="Stats" pathname={pathname} dark={dark} />
             <div className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`} />
-            <NavLink href="/search" icon={Users} label="Alumni" pathname={pathname} dark={dark} />
+            <NavLink href="/kvisian" icon={Users} label="Kvisian" pathname={pathname} dark={dark} />
           </div>
         </div>
 
@@ -260,7 +262,7 @@ export function Navbar() {
         KVIS Connect
       </Link>
       <div className="flex items-center gap-3">
-        <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-visible w-64">
+        <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-visible w-[338px]">
           <AlumniSearch solid />
         </div>
         <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-hidden shrink-0">
@@ -268,7 +270,7 @@ export function Navbar() {
           <div className="w-px h-4 bg-border" />
           <NavLink href="/stats" icon={BarChart2} label="Stats" pathname={pathname} dark={false} />
           <div className="w-px h-4 bg-border" />
-          <NavLink href="/search" icon={Users} label="Alumni" pathname={pathname} dark={false} />
+          <NavLink href="/kvisian" icon={Users} label="Kvisian" pathname={pathname} dark={false} />
         </div>
       </div>
       <div className="flex items-center gap-3 shrink-0">

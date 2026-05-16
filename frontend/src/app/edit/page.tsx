@@ -1,28 +1,48 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { userApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Upload, Loader2, Check, ShieldCheck, ShieldAlert } from "lucide-react";
-import { DEGREES, JOB_FIELDS, MAJORS, MBTI_TYPES, KVIS_YEARS } from "@/lib/constants/options";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Plus,
+  Trash2,
+  Upload,
+  Loader2,
+  Check,
+  ShieldCheck,
+  ShieldAlert,
+} from "lucide-react";
+import {
+  DEGREES,
+  JOB_FIELDS,
+  MBTI_TYPES,
+  KVIS_YEARS,
+} from "@/lib/constants/options";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Education, Career } from "@/lib/types";
+
+const P = {
+  purple: "oklch(44% 0.26 294)",
+  purpleSoft: "oklch(95% 0.035 294)",
+  green: "oklch(40% 0.16 148)",
+  text3: "oklch(62% 0.005 294)",
+  rule: "oklch(90% 0.007 294)",
+};
 
 const generalSchema = z.object({
   first_name: z.string().min(1, "Required"),
@@ -40,45 +60,213 @@ const generalSchema = z.object({
 });
 
 type GeneralForm = z.infer<typeof generalSchema>;
+type Tab = "general" | "education" | "career";
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="text-xs font-bold uppercase tracking-[0.28em] py-1 transition-colors"
+      style={{
+        color: active ? P.purple : undefined,
+        textDecoration: active ? "underline" : "none",
+        textDecorationThickness: 2,
+        textUnderlineOffset: 8,
+      }}
+    >
+      <span
+        className={
+          active
+            ? ""
+            : "text-muted-foreground hover:text-foreground transition-colors"
+        }
+        style={active ? { color: P.purple } : undefined}
+      >
+        {children}
+      </span>
+    </button>
+  );
+}
+
+function SectionHead({
+  numeral,
+  kicker,
+  title,
+}: {
+  numeral: string;
+  kicker: string;
+  title: string;
+}) {
+  return (
+    <header className="pt-9 pb-4">
+      <div className="flex items-baseline gap-3 mb-2">
+        <span
+          className="font-mono font-black text-xl tabular-nums"
+          style={{ color: P.green, letterSpacing: "-0.02em" }}
+        >
+          {numeral}
+        </span>
+        <span
+          className="text-xs uppercase tracking-[0.28em] font-bold"
+          style={{ color: P.text3 }}
+        >
+          {kicker}
+        </span>
+      </div>
+      <h2 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-[-0.025em] leading-[1.02] text-foreground max-w-[22ch]">
+        {title}
+      </h2>
+    </header>
+  );
+}
+
+function FieldRow({
+  label,
+  required,
+  hint,
+  error,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  hint?: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-4 border-b"
+      style={{ borderColor: P.rule }}
+    >
+      <div className="md:pt-2.5">
+        <span
+          className="text-xs uppercase tracking-[0.24em] font-bold"
+          style={{ color: P.text3 }}
+        >
+          {label}
+          {required && <span style={{ color: P.purple }}> *</span>}
+        </span>
+        {hint && (
+          <p className="text-[11px] text-muted-foreground mt-1 normal-case tracking-normal">
+            {hint}
+          </p>
+        )}
+      </div>
+      <div className="min-w-0">
+        {children}
+        {error && (
+          <p className="text-xs mt-1.5 font-semibold" style={{ color: P.purple }}>
+            {error}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PrimaryButton({
+  children,
+  type = "button",
+  onClick,
+  disabled,
+  className = "",
+}: {
+  children: React.ReactNode;
+  type?: "button" | "submit";
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      className={`inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.28em] py-3 px-6 bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function GhostButton({
+  children,
+  onClick,
+  className = "",
+}: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.28em] py-3 px-6 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+const inputCls =
+  "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:border-foreground transition-colors";
+
+const selectTriggerCls =
+  "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground focus:ring-0 focus:ring-offset-0";
 
 export default function EditPage() {
   const router = useRouter();
   const { user: me, loading, refetch } = useAuth();
-  const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [picPreview, setPicPreview] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>("general");
 
   useEffect(() => {
     if (!loading && !me) router.push("/auth/login");
   }, [loading, me, router]);
 
-  // General form
-  const { register, handleSubmit, setValue, watch, formState: { errors, isDirty, isSubmitting } } = useForm<GeneralForm>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isDirty, isSubmitting },
+  } = useForm<GeneralForm>({
     resolver: zodResolver(generalSchema),
-    values: me ? {
-      first_name: me.first_name,
-      last_name: me.last_name,
-      kvis_year: me.kvis_year ?? undefined,
-      place: me.place ?? "",
-      country: me.country ?? "",
-      bio: me.bio ?? "",
-      mbti: me.mbti ?? "",
-      interests: me.interests ?? "",
-      facebook_url: me.facebook_url ?? "",
-      linkedin_url: me.linkedin_url ?? "",
-      line_id: me.line_id ?? "",
-      website_url: me.website_url ?? "",
-    } : undefined,
+    values: me
+      ? {
+          first_name: me.first_name,
+          last_name: me.last_name,
+          kvis_year: me.kvis_year ?? undefined,
+          place: me.place ?? "",
+          country: me.country ?? "",
+          bio: me.bio ?? "",
+          mbti: me.mbti ?? "",
+          interests: me.interests ?? "",
+          facebook_url: me.facebook_url ?? "",
+          linkedin_url: me.linkedin_url ?? "",
+          line_id: me.line_id ?? "",
+          website_url: me.website_url ?? "",
+        }
+      : undefined,
   });
 
-  // Education state
   const [education, setEducation] = useState<Omit<Education, "id">[]>([]);
   const [career, setCareer] = useState<Omit<Career, "id">[]>([]);
 
   useEffect(() => {
     if (me) {
-      setEducation(me.education.map(({ id, ...rest }) => rest));
-      setCareer(me.career.map(({ id, ...rest }) => rest));
+      setEducation(me.education.map(({ id: _id, ...rest }) => rest));
+      setCareer(me.career.map(({ id: _id, ...rest }) => rest));
     }
   }, [me]);
 
@@ -115,260 +303,765 @@ export default function EditPage() {
   };
 
   if (loading || !me) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
+    return (
+      <div className="min-h-full bg-background">
+        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
+          <Skeleton className="h-4 w-48 mb-4" />
+          <Skeleton className="h-20 w-3/4 mb-6" />
+          <Skeleton className="h-10 w-full mb-6" />
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 w-full" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const initials = `${me.first_name[0] ?? ""}${me.last_name[0] ?? ""}`.toUpperCase();
+  const previewUrl = picPreview ?? me.profile_pic_url ?? "";
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">Edit Profile</h1>
+    <div className="min-h-full bg-background">
+      <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
+        {/* Masthead */}
+        <header className="pb-7 border-b border-foreground/60">
+          <p
+            className="text-xs font-bold uppercase tracking-[0.3em] mb-3"
+            style={{ color: P.purple }}
+          >
+            KVIS Connect · Edit Dossier
+          </p>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+            Edit profile
+          </h1>
+          <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
+            Update your dossier — the page other alumni see when they look you up.
+          </p>
+          <div
+            className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
+            style={{ color: P.text3 }}
+          >
+            <span>{me.email}</span>
+            <span aria-hidden>·</span>
+            <Link
+              href={`/profile/${me.id}`}
+              className="hover:text-foreground transition-colors underline decoration-1 underline-offset-4"
+            >
+              View public profile
+            </Link>
+          </div>
+        </header>
 
-      <Tabs defaultValue="general">
-        <TabsList className="mb-6 w-full">
-          <TabsTrigger value="general" className="flex-1">General</TabsTrigger>
-          <TabsTrigger value="education" className="flex-1">Education</TabsTrigger>
-          <TabsTrigger value="career" className="flex-1">Career</TabsTrigger>
-        </TabsList>
+        {/* Tabs */}
+        <div
+          className="flex items-center gap-7 pt-5 pb-1 border-b"
+          style={{ borderColor: P.rule }}
+        >
+          <TabButton active={tab === "general"} onClick={() => setTab("general")}>
+            General
+          </TabButton>
+          <TabButton
+            active={tab === "education"}
+            onClick={() => setTab("education")}
+          >
+            Education
+          </TabButton>
+          <TabButton active={tab === "career"} onClick={() => setTab("career")}>
+            Career
+          </TabButton>
+        </div>
 
         {/* GENERAL TAB */}
-        <TabsContent value="general">
-          {/* Profile pic */}
-          <Card className="mb-4">
-            <CardHeader><CardTitle className="text-sm">Profile Picture</CardTitle></CardHeader>
-            <CardContent className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={picPreview ?? me.profile_pic_url ?? ""} />
-                <AvatarFallback className="text-xl font-bold">{initials}</AvatarFallback>
-              </Avatar>
-              <Button variant="outline" onClick={() => fileRef.current?.click()}>
-                <Upload className="h-4 w-4 mr-2" /> Change photo
-              </Button>
-              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePicChange} />
-            </CardContent>
-          </Card>
-
-          {/* KVIS Verification */}
-          <Card className="mb-4">
-            <CardHeader><CardTitle className="text-sm">KVIS Verification</CardTitle></CardHeader>
-            <CardContent>
-              {me.is_verified ? (
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">KVIS-Verified</p>
-                    <p className="text-xs text-muted-foreground">{me.kvis_email}</p>
-                  </div>
+        {tab === "general" && (
+          <>
+            {/* I. Portrait */}
+            <section>
+              <SectionHead numeral="I." kicker="Portrait" title="Profile picture" />
+              <div
+                className="grid grid-cols-[100px_1fr] md:grid-cols-[140px_1fr] gap-6 md:gap-8 items-center py-4 border-b"
+                style={{ borderColor: P.rule }}
+              >
+                <div className="relative aspect-square overflow-hidden bg-muted">
+                  {previewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={previewUrl}
+                      alt={`${me.first_name} ${me.last_name}`}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center text-white font-black"
+                      style={{
+                        background: P.purple,
+                        fontSize: "clamp(1.75rem, 6vw, 3rem)",
+                      }}
+                    >
+                      {initials}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="flex items-center justify-between gap-4">
+                <div>
+                  <GhostButton onClick={() => fileRef.current?.click()}>
+                    <Upload className="h-3.5 w-3.5" /> Change photo
+                  </GhostButton>
+                  <p className="text-xs text-muted-foreground mt-3 max-w-[40ch]">
+                    Square images work best. JPG or PNG, up to ~5MB.
+                  </p>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handlePicChange}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* II. Verification */}
+            <section>
+              <SectionHead
+                numeral="II."
+                kicker="Verification"
+                title="KVIS-verified badge"
+              />
+              <div
+                className="grid grid-cols-[1fr_auto] gap-4 items-center py-5 border-b"
+                style={{ borderColor: P.rule }}
+              >
+                {me.is_verified ? (
                   <div className="flex items-center gap-3">
-                    <ShieldAlert className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <p className="text-sm text-muted-foreground">Not verified — confirm your @kvis.ac.th email to get the KVIS-Verified badge</p>
+                    <ShieldCheck
+                      className="h-5 w-5 shrink-0"
+                      style={{ color: P.green }}
+                    />
+                    <div>
+                      <p
+                        className="text-xs font-bold uppercase tracking-[0.22em]"
+                        style={{ color: P.green }}
+                      >
+                        Verified
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {me.kvis_email}
+                      </p>
+                    </div>
                   </div>
-                  <Button asChild variant="outline" size="sm" className="shrink-0">
-                    <Link href="/auth/verify-email">Verify</Link>
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <ShieldAlert className="h-5 w-5 shrink-0 text-muted-foreground" />
+                    <div>
+                      <p
+                        className="text-xs font-bold uppercase tracking-[0.22em]"
+                        style={{ color: P.text3 }}
+                      >
+                        Not verified
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5 max-w-[40ch]">
+                        Confirm your @kvis.ac.th email to earn the badge.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {!me.is_verified && (
+                  <GhostButton onClick={() => router.push("/auth/verify-email")}>
+                    Verify
+                  </GhostButton>
+                )}
+              </div>
+            </section>
 
-          <form onSubmit={handleSubmit(saveGeneral)}>
-            <Card className="mb-4">
-              <CardHeader><CardTitle className="text-sm">Basic Info</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label>First Name *</Label>
-                    <Input {...register("first_name")} />
-                    {errors.first_name && <p className="text-xs text-destructive">{errors.first_name.message}</p>}
-                  </div>
-                  <div className="space-y-1">
-                    <Label>Last Name *</Label>
-                    <Input {...register("last_name")} />
-                    {errors.last_name && <p className="text-xs text-destructive">{errors.last_name.message}</p>}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label>KVIS Graduation Year</Label>
-                  <Select defaultValue={me.kvis_year ? String(me.kvis_year) : undefined}
-                    onValueChange={(v) => setValue("kvis_year", parseInt(v))}>
-                    <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
+            <form onSubmit={handleSubmit(saveGeneral)}>
+              {/* III. Basics */}
+              <section>
+                <SectionHead
+                  numeral="III."
+                  kicker="Identity"
+                  title="The basics"
+                />
+                <FieldRow
+                  label="First name"
+                  required
+                  error={errors.first_name?.message}
+                >
+                  <Input {...register("first_name")} className={inputCls} />
+                </FieldRow>
+                <FieldRow
+                  label="Last name"
+                  required
+                  error={errors.last_name?.message}
+                >
+                  <Input {...register("last_name")} className={inputCls} />
+                </FieldRow>
+                <FieldRow label="KVIS cohort">
+                  <Select
+                    defaultValue={me.kvis_year ? String(me.kvis_year) : undefined}
+                    onValueChange={(v) => setValue("kvis_year", parseInt(v), { shouldDirty: true })}
+                  >
+                    <SelectTrigger className={selectTriggerCls}>
+                      <SelectValue placeholder="Select graduation year" />
+                    </SelectTrigger>
                     <SelectContent>
                       {KVIS_YEARS.map((y) => (
-                        <SelectItem key={y.value} value={String(y.value)}>{y.label}</SelectItem>
+                        <SelectItem key={y.value} value={String(y.value)}>
+                          {y.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label>MBTI Type</Label>
-                  <Select defaultValue={me.mbti ?? undefined} onValueChange={(v) => setValue("mbti", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select MBTI" /></SelectTrigger>
+                </FieldRow>
+                <FieldRow label="MBTI">
+                  <Select
+                    defaultValue={me.mbti ?? undefined}
+                    onValueChange={(v) => setValue("mbti", v, { shouldDirty: true })}
+                  >
+                    <SelectTrigger className={selectTriggerCls}>
+                      <SelectValue placeholder="Select MBTI" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {MBTI_TYPES.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                      {MBTI_TYPES.map((m) => (
+                        <SelectItem key={m} value={m}>
+                          {m}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label>Bio</Label>
-                  <Textarea placeholder="Tell your fellow alumni about yourself…" rows={3} {...register("bio")} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Interests <span className="text-xs text-muted-foreground">(comma-separated)</span></Label>
-                  <Input placeholder="e.g. Machine Learning, Photography, Hiking" {...register("interests")} />
-                </div>
-              </CardContent>
-            </Card>
+                </FieldRow>
+                <FieldRow label="Bio" hint="Max 500 characters.">
+                  <Textarea
+                    rows={4}
+                    placeholder="Tell your fellow alumni about yourself…"
+                    {...register("bio")}
+                    className={`${inputCls} min-h-[100px]`}
+                  />
+                </FieldRow>
+                <FieldRow label="Tags" hint="Comma-separated.">
+                  <Input
+                    placeholder="Machine Learning, Photography, Hiking"
+                    {...register("interests")}
+                    className={inputCls}
+                  />
+                </FieldRow>
+              </section>
 
-            <Card className="mb-4">
-              <CardHeader><CardTitle className="text-sm">Location</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-1">
-                  <Label>Current Location</Label>
-                  <Input placeholder="e.g. Bangkok, Thailand" {...register("place")} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Country</Label>
-                  <Select defaultValue={me.country ?? undefined} onValueChange={(v) => setValue("country", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger>
+              {/* IV. Location */}
+              <section>
+                <SectionHead numeral="IV." kicker="Location" title="Where you are" />
+                <FieldRow label="City">
+                  <Input
+                    placeholder="Bangkok, Thailand"
+                    {...register("place")}
+                    className={inputCls}
+                  />
+                </FieldRow>
+                <FieldRow label="Country">
+                  <Select
+                    defaultValue={me.country ?? undefined}
+                    onValueChange={(v) => setValue("country", v, { shouldDirty: true })}
+                  >
+                    <SelectTrigger className={selectTriggerCls}>
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {COUNTRIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                      {COUNTRIES.map((c) => (
+                        <SelectItem key={c.value} value={c.value}>
+                          {c.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                </div>
-              </CardContent>
-            </Card>
+                </FieldRow>
+              </section>
 
-            <Card className="mb-4">
-              <CardHeader><CardTitle className="text-sm">Social Links</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-1">
-                  <Label>Facebook URL</Label>
-                  <Input placeholder="https://facebook.com/…" {...register("facebook_url")} />
-                </div>
-                <div className="space-y-1">
-                  <Label>LinkedIn URL</Label>
-                  <Input placeholder="https://linkedin.com/in/…" {...register("linkedin_url")} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Personal Website</Label>
-                  <Input placeholder="https://…" {...register("website_url")} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Line ID</Label>
-                  <Input placeholder="Your Line ID" {...register("line_id")} />
-                </div>
-              </CardContent>
-            </Card>
+              {/* V. Channels */}
+              <section>
+                <SectionHead
+                  numeral="V."
+                  kicker="Channels"
+                  title="How to reach you"
+                />
+                <FieldRow label="Facebook">
+                  <Input
+                    placeholder="https://facebook.com/…"
+                    {...register("facebook_url")}
+                    className={inputCls}
+                  />
+                </FieldRow>
+                <FieldRow label="LinkedIn">
+                  <Input
+                    placeholder="https://linkedin.com/in/…"
+                    {...register("linkedin_url")}
+                    className={inputCls}
+                  />
+                </FieldRow>
+                <FieldRow label="Website">
+                  <Input
+                    placeholder="https://…"
+                    {...register("website_url")}
+                    className={inputCls}
+                  />
+                </FieldRow>
+                <FieldRow label="LINE ID">
+                  <Input
+                    placeholder="your.line.id"
+                    {...register("line_id")}
+                    className={inputCls}
+                  />
+                </FieldRow>
+              </section>
 
-            <Button type="submit" disabled={isSubmitting || !isDirty} className="w-full">
-              {isSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
-              Save Changes
-            </Button>
-          </form>
-        </TabsContent>
+              <div className="pt-8 flex items-center gap-4 flex-wrap">
+                <PrimaryButton type="submit" disabled={isSubmitting || !isDirty}>
+                  {isSubmitting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                  Save changes
+                </PrimaryButton>
+                {!isDirty && !isSubmitting && (
+                  <span
+                    className="text-xs uppercase tracking-[0.22em]"
+                    style={{ color: P.text3 }}
+                  >
+                    No unsaved changes
+                  </span>
+                )}
+              </div>
+            </form>
+          </>
+        )}
 
         {/* EDUCATION TAB */}
-        <TabsContent value="education">
-          <div className="space-y-4">
-            {education.map((edu, i) => (
-              <Card key={i}>
-                <CardContent className="pt-5 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-sm">Education #{i + 1}</span>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"
-                      onClick={() => setEducation((prev) => prev.filter((_, j) => j !== i))}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+        {tab === "education" && (
+          <section>
+            <SectionHead
+              numeral="I."
+              kicker="Schooling"
+              title="Where you studied"
+            />
+
+            {education.length === 0 && (
+              <div
+                className="py-10 border-b text-sm text-muted-foreground italic"
+                style={{ borderColor: P.rule }}
+              >
+                No education added yet.
+              </div>
+            )}
+
+            <div>
+              {education.map((edu, i) => (
+                <div
+                  key={i}
+                  className="py-7 border-b"
+                  style={{ borderColor: P.rule }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-baseline gap-3">
+                      <span
+                        className="text-xs font-mono tabular-nums font-semibold"
+                        style={{ color: P.text3 }}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className="text-xs uppercase tracking-[0.26em] font-bold"
+                        style={{ color: P.text3 }}
+                      >
+                        Education
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEducation((prev) => prev.filter((_, j) => j !== i))
+                      }
+                      className="text-xs font-bold uppercase tracking-[0.22em] inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                      style={{ color: P.text3 }}
+                    >
+                      <Trash2 className="h-3 w-3" /> Remove
+                    </button>
                   </div>
-                  <Input placeholder="University name" value={edu.uni_name}
-                    onChange={(e) => setEducation((prev) => prev.map((x, j) => j === i ? { ...x, uni_name: e.target.value } : x))} />
-                  <Select value={edu.degree}
-                    onValueChange={(v) => setEducation((prev) => prev.map((x, j) => j === i ? { ...x, degree: v } : x))}>
-                    <SelectTrigger><SelectValue placeholder="Degree" /></SelectTrigger>
-                    <SelectContent>{DEGREES.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                  <Input placeholder="Major" value={edu.major}
-                    onChange={(e) => setEducation((prev) => prev.map((x, j) => j === i ? { ...x, major: e.target.value } : x))} />
-                  <Select value={edu.country}
-                    onValueChange={(v) => setEducation((prev) => prev.map((x, j) => j === i ? { ...x, country: v } : x))}>
-                    <SelectTrigger><SelectValue placeholder="Country" /></SelectTrigger>
-                    <SelectContent>{COUNTRIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                  <Input placeholder="Scholarship (optional)" value={edu.scholarship ?? ""}
-                    onChange={(e) => setEducation((prev) => prev.map((x, j) => j === i ? { ...x, scholarship: e.target.value } : x))} />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input type="number" placeholder="Start year" value={edu.start_year ?? ""}
-                      onChange={(e) => setEducation((prev) => prev.map((x, j) => j === i ? { ...x, start_year: parseInt(e.target.value) || undefined } : x))} />
-                    <Input type="number" placeholder="End year" value={edu.end_year ?? ""}
-                      onChange={(e) => setEducation((prev) => prev.map((x, j) => j === i ? { ...x, end_year: parseInt(e.target.value) || undefined } : x))} />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            <Button variant="outline" className="w-full" onClick={() =>
-              setEducation((prev) => [...prev, { uni_name: "", degree: "", major: "", country: "" }])}>
-              <Plus className="h-4 w-4 mr-2" /> Add Education
-            </Button>
-            <Button className="w-full" onClick={saveEducation}>
-              <Check className="h-4 w-4 mr-2" /> Save Education
-            </Button>
-          </div>
-        </TabsContent>
+
+                  <FieldRow label="University">
+                    <Input
+                      placeholder="e.g. Massachusetts Institute of Technology"
+                      value={edu.uni_name}
+                      onChange={(e) =>
+                        setEducation((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, uni_name: e.target.value } : x,
+                          ),
+                        )
+                      }
+                      className={inputCls}
+                    />
+                  </FieldRow>
+                  <FieldRow label="Degree">
+                    <Select
+                      value={edu.degree}
+                      onValueChange={(v) =>
+                        setEducation((prev) =>
+                          prev.map((x, j) => (j === i ? { ...x, degree: v } : x)),
+                        )
+                      }
+                    >
+                      <SelectTrigger className={selectTriggerCls}>
+                        <SelectValue placeholder="Select degree" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DEGREES.map((d) => (
+                          <SelectItem key={d.value} value={d.value}>
+                            {d.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FieldRow>
+                  <FieldRow label="Major">
+                    <Input
+                      placeholder="e.g. Computer Science"
+                      value={edu.major}
+                      onChange={(e) =>
+                        setEducation((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, major: e.target.value } : x,
+                          ),
+                        )
+                      }
+                      className={inputCls}
+                    />
+                  </FieldRow>
+                  <FieldRow label="Country">
+                    <Select
+                      value={edu.country}
+                      onValueChange={(v) =>
+                        setEducation((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, country: v } : x,
+                          ),
+                        )
+                      }
+                    >
+                      <SelectTrigger className={selectTriggerCls}>
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FieldRow>
+                  <FieldRow label="Scholarship" hint="Optional.">
+                    <Input
+                      placeholder="e.g. DPST"
+                      value={edu.scholarship ?? ""}
+                      onChange={(e) =>
+                        setEducation((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, scholarship: e.target.value } : x,
+                          ),
+                        )
+                      }
+                      className={inputCls}
+                    />
+                  </FieldRow>
+                  <FieldRow label="Years">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        type="number"
+                        placeholder="Start year"
+                        value={edu.start_year ?? ""}
+                        onChange={(e) =>
+                          setEducation((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? {
+                                    ...x,
+                                    start_year:
+                                      parseInt(e.target.value) || undefined,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                        className={inputCls}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="End year"
+                        value={edu.end_year ?? ""}
+                        onChange={(e) =>
+                          setEducation((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? {
+                                    ...x,
+                                    end_year:
+                                      parseInt(e.target.value) || undefined,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                        className={inputCls}
+                      />
+                    </div>
+                  </FieldRow>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-8 flex items-center gap-4 flex-wrap">
+              <PrimaryButton onClick={saveEducation}>
+                <Check className="h-3.5 w-3.5" /> Save education
+              </PrimaryButton>
+              <GhostButton
+                onClick={() =>
+                  setEducation((prev) => [
+                    ...prev,
+                    {
+                      uni_name: "",
+                      degree: "",
+                      major: "",
+                      country: "",
+                    },
+                  ])
+                }
+              >
+                <Plus className="h-3.5 w-3.5" /> Add entry
+              </GhostButton>
+            </div>
+          </section>
+        )}
 
         {/* CAREER TAB */}
-        <TabsContent value="career">
-          <div className="space-y-4">
-            {career.map((job, i) => (
-              <Card key={i}>
-                <CardContent className="pt-5 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-sm">Position #{i + 1}</span>
-                    <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive"
-                      onClick={() => setCareer((prev) => prev.filter((_, j) => j !== i))}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+        {tab === "career" && (
+          <section>
+            <SectionHead numeral="I." kicker="Work" title="What you do" />
+
+            {career.length === 0 && (
+              <div
+                className="py-10 border-b text-sm text-muted-foreground italic"
+                style={{ borderColor: P.rule }}
+              >
+                No positions added yet.
+              </div>
+            )}
+
+            <div>
+              {career.map((job, i) => (
+                <div
+                  key={i}
+                  className="py-7 border-b"
+                  style={{ borderColor: P.rule }}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-baseline gap-3">
+                      <span
+                        className="text-xs font-mono tabular-nums font-semibold"
+                        style={{ color: P.text3 }}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className="text-xs uppercase tracking-[0.26em] font-bold"
+                        style={{ color: P.text3 }}
+                      >
+                        Position
+                      </span>
+                      {job.is_current && (
+                        <span
+                          className="text-[10px] font-bold uppercase tracking-[0.22em] px-1.5 py-0.5 leading-none text-white"
+                          style={{ background: P.green }}
+                        >
+                          Current
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCareer((prev) => prev.filter((_, j) => j !== i))
+                      }
+                      className="text-xs font-bold uppercase tracking-[0.22em] inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+                      style={{ color: P.text3 }}
+                    >
+                      <Trash2 className="h-3 w-3" /> Remove
+                    </button>
                   </div>
-                  <Input placeholder="Job title" value={job.job_title}
-                    onChange={(e) => setCareer((prev) => prev.map((x, j) => j === i ? { ...x, job_title: e.target.value } : x))} />
-                  <Input placeholder="Employer" value={job.employer}
-                    onChange={(e) => setCareer((prev) => prev.map((x, j) => j === i ? { ...x, employer: e.target.value } : x))} />
-                  <Select value={job.job_field}
-                    onValueChange={(v) => setCareer((prev) => prev.map((x, j) => j === i ? { ...x, job_field: v } : x))}>
-                    <SelectTrigger><SelectValue placeholder="Job field" /></SelectTrigger>
-                    <SelectContent>{JOB_FIELDS.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                  <Select value={job.country}
-                    onValueChange={(v) => setCareer((prev) => prev.map((x, j) => j === i ? { ...x, country: v } : x))}>
-                    <SelectTrigger><SelectValue placeholder="Country" /></SelectTrigger>
-                    <SelectContent>{COUNTRIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input type="number" placeholder="Start year" value={job.start_year ?? ""}
-                      onChange={(e) => setCareer((prev) => prev.map((x, j) => j === i ? { ...x, start_year: parseInt(e.target.value) || undefined } : x))} />
-                    <Input type="number" placeholder="End year" value={job.end_year ?? ""}
-                      onChange={(e) => setCareer((prev) => prev.map((x, j) => j === i ? { ...x, end_year: parseInt(e.target.value) || undefined } : x))} />
-                  </div>
-                  <label className="flex items-center gap-2 text-sm cursor-pointer">
-                    <input type="checkbox" checked={job.is_current}
-                      onChange={(e) => setCareer((prev) => prev.map((x, j) => j === i ? { ...x, is_current: e.target.checked } : x))} />
-                    Currently working here
-                  </label>
-                </CardContent>
-              </Card>
-            ))}
-            <Button variant="outline" className="w-full"
-              onClick={() => setCareer((prev) => [...prev, { job_title: "", employer: "", job_field: "", country: "", is_current: false }])}>
-              <Plus className="h-4 w-4 mr-2" /> Add Position
-            </Button>
-            <Button className="w-full" onClick={saveCareer}>
-              <Check className="h-4 w-4 mr-2" /> Save Career
-            </Button>
-          </div>
-        </TabsContent>
-      </Tabs>
+
+                  <FieldRow label="Job title">
+                    <Input
+                      placeholder="e.g. ML Engineer"
+                      value={job.job_title}
+                      onChange={(e) =>
+                        setCareer((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, job_title: e.target.value } : x,
+                          ),
+                        )
+                      }
+                      className={inputCls}
+                    />
+                  </FieldRow>
+                  <FieldRow label="Employer">
+                    <Input
+                      placeholder="e.g. Google"
+                      value={job.employer}
+                      onChange={(e) =>
+                        setCareer((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, employer: e.target.value } : x,
+                          ),
+                        )
+                      }
+                      className={inputCls}
+                    />
+                  </FieldRow>
+                  <FieldRow label="Field">
+                    <Select
+                      value={job.job_field}
+                      onValueChange={(v) =>
+                        setCareer((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, job_field: v } : x,
+                          ),
+                        )
+                      }
+                    >
+                      <SelectTrigger className={selectTriggerCls}>
+                        <SelectValue placeholder="Select field" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {JOB_FIELDS.map((f) => (
+                          <SelectItem key={f.value} value={f.value}>
+                            {f.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FieldRow>
+                  <FieldRow label="Country">
+                    <Select
+                      value={job.country}
+                      onValueChange={(v) =>
+                        setCareer((prev) =>
+                          prev.map((x, j) =>
+                            j === i ? { ...x, country: v } : x,
+                          ),
+                        )
+                      }
+                    >
+                      <SelectTrigger className={selectTriggerCls}>
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map((c) => (
+                          <SelectItem key={c.value} value={c.value}>
+                            {c.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FieldRow>
+                  <FieldRow label="Years">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        type="number"
+                        placeholder="Start year"
+                        value={job.start_year ?? ""}
+                        onChange={(e) =>
+                          setCareer((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? {
+                                    ...x,
+                                    start_year:
+                                      parseInt(e.target.value) || undefined,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                        className={inputCls}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="End year"
+                        value={job.end_year ?? ""}
+                        disabled={job.is_current}
+                        onChange={(e) =>
+                          setCareer((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? {
+                                    ...x,
+                                    end_year:
+                                      parseInt(e.target.value) || undefined,
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                        className={`${inputCls} disabled:opacity-40`}
+                      />
+                    </div>
+                  </FieldRow>
+                  <FieldRow label="Status">
+                    <label className="inline-flex items-center gap-2.5 text-sm text-foreground cursor-pointer pt-1.5">
+                      <input
+                        type="checkbox"
+                        checked={job.is_current}
+                        onChange={(e) =>
+                          setCareer((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? { ...x, is_current: e.target.checked }
+                                : x,
+                            ),
+                          )
+                        }
+                        className="h-4 w-4 accent-foreground"
+                      />
+                      <span className="text-sm">I currently work here</span>
+                    </label>
+                  </FieldRow>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-8 flex items-center gap-4 flex-wrap">
+              <PrimaryButton onClick={saveCareer}>
+                <Check className="h-3.5 w-3.5" /> Save career
+              </PrimaryButton>
+              <GhostButton
+                onClick={() =>
+                  setCareer((prev) => [
+                    ...prev,
+                    {
+                      job_title: "",
+                      employer: "",
+                      job_field: "",
+                      country: "",
+                      is_current: false,
+                    },
+                  ])
+                }
+              >
+                <Plus className="h-3.5 w-3.5" /> Add entry
+              </GhostButton>
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }
