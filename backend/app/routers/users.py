@@ -7,6 +7,7 @@ import uuid
 from app.core.database import get_session
 from app.core.deps import get_current_user, get_optional_user
 from app.core.config import settings
+from app.core.cache import cached, invalidate_tags
 from app.models.user import User, Education, Career
 from app.schemas.user import (
     UserMe, UserPublic, UserUpdate, UserCard,
@@ -23,7 +24,7 @@ def get_me(current_user: User = Depends(get_current_user), session: Session = De
 
 
 @router.patch("/me", response_model=UserMe)
-def update_me(
+async def update_me(
     body: UserUpdate,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -36,11 +37,12 @@ def update_me(
     session.add(user)
     session.commit()
     session.refresh(user)
+    await invalidate_tags("users", f"user:{current_user.id}")
     return _user_to_me(user)
 
 
 @router.post("/me/profile-pic")
-def upload_profile_pic(
+async def upload_profile_pic(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -64,10 +66,12 @@ def upload_profile_pic(
     user.updated_at = datetime.utcnow()
     session.add(user)
     session.commit()
+    await invalidate_tags("users", f"user:{current_user.id}")
     return {"url": url}
 
 
 @router.get("/{user_id}", response_model=UserPublic)
+@cached(key=lambda user_id, session: f"user:{user_id}", tags=lambda user_id, session: ["users", f"user:{user_id}"], ttl=settings.CACHE_TTL_LONG)
 def get_user(user_id: int, session: Session = Depends(get_session)):
     user = session.get(User, user_id)
     if not user:
@@ -77,7 +81,7 @@ def get_user(user_id: int, session: Session = Depends(get_session)):
 
 # Education
 @router.put("/me/education")
-def replace_education(
+async def replace_education(
     items: list[EducationWrite],
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -88,12 +92,13 @@ def replace_education(
     for item in items:
         session.add(Education(user_id=current_user.id, **item.model_dump()))
     session.commit()
+    await invalidate_tags("users", f"user:{current_user.id}")
     return {"message": "Education updated"}
 
 
 # Career
 @router.put("/me/career")
-def replace_career(
+async def replace_career(
     items: list[CareerWrite],
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -104,10 +109,12 @@ def replace_career(
     for item in items:
         session.add(Career(user_id=current_user.id, **item.model_dump()))
     session.commit()
+    await invalidate_tags("users", f"user:{current_user.id}")
     return {"message": "Career updated"}
 
 
 @router.get("/globe/pins", response_model=list[GlobePin])
+@cached(key="globe", tags=["users"], ttl=settings.CACHE_TTL_LONG)
 def get_globe_pins(session: Session = Depends(get_session)):
     users = session.exec(
         select(User).where(User.latitude.isnot(None), User.longitude.isnot(None))
@@ -161,7 +168,10 @@ def _career_list(user: User):
 def _user_to_public(user: User) -> dict:
     return {
         "id": user.id, "first_name": user.first_name, "last_name": user.last_name,
-        "kvis_year": user.kvis_year, "place": user.place, "latitude": user.latitude,
+        "kvis_year": user.kvis_year,
+        "current_grade": user.current_grade, "current_class": user.current_class,
+        "current_elemental": user.current_elemental,
+        "place": user.place, "latitude": user.latitude,
         "longitude": user.longitude, "country": user.country,
         "profile_pic_url": user.profile_pic_url, "bio": user.bio,
         "mbti": user.mbti, "interests": user.interests,

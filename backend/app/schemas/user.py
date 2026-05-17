@@ -54,6 +54,9 @@ class UserPublic(BaseModel):
     first_name: str
     last_name: str
     kvis_year: Optional[int]
+    current_grade: Optional[int] = None
+    current_class: Optional[int] = None
+    current_elemental: Optional[str] = None
     place: Optional[str]
     latitude: Optional[float]
     longitude: Optional[float]
@@ -82,6 +85,9 @@ class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     kvis_year: Optional[int] = None
+    current_grade: Optional[int] = None
+    current_class: Optional[int] = None
+    current_elemental: Optional[str] = None
     place: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
@@ -101,6 +107,9 @@ class UserCard(BaseModel):
     first_name: str
     last_name: str
     kvis_year: Optional[int]
+    current_grade: Optional[int] = None
+    current_class: Optional[int] = None
+    current_elemental: Optional[str] = None
     place: Optional[str]
     country: Optional[str]
     profile_pic_url: Optional[str]

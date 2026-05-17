@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session, select, func
 from collections import Counter
 
+from app.core.cache import cached
+from app.core.config import settings
 from app.core.database import get_session
 from app.models.user import User, Education, Career
 
@@ -9,6 +11,7 @@ router = APIRouter(prefix="/summary", tags=["summary"])
 
 
 @router.get("")
+@cached(key="summary", tags=["users"], ttl=settings.CACHE_TTL_LONG)
 def get_summary(session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     total = len(users)

@@ -51,6 +51,14 @@ class User(SQLModel, table=True):
     last_name: str
     kvis_year: Optional[int] = Field(default=None, index=True)
 
+    # Current student fields. Null = alumni or not enrolled.
+    # current_grade: 10 (M.4), 11 (M.5), 12 (M.6)
+    # current_class: 1-4
+    # current_elemental: earth | water | air | fire
+    current_grade: Optional[int] = Field(default=None, index=True)
+    current_class: Optional[int] = None
+    current_elemental: Optional[str] = None
+
     # Contact & social
     facebook_url: Optional[str] = None
     linkedin_url: Optional[str] = None

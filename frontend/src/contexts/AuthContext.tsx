@@ -23,7 +23,7 @@ const DEV_MOCK_USER: UserMe = {
   last_name: "User",
   email: "dev@kvis.local",
   email_verified: true,
-  is_verified: true,
+  is_verified: false,
   education: [],
   career: [],
   created_at: new Date().toISOString(),

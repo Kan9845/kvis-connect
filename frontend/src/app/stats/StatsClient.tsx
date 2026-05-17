@@ -2,7 +2,10 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { keys } from "@/lib/cache/keys";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { FilterPill } from "@/components/ui/filter-pill";
 import type { UserCard, Education } from "@/lib/types";
 
 const P = {
@@ -154,9 +157,10 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
         </div>
       ))}
       {!showAll && hidden > 0 && (
-        <button
+        <Button
+          variant="link"
           onClick={() => setShowAll(true)}
-          className="mt-5 text-xs uppercase tracking-[0.22em] font-bold hover:underline"
+          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline"
           style={{
             color: P.purple,
             textDecorationColor: P.purple,
@@ -164,16 +168,17 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
           }}
         >
           See all {items.length} entries →
-        </button>
+        </Button>
       )}
       {showAll && hidden > 0 && (
-        <button
+        <Button
+          variant="link"
           onClick={() => setShowAll(false)}
-          className="mt-5 text-xs uppercase tracking-[0.22em] font-bold hover:underline"
+          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline"
           style={{ color: P.text3, textUnderlineOffset: 4 }}
         >
           ← Collapse
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -228,53 +233,12 @@ function EmptyRow({ label }: { label: string }) {
   );
 }
 
-function CohortPill({
-  active,
-  count,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  count: number;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="group/c text-sm font-semibold uppercase tracking-[0.14em] transition-colors leading-none"
-      style={
-        active
-          ? {
-              color: P.purple,
-              textDecoration: "underline",
-              textDecorationThickness: 2,
-              textUnderlineOffset: 6,
-            }
-          : undefined
-      }
-    >
-      <span
-        className={active ? "" : "text-muted-foreground group-hover/c:text-foreground transition-colors"}
-        style={active ? { color: P.purple } : undefined}
-      >
-        {children}
-      </span>
-      <sup
-        className="ml-1 text-xs font-mono tabular-nums"
-        style={{ color: P.text3 }}
-      >
-        {count}
-      </sup>
-    </button>
-  );
-}
 
 export default function StatsClient() {
   const [cohort, setCohort] = useState<number | null>(null);
 
   const { data: alumni = [], isLoading } = useQuery({
-    queryKey: ["alumni", "stats", "all"],
+    queryKey: keys.stats.alumni(),
     queryFn: () =>
       api
         .get<UserCard[]>("/api/search", {
@@ -402,22 +366,22 @@ export default function StatsClient() {
               Cohort
             </span>
             <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
-              <CohortPill
+              <FilterPill
                 active={cohort === null}
                 count={alumni.length}
                 onClick={() => setCohort(null)}
               >
                 All
-              </CohortPill>
+              </FilterPill>
               {cohorts.map((y) => (
-                <CohortPill
+                <FilterPill
                   key={y}
                   active={cohort === y}
                   count={cohortCounts.get(y) ?? 0}
                   onClick={() => setCohort(cohort === y ? null : y)}
                 >
                   K{y}
-                </CohortPill>
+                </FilterPill>
               ))}
             </div>
           </nav>

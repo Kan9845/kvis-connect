@@ -1,10 +1,16 @@
+import asyncio
+import logging
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.core.config import settings
 from app.core.database import init_db
+from app.core import cache
 from app.routers import auth, users, search, summary, blogs
+
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="KVIS Connect API", version="1.0.0")
 
@@ -20,8 +26,18 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
 
 @app.on_event("startup")
-def on_startup():
+async def on_startup():
     init_db()
+    await cache.init_cache()
+    app.state.metrics_task = asyncio.create_task(cache.metrics_logger())
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    task = getattr(app.state, "metrics_task", None)
+    if task is not None:
+        task.cancel()
+    await cache.close_cache()
 
 
 app.include_router(auth.router, prefix="/api")

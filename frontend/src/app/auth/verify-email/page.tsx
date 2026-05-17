@@ -3,15 +3,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
+import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
 
 const RESEND_COOLDOWN = 60;
+const INPUT_BORDER = "oklch(35% 0.005 294)";
+const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
 
 export default function VerifyKvisPage() {
   const { user, loading, refetch } = useAuth();
@@ -73,106 +72,212 @@ export default function VerifyKvisPage() {
 
   if (loading || !user) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-full flex items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
       </div>
     );
   }
 
+  const focusable = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+      e.currentTarget.style.borderColor = INPUT_BORDER_FOCUS;
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+      e.currentTarget.style.borderColor = INPUT_BORDER;
+    },
+  };
+
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-6">
-          <div className="text-primary font-bold text-xl">
-            KVIS Connect
-          </div>
-        </div>
+    <AuthShell
+      numeral="03"
+      kicker="Verification · School credentials"
+      title="Stamp your name with the KVIS seal."
+      lede="Confirm ownership of your @kvis.ac.th address to earn the KVIS-Verified badge on your profile, blog posts, and directory card."
+      footer={
+        <span>
+          Not now —{" "}
+          <button
+            type="button"
+            onClick={() => router.push("/")}
+            className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
+            style={{ textDecorationColor: P.purple }}
+          >
+            Continue without verifying →
+          </button>
+        </span>
+      }
+    >
+      {/* Step indicator */}
+      <div className="mb-8 flex items-center gap-6">
+        <StepDot index="01" label="Email" active={!otpSent} done={otpSent} />
+        <div className="flex-1 h-px" style={{ background: P.rule }} />
+        <StepDot index="02" label="Code" active={otpSent} done={false} />
+      </div>
 
-        <Card>
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-2">
-              <ShieldCheck className="h-10 w-10 text-primary" />
-            </div>
-            <CardTitle>Get KVIS-Verified</CardTitle>
-            <CardDescription>
-              Verify your @kvis.ac.th email to unlock the KVIS-Verified badge
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
-            {!otpSent ? (
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <Label>KVIS Email</Label>
-                  <Input
-                    type="email"
-                    placeholder="you@kvis.ac.th"
-                    value={kvisEmail}
-                    onChange={(e) => setKvisEmail(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-                <Button
-                  className="w-full"
-                  onClick={sendOtp}
-                  disabled={sending || !kvisEmail}
+      {!otpSent ? (
+        <div className="space-y-6">
+          <div>
+            <FieldLabel
+              hint={
+                <span
+                  className="text-[10px] uppercase tracking-[0.22em]"
+                  style={{ color: P.text3 }}
                 >
-                  {sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Send verification code
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={onSubmit} className="space-y-4">
-                <p className="text-sm text-center text-muted-foreground">
-                  Code sent to <span className="font-medium text-foreground">{kvisEmail}</span>
-                </p>
-                <Input
-                  placeholder="000000"
-                  maxLength={6}
-                  className="text-center text-2xl tracking-[0.5em] font-mono"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  autoFocus
-                />
-                <Button type="submit" className="w-full" disabled={submitting || otp.length !== 6}>
-                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Verify
-                </Button>
+                  @kvis.ac.th only
+                </span>
+              }
+            >
+              KVIS Email
+            </FieldLabel>
+            <input
+              type="email"
+              placeholder="you@kvis.ac.th"
+              value={kvisEmail}
+              onChange={(e) => setKvisEmail(e.target.value)}
+              autoFocus
+              className={editorialInputClass}
+              style={{ borderColor: INPUT_BORDER }}
+              {...focusable}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={sendOtp}
+            disabled={sending || !kvisEmail}
+            className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs uppercase tracking-[0.28em] font-bold disabled:opacity-50"
+          >
+            {sending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            Send verification code
+          </button>
 
-                <div className="text-center text-sm text-muted-foreground">
-                  Wrong email?{" "}
-                  <button
-                    type="button"
-                    onClick={() => { setOtpSent(false); setOtp(""); }}
-                    className="text-primary hover:underline"
-                  >
-                    Change
-                  </button>
-                  {" · "}
-                  <button
-                    type="button"
-                    onClick={sendOtp}
-                    disabled={cooldown > 0}
-                    className="text-primary hover:underline disabled:opacity-40 disabled:no-underline"
-                  >
-                    {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend"}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            <p className="text-center text-xs text-muted-foreground pt-1">
-              Skip for now —{" "}
-              <button
-                type="button"
-                onClick={() => router.push("/")}
-                className="text-primary hover:underline"
+          <Receipt label="What you'll get">
+            <span className="block">A 6-digit one-time code, valid for 10 minutes.</span>
+          </Receipt>
+        </div>
+      ) : (
+        <form onSubmit={onSubmit} className="space-y-6">
+          <div
+            className="px-4 py-3 border flex items-center justify-between"
+            style={{ borderColor: P.rule }}
+          >
+            <div>
+              <p
+                className="text-[10px] font-bold uppercase tracking-[0.28em]"
+                style={{ color: P.text3 }}
               >
-                continue without verifying
-              </button>
-            </p>
-          </CardContent>
-        </Card>
+                Sent to
+              </p>
+              <p className="font-semibold text-foreground text-sm mt-0.5 break-all">
+                {kvisEmail}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setOtpSent(false);
+                setOtp("");
+              }}
+              className="text-[10px] font-bold uppercase tracking-[0.22em] text-foreground/70 hover:text-foreground"
+            >
+              Change
+            </button>
+          </div>
+
+          <div>
+            <FieldLabel>Verification code</FieldLabel>
+            <input
+              inputMode="numeric"
+              placeholder="000000"
+              maxLength={6}
+              className="w-full bg-transparent border rounded-none px-4 py-4 text-center text-3xl tracking-[0.5em] font-mono font-bold text-foreground placeholder:text-foreground/15 focus:outline-none transition-colors tabular-nums"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              autoFocus
+              style={{ borderColor: INPUT_BORDER }}
+              {...focusable}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting || otp.length !== 6}
+            className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs uppercase tracking-[0.28em] font-bold disabled:opacity-50"
+          >
+            {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            Verify
+          </button>
+
+          <div
+            className="flex items-center justify-between pt-1 text-[10px] font-bold uppercase tracking-[0.22em]"
+            style={{ color: P.text3 }}
+          >
+            <span>Didn&apos;t receive the code?</span>
+            <button
+              type="button"
+              onClick={sendOtp}
+              disabled={cooldown > 0}
+              className="text-foreground hover:underline disabled:opacity-40 disabled:no-underline underline-offset-[5px] tabular-nums"
+              style={{ textDecorationColor: P.purple }}
+            >
+              {cooldown > 0 ? `Resend in ${String(cooldown).padStart(2, "0")}s` : "Resend"}
+            </button>
+          </div>
+        </form>
+      )}
+    </AuthShell>
+  );
+}
+
+function StepDot({
+  index,
+  label,
+  active,
+  done,
+}: {
+  index: string;
+  label: string;
+  active: boolean;
+  done: boolean;
+}) {
+  const color = active ? "oklch(75% 0.18 294)" : done ? P.green : P.text3;
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+      <span
+        className="font-mono font-black text-sm tabular-nums"
+        style={{ color, letterSpacing: "-0.02em" }}
+      >
+        {index}
+      </span>
+      <span
+        className="text-[10px] font-bold uppercase tracking-[0.28em]"
+        style={{ color: active ? "oklch(85% 0.04 294)" : P.text3 }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function Receipt({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className="border px-4 py-3 mt-2"
+      style={{ borderColor: P.rule }}
+    >
+      <p
+        className="text-[10px] font-bold uppercase tracking-[0.28em] mb-1.5"
+        style={{ color: P.text3 }}
+      >
+        {label}
+      </p>
+      <div className="text-xs text-muted-foreground leading-relaxed">
+        {children}
       </div>
     </div>
   );

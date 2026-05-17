@@ -51,9 +51,12 @@ export function UserCard({ user }: Props) {
               )}
             </div>
             {user.mbti && (
-              <span className={`text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ${MBTI_COLORS[user.mbti] ?? "bg-gray-100 text-gray-600"}`}>
+              <Badge
+                variant="secondary"
+                className={`shrink-0 border-transparent px-2 py-0.5 text-xs font-bold ${MBTI_COLORS[user.mbti] ?? "bg-gray-100 text-gray-600"}`}
+              >
                 {user.mbti}
-              </span>
+              </Badge>
             )}
           </div>
 

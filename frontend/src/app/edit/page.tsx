@@ -5,7 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { userApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { onMeUpdateSuccess } from "@/lib/cache/invalidate";
 import { toast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -62,40 +67,6 @@ const generalSchema = z.object({
 type GeneralForm = z.infer<typeof generalSchema>;
 type Tab = "general" | "education" | "career";
 
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-xs font-bold uppercase tracking-[0.28em] py-1 transition-colors"
-      style={{
-        color: active ? P.purple : undefined,
-        textDecoration: active ? "underline" : "none",
-        textDecorationThickness: 2,
-        textUnderlineOffset: 8,
-      }}
-    >
-      <span
-        className={
-          active
-            ? ""
-            : "text-muted-foreground hover:text-foreground transition-colors"
-        }
-        style={active ? { color: P.purple } : undefined}
-      >
-        {children}
-      </span>
-    </button>
-  );
-}
 
 function SectionHead({
   numeral,
@@ -173,50 +144,6 @@ function FieldRow({
   );
 }
 
-function PrimaryButton({
-  children,
-  type = "button",
-  onClick,
-  disabled,
-  className = "",
-}: {
-  children: React.ReactNode;
-  type?: "button" | "submit";
-  onClick?: () => void;
-  disabled?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      className={`inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.28em] py-3 px-6 bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function GhostButton({
-  children,
-  onClick,
-  className = "",
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.28em] py-3 px-6 border border-foreground text-foreground hover:bg-foreground hover:text-background transition-colors ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
 
 const inputCls =
   "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:border-foreground transition-colors";
@@ -227,6 +154,7 @@ const selectTriggerCls =
 export default function EditPage() {
   const router = useRouter();
   const { user: me, loading, refetch } = useAuth();
+  const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [picPreview, setPicPreview] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("general");
@@ -271,7 +199,8 @@ export default function EditPage() {
   }, [me]);
 
   const saveGeneral = async (data: GeneralForm) => {
-    await userApi.updateMe(data);
+    const updated = await userApi.updateMe(data);
+    onMeUpdateSuccess(qc, updated);
     await refetch();
     toast({ title: "Profile updated" });
   };
@@ -279,12 +208,15 @@ export default function EditPage() {
   const saveEducation = async () => {
     await userApi.updateEducation(education);
     await refetch();
+    // refetch updates AuthContext; sync the RQ cache afterward if me is available
+    if (me) onMeUpdateSuccess(qc, { ...me, education: me.education });
     toast({ title: "Education saved" });
   };
 
   const saveCareer = async () => {
     await userApi.updateCareer(career);
     await refetch();
+    if (me) onMeUpdateSuccess(qc, { ...me, career: me.career });
     toast({ title: "Career saved" });
   };
 
@@ -295,6 +227,9 @@ export default function EditPage() {
     try {
       const { url } = await userApi.uploadProfilePic(file);
       await userApi.updateMe({ profile_pic_url: url });
+      // Fetch fresh me to get full updated user, then hydrate cache.
+      const fresh = await userApi.getMe();
+      onMeUpdateSuccess(qc, fresh);
       await refetch();
       toast({ title: "Profile picture updated" });
     } catch {
@@ -355,23 +290,31 @@ export default function EditPage() {
         </header>
 
         {/* Tabs */}
-        <div
-          className="flex items-center gap-7 pt-5 pb-1 border-b"
-          style={{ borderColor: P.rule }}
-        >
-          <TabButton active={tab === "general"} onClick={() => setTab("general")}>
-            General
-          </TabButton>
-          <TabButton
-            active={tab === "education"}
-            onClick={() => setTab("education")}
+        <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">
+          <TabsList
+            className="h-auto w-full justify-start gap-7 rounded-none border-b bg-transparent p-0 pt-5 pb-1"
+            style={{ borderColor: P.rule }}
           >
-            Education
-          </TabButton>
-          <TabButton active={tab === "career"} onClick={() => setTab("career")}>
-            Career
-          </TabButton>
-        </div>
+            <TabsTrigger
+              value="general"
+              className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2"
+            >
+              General
+            </TabsTrigger>
+            <TabsTrigger
+              value="education"
+              className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2"
+            >
+              Education
+            </TabsTrigger>
+            <TabsTrigger
+              value="career"
+              className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2"
+            >
+              Career
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* GENERAL TAB */}
         {tab === "general" && (
@@ -404,9 +347,14 @@ export default function EditPage() {
                   )}
                 </div>
                 <div>
-                  <GhostButton onClick={() => fileRef.current?.click()}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileRef.current?.click()}
+                    className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2"
+                  >
                     <Upload className="h-3.5 w-3.5" /> Change photo
-                  </GhostButton>
+                  </Button>
                   <p className="text-xs text-muted-foreground mt-3 max-w-[40ch]">
                     Square images work best. JPG or PNG, up to ~5MB.
                   </p>
@@ -421,56 +369,93 @@ export default function EditPage() {
               </div>
             </section>
 
-            {/* II. Verification */}
+            {/* II. Credential — auto-awarded, not editable */}
             <section>
               <SectionHead
                 numeral="II."
-                kicker="Verification"
+                kicker="Credential"
                 title="KVIS-verified badge"
               />
-              <div
-                className="grid grid-cols-[1fr_auto] gap-4 items-center py-5 border-b"
-                style={{ borderColor: P.rule }}
-              >
-                {me.is_verified ? (
-                  <div className="flex items-center gap-3">
-                    <ShieldCheck
-                      className="h-5 w-5 shrink-0"
-                      style={{ color: P.green }}
-                    />
-                    <div>
-                      <p
-                        className="text-xs font-bold uppercase tracking-[0.22em]"
-                        style={{ color: P.green }}
-                      >
-                        Verified
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {me.kvis_email}
-                      </p>
-                    </div>
+              <div className="py-5">
+                <div
+                  className="border"
+                  style={{
+                    borderColor: me.is_verified ? P.green : P.rule,
+                  }}
+                >
+                  {/* Top strap — credential status + serial */}
+                  <div
+                    className="flex items-center justify-between gap-3 px-5 py-2.5 border-b"
+                    style={{
+                      borderColor: me.is_verified ? P.green : P.rule,
+                    }}
+                  >
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-[0.3em]"
+                      style={{ color: me.is_verified ? P.green : P.text3 }}
+                    >
+                      {me.is_verified
+                        ? "Issued · Automatic"
+                        : "No credential on file"}
+                    </span>
+                    <span
+                      className="text-[10px] font-mono tabular-nums tracking-[0.2em]"
+                      style={{ color: P.text3 }}
+                    >
+                      KVIS · V01
+                    </span>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <ShieldAlert className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <div>
+
+                  {/* Body */}
+                  <div className="px-5 py-6 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-5 md:items-center">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2.5 mb-2">
+                        {me.is_verified ? (
+                          <ShieldCheck
+                            className="h-5 w-5 shrink-0"
+                            style={{ color: P.green }}
+                          />
+                        ) : (
+                          <ShieldAlert className="h-5 w-5 shrink-0 text-muted-foreground" />
+                        )}
+                        <span className="text-2xl md:text-[1.75rem] font-black tracking-[-0.025em] leading-none text-foreground">
+                          KVIS-verified
+                        </span>
+                      </div>
                       <p
-                        className="text-xs font-bold uppercase tracking-[0.22em]"
+                        className="text-xs font-mono tracking-wide truncate"
                         style={{ color: P.text3 }}
                       >
-                        Not verified
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5 max-w-[40ch]">
-                        Confirm your @kvis.ac.th email to earn the badge.
+                        {me.is_verified
+                          ? `Awarded to ${me.kvis_email}`
+                          : "Not yet awarded"}
                       </p>
                     </div>
+
+                    {!me.is_verified && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => router.push("/auth/verify-email")}
+                        className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2"
+                      >
+                        Verify with KVIS email
+                      </Button>
+                    )}
                   </div>
-                )}
-                {!me.is_verified && (
-                  <GhostButton onClick={() => router.push("/auth/verify-email")}>
-                    Verify
-                  </GhostButton>
-                )}
+
+                  {/* Footnote — explains automatic issuance */}
+                  <div
+                    className="px-5 py-3 border-t"
+                    style={{ borderColor: P.rule }}
+                  >
+                    <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
+                      {me.is_verified
+                        ? "Issued automatically on @kvis.ac.th email confirmation. Not editable here."
+                        : "We send a one-time code to your @kvis.ac.th address to issue this credential."}
+                    </p>
+                  </div>
+                </div>
               </div>
             </section>
 
@@ -614,14 +599,14 @@ export default function EditPage() {
               </section>
 
               <div className="pt-8 flex items-center gap-4 flex-wrap">
-                <PrimaryButton type="submit" disabled={isSubmitting || !isDirty}>
-                  {isSubmitting ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Check className="h-3.5 w-3.5" />
-                  )}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !isDirty}
+                  className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2"
+                >
+                  {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                   Save changes
-                </PrimaryButton>
+                </Button>
                 {!isDirty && !isSubmitting && (
                   <span
                     className="text-xs uppercase tracking-[0.22em]"
@@ -820,10 +805,16 @@ export default function EditPage() {
             </div>
 
             <div className="pt-8 flex items-center gap-4 flex-wrap">
-              <PrimaryButton onClick={saveEducation}>
+              <Button
+                type="button"
+                onClick={saveEducation}
+                className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2"
+              >
                 <Check className="h-3.5 w-3.5" /> Save education
-              </PrimaryButton>
-              <GhostButton
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() =>
                   setEducation((prev) => [
                     ...prev,
@@ -835,9 +826,10 @@ export default function EditPage() {
                     },
                   ])
                 }
+                className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2"
               >
                 <Plus className="h-3.5 w-3.5" /> Add entry
-              </GhostButton>
+              </Button>
             </div>
           </section>
         )}
@@ -878,12 +870,12 @@ export default function EditPage() {
                         Position
                       </span>
                       {job.is_current && (
-                        <span
-                          className="text-[10px] font-bold uppercase tracking-[0.22em] px-1.5 py-0.5 leading-none text-white"
+                        <Badge
+                          className="rounded-none border-transparent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.22em] leading-none text-white hover:bg-[oklch(40%_0.16_148)]"
                           style={{ background: P.green }}
                         >
                           Current
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <button
@@ -1039,10 +1031,16 @@ export default function EditPage() {
             </div>
 
             <div className="pt-8 flex items-center gap-4 flex-wrap">
-              <PrimaryButton onClick={saveCareer}>
+              <Button
+                type="button"
+                onClick={saveCareer}
+                className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2"
+              >
                 <Check className="h-3.5 w-3.5" /> Save career
-              </PrimaryButton>
-              <GhostButton
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() =>
                   setCareer((prev) => [
                     ...prev,
@@ -1055,9 +1053,10 @@ export default function EditPage() {
                     },
                   ])
                 }
+                className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2"
               >
                 <Plus className="h-3.5 w-3.5" /> Add entry
-              </GhostButton>
+              </Button>
             </div>
           </section>
         )}

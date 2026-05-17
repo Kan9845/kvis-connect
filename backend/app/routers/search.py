@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select
 from typing import Optional
 
+from app.core.cache import cached
+from app.core.config import settings
 from app.core.database import get_session
 from app.models.user import User, Education, Career
 from app.schemas.user import UserCard
@@ -12,6 +14,7 @@ VALID_SORT = {"name", "kvis_year", "created_at"}
 
 
 @router.get("", response_model=list[UserCard])
+@cached(key="search:<args>", tags=["users"], ttl=settings.CACHE_TTL_SHORT)
 def search_users(
     session: Session = Depends(get_session),
     # Basic filters
@@ -111,6 +114,9 @@ def _to_card(user: User) -> dict:
         "first_name": user.first_name,
         "last_name": user.last_name,
         "kvis_year": user.kvis_year,
+        "current_grade": user.current_grade,
+        "current_class": user.current_class,
+        "current_elemental": user.current_elemental,
         "place": user.place,
         "country": user.country,
         "profile_pic_url": user.profile_pic_url,

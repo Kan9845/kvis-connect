@@ -12,6 +12,7 @@ from app.core.database import get_session
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from app.core.config import settings
 from app.core.deps import get_current_user
+from app.core.cache import invalidate_tags
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody
 
@@ -88,7 +89,7 @@ def _set_auth_cookies(response: Response, user_id: int):
 
 
 @router.post("/register")
-def register(body: RegisterRequest, response: Response, session: Session = Depends(get_session)):
+async def register(body: RegisterRequest, response: Response, session: Session = Depends(get_session)):
     if not body.email.endswith(f"@{KVIS_DOMAIN}"):
         raise HTTPException(400, detail="Only @kvis.ac.th emails are allowed")
 
@@ -107,6 +108,7 @@ def register(body: RegisterRequest, response: Response, session: Session = Depen
     )
     session.add(user)
     session.commit()
+    await invalidate_tags("users")
     session.refresh(user)
 
     _set_auth_cookies(response, user.id)
@@ -175,7 +177,7 @@ def request_otp(body: OTPRequestBody):
 
 
 @router.post("/otp/verify")
-def verify_otp(body: OTPVerifyBody, response: Response, session: Session = Depends(get_session)):
+async def verify_otp(body: OTPVerifyBody, response: Response, session: Session = Depends(get_session)):
     record = _otp_store.get(body.email)
     if not record:
         raise HTTPException(400, detail="No OTP requested for this email")
@@ -188,6 +190,7 @@ def verify_otp(body: OTPVerifyBody, response: Response, session: Session = Depen
     del _otp_store[body.email]
 
     user = session.exec(select(User).where(User.email == body.email)).first()
+    is_new_user = user is None
     if not user:
         user = User(email=body.email, first_name="", last_name="", email_verified=True)
         session.add(user)
@@ -196,6 +199,8 @@ def verify_otp(body: OTPVerifyBody, response: Response, session: Session = Depen
         session.add(user)
 
     session.commit()
+    if is_new_user:
+        await invalidate_tags("users")
     session.refresh(user)
 
     _set_auth_cookies(response, user.id)
@@ -204,7 +209,7 @@ def verify_otp(body: OTPVerifyBody, response: Response, session: Session = Depen
 
 # KVIS email verification (for logged-in Google users)
 @router.post("/kvis/verify")
-def verify_kvis_email(
+async def verify_kvis_email(
     body: KvisVerifyBody,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -229,6 +234,7 @@ def verify_kvis_email(
     user.kvis_email = kvis_email
     session.add(user)
     session.commit()
+    await invalidate_tags("users", f"user:{user.id}")
 
     return {"message": "KVIS email verified"}
 
@@ -251,6 +257,7 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
     user = session.exec(select(User).where(User.google_id == google_id)).first()
     if not user:
         user = session.exec(select(User).where(User.email == email)).first()
+        is_new_user = user is None
         if user:
             user.google_id = google_id
             user.email_verified = True
@@ -265,6 +272,8 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
             )
         session.add(user)
         session.commit()
+        if is_new_user:
+            await invalidate_tags("users")
         session.refresh(user)
 
     response = RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/callback")

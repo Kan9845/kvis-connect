@@ -5,10 +5,13 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
+import { keys } from "@/lib/cache/keys";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FilterPill } from "@/components/ui/filter-pill";
 import { Search, X } from "lucide-react";
-import { MOCK_CURRENT_STUDENTS } from "@/lib/mock-students";
 import type { UserCard } from "@/lib/types";
 
 const P = {
@@ -205,47 +208,6 @@ function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
   );
 }
 
-function FilterButton({
-  active,
-  onClick,
-  children,
-  count,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  count?: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-sm font-semibold uppercase tracking-[0.14em] transition-colors leading-none"
-      style={{
-        color: active ? P.purple : undefined,
-        textDecoration: active ? "underline" : "none",
-        textDecorationThickness: 2,
-        textUnderlineOffset: 6,
-      }}
-    >
-      <span
-        className={active ? "" : "text-muted-foreground hover:text-foreground transition-colors"}
-        style={active ? { color: P.purple } : undefined}
-      >
-        {children}
-      </span>
-      {count !== undefined && (
-        <sup
-          className="ml-1 text-xs font-mono tabular-nums"
-          style={{ color: P.text3 }}
-        >
-          {count}
-        </sup>
-      )}
-    </button>
-  );
-}
-
 function FilterRow({
   label,
   children,
@@ -268,37 +230,6 @@ function FilterRow({
         {children}
       </div>
     </div>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-xs font-bold uppercase tracking-[0.28em] py-1 transition-colors"
-      style={{
-        color: active ? P.purple : undefined,
-        textDecoration: active ? "underline" : "none",
-        textDecorationThickness: 2,
-        textUnderlineOffset: 8,
-      }}
-    >
-      <span
-        className={active ? "" : "text-muted-foreground hover:text-foreground transition-colors"}
-        style={active ? { color: P.purple } : undefined}
-      >
-        {children}
-      </span>
-    </button>
   );
 }
 
@@ -343,7 +274,7 @@ function SearchPageInner() {
   const [q, setQ] = useState("");
 
   const { data: rawPeople = [], isLoading } = useQuery({
-    queryKey: ["yearbook-all"],
+    queryKey: keys.yearbook.all(),
     queryFn: () =>
       api
         .get<UserCard[]>("/api/search", {
@@ -354,14 +285,7 @@ function SearchPageInner() {
     staleTime: 5 * 60 * 1000,
   });
 
-  // In dev, if the backend has no current students yet, splice in the fixture
-  // so the "Current Students" tab is populated. Real data always wins.
-  const people = useMemo(() => {
-    const isDev = process.env.NODE_ENV !== "production";
-    const hasStudents = rawPeople.some((p) => p.current_grade);
-    if (!isDev || hasStudents) return rawPeople;
-    return [...rawPeople, ...MOCK_CURRENT_STUDENTS];
-  }, [rawPeople]);
+  const people = rawPeople;
 
   // Split: a person is a current student if current_grade is set
   const alumni = useMemo(
@@ -561,57 +485,65 @@ function SearchPageInner() {
         </header>
 
         {/* Tab toggle */}
-        <div
-          className="flex items-center gap-7 pt-5 pb-1 border-b"
-          style={{ borderColor: P.rule }}
-        >
-          <TabButton active={isAlumni} onClick={() => switchTab("alumni")}>
-            Alumni
-          </TabButton>
-          <TabButton active={!isAlumni} onClick={() => switchTab("students")}>
-            Current Students
-          </TabButton>
-        </div>
+        <Tabs value={tab} onValueChange={(v) => switchTab(v as Tab)} className="w-full">
+          <TabsList
+            className="h-auto w-full justify-start gap-7 rounded-none border-b bg-transparent p-0 pt-5 pb-1"
+            style={{ borderColor: P.rule }}
+          >
+            <TabsTrigger
+              value="alumni"
+              className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2"
+            >
+              Alumni
+            </TabsTrigger>
+            <TabsTrigger
+              value="students"
+              className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2"
+            >
+              Current Students
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
 
         {/* Filter rail */}
         <nav className="pt-2 pb-2">
           {isAlumni ? (
             <>
               <FilterRow label="Cohort">
-                <FilterButton
+                <FilterPill
                   active={activeCohort === "all"}
                   onClick={() => setActiveCohort("all")}
                 >
                   All
-                </FilterButton>
+                </FilterPill>
                 {COHORT_YEARS.map((y) => (
-                  <FilterButton
+                  <FilterPill
                     key={y}
                     active={activeCohort === y}
                     onClick={() => setActiveCohort(activeCohort === y ? "all" : y)}
                   >
                     K{y}
-                  </FilterButton>
+                  </FilterPill>
                 ))}
               </FilterRow>
 
               {countries.length > 0 && (
                 <FilterRow label="Country">
-                  <FilterButton
+                  <FilterPill
                     active={!activeCountry}
                     onClick={() => setActiveCountry("")}
                   >
                     All
-                  </FilterButton>
+                  </FilterPill>
                   {countries.map(([c, n]) => (
-                    <FilterButton
+                    <FilterPill
                       key={c}
                       active={activeCountry === c}
                       onClick={() => setActiveCountry(activeCountry === c ? "" : c)}
                       count={n}
                     >
                       {c}
-                    </FilterButton>
+                    </FilterPill>
                   ))}
                 </FilterRow>
               )}
@@ -619,58 +551,58 @@ function SearchPageInner() {
           ) : (
             <>
               <FilterRow label="Grade">
-                <FilterButton
+                <FilterPill
                   active={activeGrade === "all"}
                   onClick={() => setActiveGrade("all")}
                 >
                   All
-                </FilterButton>
+                </FilterPill>
                 {GRADES.map((g) => (
-                  <FilterButton
+                  <FilterPill
                     key={g}
                     active={activeGrade === g}
                     onClick={() => setActiveGrade(activeGrade === g ? "all" : g)}
                   >
                     {gradeLabel(g)}
-                  </FilterButton>
+                  </FilterPill>
                 ))}
               </FilterRow>
 
               <FilterRow label="Class">
-                <FilterButton
+                <FilterPill
                   active={activeClass === "all"}
                   onClick={() => setActiveClass("all")}
                 >
                   All
-                </FilterButton>
+                </FilterPill>
                 {CLASSES.map((c) => (
-                  <FilterButton
+                  <FilterPill
                     key={c}
                     active={activeClass === c}
                     onClick={() => setActiveClass(activeClass === c ? "all" : c)}
                     count={classCounts.get(c) ?? 0}
                   >
                     {c}
-                  </FilterButton>
+                  </FilterPill>
                 ))}
               </FilterRow>
 
               <FilterRow label="Element">
-                <FilterButton
+                <FilterPill
                   active={activeElement === "all"}
                   onClick={() => setActiveElement("all")}
                 >
                   All
-                </FilterButton>
+                </FilterPill>
                 {ELEMENTS.map((e) => (
-                  <FilterButton
+                  <FilterPill
                     key={e}
                     active={activeElement === e}
                     onClick={() => setActiveElement(activeElement === e ? "all" : e)}
                     count={elementCounts.get(e) ?? 0}
                   >
                     {ELEMENT_LABEL[e]}
-                  </FilterButton>
+                  </FilterPill>
                 ))}
               </FilterRow>
             </>
@@ -700,14 +632,15 @@ function SearchPageInner() {
                 className="flex-1 bg-transparent border-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
               />
               {hasFilter && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
                   onClick={resetFilters}
-                  className="text-xs uppercase tracking-[0.22em] font-bold inline-flex items-center gap-1.5 hover:text-foreground transition-colors shrink-0"
+                  className="h-auto shrink-0 gap-1.5 px-2 py-1 text-xs font-bold uppercase tracking-[0.22em] hover:bg-transparent hover:text-foreground"
                   style={{ color: P.text3 }}
                 >
                   <X className="h-3 w-3" /> Reset
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -747,13 +680,14 @@ function SearchPageInner() {
                 : "No current students match"}
             </p>
             {hasFilter && (
-              <button
+              <Button
+                variant="link"
                 onClick={resetFilters}
-                className="text-sm underline"
+                className="h-auto p-0 text-sm underline hover:no-underline"
                 style={{ color: P.purple }}
               >
                 Clear filters
-              </button>
+              </Button>
             )}
           </div>
         )}

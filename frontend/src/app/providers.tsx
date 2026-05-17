@@ -1,20 +1,81 @@
 "use client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
-import { useState } from "react";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { QueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { makePersister, clearPersistedCache, purgeStaleNamespaces } from "@/lib/cache/persister";
+import { STALE } from "@/lib/cache/keys";
 
 if (process.env.NEXT_PUBLIC_USE_MOCK === "true") {
   require("@/lib/mock");
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
-  }));
+function makeQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: STALE.static,
+        gcTime: 24 * 60 * 60 * 1000,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
+        retry: 1,
+      },
+    },
+  });
+}
+
+// Inner component — lives inside AuthProvider so useAuth() works.
+// Keyed by userId in layout so it fully remounts on login/logout, giving a fresh client + namespace.
+function RQProviders({ userId, children }: { userId: number | "anon"; children: React.ReactNode }) {
+  const prevUserIdRef = useRef<number | "anon">(userId);
+  // Stable client for this mount lifetime.
+  const [queryClient] = useState(makeQueryClient);
+
+  useEffect(() => {
+    purgeStaleNamespaces();
+  }, []);
+
+  useEffect(() => {
+    const prev = prevUserIdRef.current;
+    if (prev !== userId && prev !== "anon") {
+      // User logged out — clear their persisted namespace.
+      clearPersistedCache(prev);
+    }
+    prevUserIdRef.current = userId;
+  }, [userId]);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: makePersister(userId),
+        maxAge: 24 * 60 * 60 * 1000,
+        buster: "v1",
+      }}
+    >
+      {children}
+    </PersistQueryClientProvider>
+  );
+}
+
+// Bridge: reads userId from AuthContext (requires being inside AuthProvider).
+function RQProvidersBridge({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const userId = user?.id ?? "anon";
+  return (
+    <RQProviders key={String(userId)} userId={userId}>
+      {children}
+    </RQProviders>
+  );
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      {children}
     </ThemeProvider>
   );
 }
+
+export { RQProvidersBridge as RQProviders };

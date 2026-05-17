@@ -262,8 +262,8 @@ const MOCK_ALUMNI = [
     last_name: "Aumthai",
     kvis_year: 13,
     place: "San Francisco, USA",
-    latitude: 37.7599,
-    longitude: -122.4398,
+    latitude: 37.7749,
+    longitude: -122.4194,
     country: "USA",
     profile_pic_url: null,
     bio: "Senior software engineer at a Bay Area startup.",
@@ -332,8 +332,8 @@ const MOCK_ALUMNI = [
     last_name: "Chailek",
     kvis_year: 20,
     place: "Bangkok, Thailand",
-    latitude: 13.8100,
-    longitude: 100.5230,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Policy analyst at the National Science and Technology Development Agency.",
@@ -426,8 +426,8 @@ const MOCK_ALUMNI = [
     last_name: "Pongpat",
     kvis_year: 19,
     place: "Bangkok, Thailand",
-    latitude: 13.7400,
-    longitude: 100.4800,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Physician at Ramathibodi Hospital specialising in internal medicine.",
@@ -543,7 +543,7 @@ const MOCK_ALUMNI = [
     kvis_year: 12,
     place: "Bangkok, Thailand",
     latitude: 13.7563,
-    longitude: 100.5550,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Director at the Ministry of Science, shaping Thailand's digital economy policy.",
@@ -637,8 +637,8 @@ const MOCK_ALUMNI = [
     last_name: "Suwan",
     kvis_year: 16,
     place: "Bangkok, Thailand",
-    latitude: 13.7300,
-    longitude: 100.5200,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Cardiologist at King Chulalongkorn Memorial Hospital.",
@@ -777,8 +777,8 @@ const MOCK_ALUMNI = [
     last_name: "Kongphan",
     kvis_year: 18,
     place: "Bangkok, Thailand",
-    latitude: 13.7700,
-    longitude: 100.4900,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Civil engineer leading infrastructure projects for Thailand's high-speed rail.",
@@ -873,8 +873,8 @@ const MOCK_ALUMNI = [
     last_name: "Phetphan",
     kvis_year: 13,
     place: "Singapore",
-    latitude: 1.3000,
-    longitude: 103.8500,
+    latitude: 1.3521,
+    longitude: 103.8198,
     country: "Singapore",
     profile_pic_url: null,
     bio: "Postdoctoral researcher developing catalysts for green hydrogen production.",
@@ -897,8 +897,8 @@ const MOCK_ALUMNI = [
     last_name: "Suwan",
     kvis_year: 20,
     place: "Bangkok, Thailand",
-    latitude: 13.7600,
-    longitude: 100.5350,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Paediatric surgeon at Siriraj Hospital with a focus on congenital anomalies.",
@@ -921,8 +921,8 @@ const MOCK_ALUMNI = [
     last_name: "Tipsuk",
     kvis_year: 23,
     place: "Boston, USA",
-    latitude: 42.3800,
-    longitude: -71.1200,
+    latitude: 42.3601,
+    longitude: -71.0589,
     country: "USA",
     profile_pic_url: null,
     bio: "Graduate student studying computational biology at Harvard.",
@@ -967,8 +967,8 @@ const MOCK_ALUMNI = [
     last_name: "Kasem",
     kvis_year: 12,
     place: "Bangkok, Thailand",
-    latitude: 13.7900,
-    longitude: 100.5400,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Investment director at a leading Thai private equity firm.",
@@ -991,8 +991,8 @@ const MOCK_ALUMNI = [
     last_name: "Srisuk",
     kvis_year: 19,
     place: "Paris, France",
-    latitude: 48.8800,
-    longitude: 2.3200,
+    latitude: 48.8566,
+    longitude: 2.3522,
     country: "France",
     profile_pic_url: null,
     bio: "PhD candidate at the Sorbonne researching contemporary Southeast Asian art.",
@@ -1037,8 +1037,8 @@ const MOCK_ALUMNI = [
     last_name: "Chaimit",
     kvis_year: 20,
     place: "Seoul, South Korea",
-    latitude: 37.5400,
-    longitude: 127.0000,
+    latitude: 37.5665,
+    longitude: 126.978,
     country: "South Korea",
     profile_pic_url: null,
     bio: "AI researcher at Samsung focusing on on-device language models.",
@@ -1061,8 +1061,8 @@ const MOCK_ALUMNI = [
     last_name: "Thepsiri",
     kvis_year: 21,
     place: "Bangkok, Thailand",
-    latitude: 13.7450,
-    longitude: 100.5600,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Education innovation officer driving STEM curriculum reform in Thai secondary schools.",
@@ -1085,8 +1085,8 @@ const MOCK_ALUMNI = [
     last_name: "Chompoo",
     kvis_year: 17,
     place: "Boston, USA",
-    latitude: 42.3350,
-    longitude: -71.1050,
+    latitude: 42.3601,
+    longitude: -71.0589,
     country: "USA",
     profile_pic_url: null,
     bio: "MD-PhD candidate at Harvard Medical School studying immunotherapy for solid tumours.",
@@ -1107,8 +1107,8 @@ const MOCK_ALUMNI = [
     last_name: "Rattanakorn",
     kvis_year: 23,
     place: "Singapore",
-    latitude: 1.3300,
-    longitude: 103.8200,
+    latitude: 1.3521,
+    longitude: 103.8198,
     country: "Singapore",
     profile_pic_url: null,
     bio: "Analyst at a sovereign wealth fund covering Southeast Asian tech investments.",
@@ -1129,8 +1129,8 @@ const MOCK_ALUMNI = [
     last_name: "Mahawan",
     kvis_year: 11,
     place: "Chiang Mai, Thailand",
-    latitude: 18.8000,
-    longitude: 98.9700,
+    latitude: 18.7883,
+    longitude: 98.9853,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Social entrepreneur running an organic farm network connecting highland farmers to Bangkok markets.",
@@ -1153,8 +1153,8 @@ const MOCK_ALUMNI = [
     last_name: "Niratpattana",
     kvis_year: 18,
     place: "Bangkok, Thailand",
-    latitude: 13.7200,
-    longitude: 100.5700,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "Research scientist at BIOTEC developing rapid diagnostic tools for tropical diseases.",
@@ -1177,8 +1177,8 @@ const MOCK_ALUMNI = [
     last_name: "Rojanapruk",
     kvis_year: 24,
     place: "Bangkok, Thailand",
-    latitude: 13.7650,
-    longitude: 100.5100,
+    latitude: 13.7563,
+    longitude: 100.5018,
     country: "Thailand",
     profile_pic_url: null,
     bio: "First-year student at Chulalongkorn Faculty of Engineering, passionate about robotics.",
@@ -1559,8 +1559,8 @@ let MOCK_BLOGS = [
         last_name: last,
         kvis_year: cohort,
         place,
-        latitude: lat + (R() - 0.5) * 0.18,
-        longitude: lng + (R() - 0.5) * 0.18,
+        latitude: lat,
+        longitude: lng,
         country,
         profile_pic_url: null,
         bio: null,
@@ -1588,6 +1588,141 @@ let MOCK_BLOGS = [
           },
         ],
         career: [],
+      });
+    }
+  }
+})();
+
+// ─── Seed current students (M.4-M.6) ──────────────────────────────────────────
+// KVIS structure: 3 grades (10/11/12 = M.4/M.5/M.6), 4 classes per grade,
+// 4 elemental houses (earth/water/air/fire). 18 students per house per grade
+// → 72 students per grade → 216 total. Houses rotate round-robin within each
+// grade so counts come out exactly 18 per house.
+(function seedCurrentStudents() {
+  const FIRSTS_M = [
+    "Anan","Akira","Apirak","Arthit","Boon","Chai","Chakrit","Chanin","Decha",
+    "Ekarat","Issara","Jakkrit","Kasem","Korn","Krit","Manop","Nattapong",
+    "Pakorn","Panya","Phanuwat","Pongsak","Prasert","Sakda","Sirichai",
+    "Somkid","Sompong","Suchart","Surapong","Tanin","Thanawat","Veerapol",
+    "Wachira","Wanchai","Worawit","Yongyuth","Anuwat","Boonsong","Chaiyan",
+    "Danai","Niran","Pisit","Rachan","Saksit","Theerapong","Wisut","Kit",
+    "Pun","Tee","Top","Bank",
+  ];
+  const FIRSTS_F = [
+    "Anong","Apinya","Aporn","Benjawan","Boonsri","Chalisa","Chanika",
+    "Chompoo","Dao","Duangporn","Hathaichanok","Jiraporn","Kanchana",
+    "Kanya","Kessaree","Lalita","Malee","Manee","Napaporn","Narisara",
+    "Nittaya","Orawan","Pakwan","Patcharin","Phailin","Piyaporn","Pornthip",
+    "Praweena","Ratchada","Saichon","Sasipim","Siriporn","Sunisa","Tarisa",
+    "Thanaporn","Thidarat","Uraiwan","Wannisa","Warangkana","Wilai","Yupin",
+    "Kanyarat","Pattaraporn","Supitcha","Tippawan","Wanida","Fern","Mint",
+    "Ploy","Nam",
+  ];
+  const LASTS_S = [
+    "Suwannathat","Tangkijvanich","Phongphaew","Srisaard","Wattanapong",
+    "Sukphanthawee","Chaisongkhram","Phakdiphisut","Limthongkul",
+    "Ngamthanachoti","Bunyaviroch","Suphawat","Prasertdee","Khamwan",
+    "Klaybor","Tinnirat","Pongdee","Inthanon","Kaewkamnerd","Kanchanaporn",
+    "Lertphol","Maneesin","Naowarat","Onsuwan","Phromsiri","Phongtongkam",
+    "Rattanaphol","Saetang","Sangtong","Siribut","Subin","Suttiwan",
+    "Tantibanchachai","Thaweesak","Vongkitisin","Watthanachai","Wongsanee",
+    "Yindee","Pannarunothai","Saengthong","Jindaprasert","Kraisin",
+    "Mongkolchai","Nopachai","Phantharak","Sangkaroen","Termpong","Thanasit",
+    "Vivathana","Wasinwattana","Charoenpong","Boriboon","Chumphon",
+    "Dechawat","Jaroensri","Khamsuk","Lertsiri","Norachit","Ratanakul",
+    "Suttisak","Theerasak","Udomchai","Visetpong","Wongchai","Yothin",
+  ];
+  const MBTIS_S = [
+    "INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP",
+    "ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP",
+  ];
+  const HOUSES = ["earth","water","air","fire"];
+
+  // Mulberry32 — deterministic so the roster stays stable across restarts.
+  function makeRng(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  const R = makeRng(2026);
+  const pick = (arr) => arr[Math.floor(R() * arr.length)];
+
+  let nextId = MOCK_ALUMNI.reduce((m, u) => Math.max(m, u.id), 0) + 1;
+  const usedHandles = new Set();
+
+  // KVIS sits in Rayong, Thailand.
+  const KVIS_LAT = 12.6916;
+  const KVIS_LNG = 101.2787;
+
+  const GRADES = [10, 11, 12]; // M.4, M.5, M.6
+  const CLASSES_PER_GRADE = 4;
+  const STUDENTS_PER_CLASS = 18; // 4 × 18 = 72 per grade, exactly 18 per house
+
+  for (const grade of GRADES) {
+    // Build a class-and-house plan for this grade so house counts land at 18 each.
+    // 72 slots = 4 classes × 18 students. Distribute houses round-robin per slot
+    // so each class ends up with ~4-5 of each house, and the grade totals are
+    // exactly 18 of each.
+    const plan = [];
+    for (let cls = 1; cls <= CLASSES_PER_GRADE; cls++) {
+      for (let i = 0; i < STUDENTS_PER_CLASS; i++) {
+        plan.push({ cls, slot: plan.length });
+      }
+    }
+    // Assign houses round-robin in slot order: slot % 4 → house.
+    // This yields exactly 18 of each house per grade (72/4 = 18).
+    for (let s = 0; s < plan.length; s++) {
+      plan[s].house = HOUSES[s % HOUSES.length];
+    }
+    // Lightly shuffle within each class so houses look mixed, not in fixed order.
+    for (let cls = 1; cls <= CLASSES_PER_GRADE; cls++) {
+      const slice = plan.filter((p) => p.cls === cls);
+      for (let i = slice.length - 1; i > 0; i--) {
+        const j = Math.floor(R() * (i + 1));
+        const tmp = slice[i].house; slice[i].house = slice[j].house; slice[j].house = tmp;
+      }
+    }
+
+    for (const { cls, house } of plan) {
+      const female = R() < 0.5;
+      const first = pick(female ? FIRSTS_F : FIRSTS_M);
+      const last = pick(LASTS_S);
+      const id = nextId++;
+      let handle = `${first.toLowerCase()}.${last[0].toLowerCase()}${id}`;
+      while (usedHandles.has(handle)) handle = `${handle}x`;
+      usedHandles.add(handle);
+
+      MOCK_ALUMNI.push({
+        id,
+        email: `${handle}@kvis.ac.th`,
+        first_name: first,
+        last_name: last,
+        kvis_year: null, // current students haven't graduated
+        place: "Rayong, Thailand",
+        latitude: KVIS_LAT + (R() - 0.5) * 0.01,
+        longitude: KVIS_LNG + (R() - 0.5) * 0.01,
+        country: "Thailand",
+        profile_pic_url: null,
+        bio: null,
+        mbti: pick(MBTIS_S),
+        interests: null,
+        facebook_url: null,
+        linkedin_url: null,
+        website_url: null,
+        line_id: null,
+        email_verified: true,
+        is_verified: true,
+        created_at: `2025-${String(1 + Math.floor(R() * 12)).padStart(2, "0")}-${String(1 + Math.floor(R() * 28)).padStart(2, "0")}T08:00:00Z`,
+        updated_at: "2025-09-01T08:00:00Z",
+        education: [],
+        career: [],
+        current_grade: grade,
+        current_class: cls,
+        current_elemental: house,
       });
     }
   }
@@ -1671,7 +1806,9 @@ app.put("/api/users/me/career", requireAuth, (req, res) => {
 
 // Globe pins
 app.get("/api/users/globe/pins", (req, res) => {
-  const pins = MOCK_ALUMNI.filter((u) => u.latitude && u.longitude).map((u) => {
+  const pins = MOCK_ALUMNI
+    .filter((u) => u.latitude && u.longitude && !u.current_grade)
+    .map((u) => {
     const currentJob = u.career.find((c) => c.is_current) || u.career[u.career.length - 1];
     return {
       user_id: u.id,
@@ -1770,6 +1907,9 @@ app.get("/api/search", (req, res) => {
       mbti: u.mbti,
       education: u.education,
       career: u.career,
+      current_grade: u.current_grade ?? null,
+      current_class: u.current_class ?? null,
+      current_elemental: u.current_elemental ?? null,
     }))
   );
 });

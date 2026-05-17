@@ -6,6 +6,8 @@ from slugify import slugify
 
 from app.core.database import get_session
 from app.core.deps import get_current_user
+from app.core.cache import cached, invalidate_tags
+from app.core.config import settings
 from app.models.user import User
 from app.models.blog import Blog
 from app.schemas.blog import BlogRead, BlogDetail, BlogCreate, BlogUpdate
@@ -35,6 +37,7 @@ def _blog_to_read(blog: Blog) -> dict:
 
 
 @router.get("", response_model=list[BlogRead])
+@cached(key="blogs:list:<args>", tags=["blogs"], ttl=settings.CACHE_TTL_SHORT)
 def list_blogs(
     session: Session = Depends(get_session),
     tag: Optional[str] = Query(default=None),
@@ -51,6 +54,7 @@ def list_blogs(
 
 
 @router.get("/{slug}", response_model=BlogDetail)
+@cached(key=lambda slug, session: f"blogs:slug:{slug}", tags=lambda slug, session: ["blogs", f"blog:{slug}"], ttl=settings.CACHE_TTL_LONG)
 def get_blog(slug: str, session: Session = Depends(get_session)):
     blog = session.exec(select(Blog).where(Blog.slug == slug)).first()
     if not blog or not blog.is_published:
@@ -59,7 +63,7 @@ def get_blog(slug: str, session: Session = Depends(get_session)):
 
 
 @router.post("", response_model=BlogDetail, status_code=201)
-def create_blog(
+async def create_blog(
     body: BlogCreate,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -85,11 +89,12 @@ def create_blog(
     session.add(blog)
     session.commit()
     session.refresh(blog)
+    await invalidate_tags("blogs")
     return {**_blog_to_read(blog), "content": blog.content}
 
 
 @router.patch("/{slug}", response_model=BlogDetail)
-def update_blog(
+async def update_blog(
     slug: str,
     body: BlogUpdate,
     current_user: User = Depends(get_current_user),
@@ -110,11 +115,12 @@ def update_blog(
     session.add(blog)
     session.commit()
     session.refresh(blog)
+    await invalidate_tags("blogs", f"blog:{slug}")
     return {**_blog_to_read(blog), "content": blog.content}
 
 
 @router.delete("/{slug}", status_code=204)
-def delete_blog(
+async def delete_blog(
     slug: str,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -126,3 +132,4 @@ def delete_blog(
         raise HTTPException(403, detail="Not your blog")
     session.delete(blog)
     session.commit()
+    await invalidate_tags("blogs", f"blog:{slug}")

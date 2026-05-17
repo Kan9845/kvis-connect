@@ -13,6 +13,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { userApi } from "@/lib/api";
+import { keys } from "@/lib/cache/keys";
 import type { GlobePin } from "@/lib/types";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
 
@@ -23,7 +24,7 @@ function AlumniSearch({ solid = false, dark = false }: { solid?: boolean; dark?:
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const { data: pins = [] } = useQuery({
-    queryKey: ["globe-pins"],
+    queryKey: keys.globe.pins(),
     queryFn: userApi.getGlobePins,
     staleTime: 5 * 60 * 1000,
   });
@@ -95,17 +96,19 @@ function ThemeToggle({ dark }: { dark: boolean }) {
   useEffect(() => setMounted(true), []);
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      className={`p-2 rounded-full transition-colors pointer-events-auto ${
-        dark ? "text-white hover:bg-white/10" : "text-foreground hover:bg-muted"
+      className={`pointer-events-auto h-9 w-9 rounded-full ${
+        dark ? "text-white hover:bg-white/10 hover:text-white" : "text-foreground hover:bg-muted"
       }`}
       aria-label="Toggle theme"
     >
       {mounted
         ? resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />
         : <Moon className="h-4 w-4 opacity-0" />}
-    </button>
+    </Button>
   );
 }
 

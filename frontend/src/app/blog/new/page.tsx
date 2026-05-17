@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { blogApi } from "@/lib/api";
+import { onBlogMutationSuccess } from "@/lib/cache/invalidate";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Loader2, Send } from "lucide-react";
@@ -112,7 +113,7 @@ export default function NewBlogPage() {
       excerpt: data.excerpt || undefined,
     }),
     onSuccess: (blog) => {
-      qc.invalidateQueries({ queryKey: ["blogs"] });
+      onBlogMutationSuccess(qc, blog);
       toast({ title: "Posted." });
       router.push(`/blog/${blog.slug}`);
     },

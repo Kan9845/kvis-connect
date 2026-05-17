@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState, useMemo, useCallback } from "react";
+import { memo, useRef, useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import type { GlobePin } from "@/lib/types";
@@ -7,178 +7,484 @@ import { useRouter } from "next/navigation";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
+// Editorial palette — matches /blog, /stats, /kvisian.
+const P = {
+  purple: "oklch(44% 0.26 294)",
+  purpleSoft: "oklch(95% 0.035 294)",
+  green: "oklch(40% 0.16 148)",
+  ink: "oklch(20% 0.015 294)",
+  text2: "oklch(45% 0.008 294)",
+  text3: "oklch(62% 0.005 294)",
+  rule: "oklch(90% 0.007 294)",
+  paper: "oklch(99% 0.003 294)",
+};
+
+interface PinCluster {
+  key: string;
+  latitude: number;
+  longitude: number;
+  place?: string;
+  country?: string;
+  members: GlobePin[];
+}
+
+// Pins for users at the same (country, state) are geocoded to identical
+// coordinates by the backend. Group them so a single visual represents the
+// whole location, with a count badge instead of stacked invisible duplicates.
+function clusterPins(pins: GlobePin[]): PinCluster[] {
+  const map = new Map<string, PinCluster>();
+  for (const p of pins) {
+    // 4dp ≈ 11m — only merges true coincident points, not nearby cities.
+    const key = `${p.latitude.toFixed(4)},${p.longitude.toFixed(4)}`;
+    const existing = map.get(key);
+    if (existing) {
+      existing.members.push(p);
+      if (!existing.place && p.place) existing.place = p.place;
+      if (!existing.country && p.country) existing.country = p.country;
+    } else {
+      map.set(key, {
+        key,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        place: p.place,
+        country: p.country,
+        members: [p],
+      });
+    }
+  }
+  // Sort members within each cluster by KVIS year then name for stable display.
+  const clusters = Array.from(map.values());
+  clusters.forEach((c) => {
+    c.members.sort((a: GlobePin, b: GlobePin) => {
+      const ay = a.kvis_year ?? 99;
+      const by = b.kvis_year ?? 99;
+      if (ay !== by) return ay - by;
+      return (a.first_name ?? "").localeCompare(b.first_name ?? "");
+    });
+  });
+  return clusters;
+}
+
 interface AlumniGlobeProps {
   pins: GlobePin[];
   filteredPins?: GlobePin[];
 }
 
-let globalCard: HTMLElement | null = null;
+// --------- shared DOM hover card (lives outside React) ---------
+interface CardState {
+  card: HTMLElement;
+  hideTimer: number | null;
+}
+let cardState: CardState | null = null;
 
-function getGlobalCard(): HTMLElement {
-  if (globalCard && document.body.contains(globalCard)) return globalCard;
-
+function getCard(): CardState {
+  if (cardState && document.body.contains(cardState.card)) return cardState;
   const card = document.createElement("div");
-  card.id = "__kvis_hover_card";
+  card.id = "__kvis_globe_card";
   card.style.cssText = `
     position:fixed;
-    width:220px;
-    background:rgba(2,8,28,0.97);
-    backdrop-filter:blur(14px);
-    border:1px solid rgba(59,130,246,0.4);
-    border-radius:14px;
-    padding:12px;
-    pointer-events:none;
+    width:264px;
+    background:${P.paper};
+    color:${P.ink};
+    border:1px solid ${P.rule};
+    border-radius:0;
+    padding:14px 14px 12px;
     opacity:0;
-    transition:opacity 0.15s;
-    box-shadow:0 8px 32px rgba(0,0,0,0.9);
-    font-family:system-ui,sans-serif;
-    z-index:99999;
+    pointer-events:none;
+    transition:opacity 0.18s ease-out;
+    box-shadow:0 18px 42px -14px rgba(15,23,42,0.45),0 4px 10px rgba(15,23,42,0.12);
+    font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;
+    z-index:30;
     top:0;left:0;
     will-change:transform,opacity;
   `;
   document.body.appendChild(card);
-  globalCard = card;
-  return card;
+
+  const state: CardState = { card, hideTimer: null };
+  card.addEventListener("mouseenter", () => {
+    if (state.hideTimer) {
+      clearTimeout(state.hideTimer);
+      state.hideTimer = null;
+    }
+  });
+  card.addEventListener("mouseleave", () => hideCard());
+  cardState = state;
+  return state;
 }
 
-function populateCard(card: HTMLElement, pin: GlobePin) {
-  const initials = `${pin.first_name?.[0] ?? ""}${pin.last_name?.[0] ?? ""}`.toUpperCase();
-  card.innerHTML = "";
+function showCardAt(anchor: HTMLElement) {
+  const { card } = getCard();
+  card.style.transform = "none";
+  card.style.opacity = "0";
+  card.style.pointerEvents = "auto";
+  card.style.left = "0px";
+  card.style.top = "0px";
 
-  const topRow = document.createElement("div");
-  topRow.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:8px;";
+  // Force layout so we can measure final dimensions.
+  const cw = card.offsetWidth || 264;
+  const ch = card.offsetHeight || 120;
+  const margin = 10;
+  const gap = 12;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
 
+  const rect = anchor.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  let left = cx - cw / 2;
+  left = Math.max(margin, Math.min(left, vw - cw - margin));
+
+  // Prefer placing above the pin; fall back to below if no room above.
+  const spaceAbove = rect.top - gap - margin;
+  const spaceBelow = vh - rect.bottom - gap - margin;
+  let top: number;
+  if (spaceAbove >= ch) {
+    top = rect.top - gap - ch;
+  } else if (spaceBelow >= ch) {
+    top = rect.bottom + gap;
+  } else {
+    // Neither side fits — clamp to viewport, biasing toward whichever has more room.
+    top = spaceAbove >= spaceBelow ? margin : vh - ch - margin;
+  }
+  top = Math.max(margin, Math.min(top, vh - ch - margin));
+
+  card.style.left = `${left}px`;
+  card.style.top = `${top}px`;
+  card.style.opacity = "1";
+}
+
+function hideCard(delay = 200) {
+  const state = cardState;
+  if (!state) return;
+  if (state.hideTimer) clearTimeout(state.hideTimer);
+  state.hideTimer = window.setTimeout(() => {
+    state.card.style.opacity = "0";
+    state.card.style.pointerEvents = "none";
+    state.hideTimer = null;
+  }, delay);
+}
+
+function cancelHide() {
+  const state = cardState;
+  if (state?.hideTimer) {
+    clearTimeout(state.hideTimer);
+    state.hideTimer = null;
+  }
+}
+
+function initials(p: GlobePin) {
+  return `${(p.first_name?.[0] ?? "").toUpperCase()}${(p.last_name?.[0] ?? "").toUpperCase()}`;
+}
+
+function avatarEl(p: GlobePin, size: number, fontSize: number): HTMLElement {
   const av = document.createElement("div");
   av.style.cssText = `
-    width:42px;height:42px;border-radius:50%;
-    border:2px solid #3b82f6;background:#1e3a5f;overflow:hidden;
-    flex-shrink:0;display:flex;align-items:center;justify-content:center;
-    font-size:13px;font-weight:700;color:white;
+    width:${size}px;height:${size}px;border-radius:50%;
+    background:${P.purple};color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:${fontSize}px;font-weight:800;letter-spacing:-0.02em;
+    overflow:hidden;flex-shrink:0;
   `;
-  if (pin.profile_pic_url) {
+  if (p.profile_pic_url) {
     const img = document.createElement("img");
-    img.src = pin.profile_pic_url;
+    img.src = p.profile_pic_url;
     img.loading = "lazy";
     img.decoding = "async";
     img.style.cssText = "width:100%;height:100%;object-fit:cover;";
-    img.onerror = () => { img.remove(); av.textContent = initials; };
+    img.onerror = () => {
+      img.remove();
+      av.textContent = initials(p);
+    };
     av.appendChild(img);
   } else {
-    av.textContent = initials;
+    av.textContent = initials(p);
   }
-
-  const nameCol = document.createElement("div");
-  nameCol.style.cssText = "min-width:0;";
-  nameCol.innerHTML = `
-    <div style="font-size:13px;font-weight:700;color:white;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-      ${pin.first_name} ${pin.last_name}
-    </div>
-    <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
-      ${[pin.kvis_year ? `Gen ${pin.kvis_year}` : null, pin.country].filter(Boolean).join(" · ")}
-    </div>
-  `;
-
-  topRow.appendChild(av);
-  topRow.appendChild(nameCol);
-  card.appendChild(topRow);
-
-  const hr = document.createElement("div");
-  hr.style.cssText = "height:1px;background:rgba(255,255,255,0.08);margin-bottom:8px;";
-  card.appendChild(hr);
-
-  if (pin.current_job) {
-    const el = document.createElement("div");
-    el.style.cssText = "font-size:11px;color:#cbd5e1;margin-bottom:5px;display:flex;align-items:flex-start;gap:5px;";
-    const safe = pin.current_job.replace(/</g, "&lt;");
-    el.innerHTML = `<span style="flex-shrink:0;">💼</span><span style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${safe}</span>`;
-    card.appendChild(el);
-  }
-
-  if (pin.place) {
-    const el = document.createElement("div");
-    el.style.cssText = "font-size:11px;color:#cbd5e1;margin-bottom:5px;display:flex;align-items:center;gap:5px;";
-    const safe = pin.place.replace(/</g, "&lt;");
-    el.innerHTML = `<span>📍</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${safe}</span>`;
-    card.appendChild(el);
-  }
-
-  if (pin.mbti) {
-    const el = document.createElement("div");
-    el.style.cssText = `
-      display:inline-block;margin-top:4px;padding:2px 8px;border-radius:20px;
-      background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);
-      font-size:10px;font-weight:700;color:#93c5fd;letter-spacing:0.05em;
-    `;
-    el.textContent = pin.mbti;
-    card.appendChild(el);
-  }
+  return av;
 }
 
-function makePinEl(pin: GlobePin, onClick: (id: number) => void): HTMLElement {
-  const initials = `${pin.first_name?.[0] ?? ""}${pin.last_name?.[0] ?? ""}`.toUpperCase();
+function makeMemberRow(p: GlobePin, onNavigate: (id: number) => void): HTMLElement {
+  const row = document.createElement("button");
+  row.type = "button";
+  row.style.cssText = `
+    display:flex;align-items:center;gap:10px;
+    width:100%;padding:7px 6px;
+    background:transparent;border:0;border-radius:0;
+    text-align:left;cursor:pointer;
+    transition:background 0.12s ease-out;
+    font-family:inherit;
+  `;
+  row.addEventListener("mouseenter", () => {
+    row.style.background = P.purpleSoft;
+  });
+  row.addEventListener("mouseleave", () => {
+    row.style.background = "transparent";
+  });
+  row.addEventListener("click", () => {
+    onNavigate(p.user_id);
+    hideCard(0);
+  });
+
+  row.appendChild(avatarEl(p, 28, 10));
+
+  const text = document.createElement("div");
+  text.style.cssText = "min-width:0;flex:1;";
+  const name = document.createElement("div");
+  name.style.cssText = `
+    font-size:13px;font-weight:600;color:${P.ink};
+    line-height:1.2;letter-spacing:-0.005em;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  `;
+  name.textContent = `${p.first_name} ${p.last_name}`;
+  text.appendChild(name);
+
+  const metaParts = [p.kvis_year ? `K${p.kvis_year}` : null, p.current_job]
+    .filter(Boolean)
+    .join(" · ");
+  if (metaParts) {
+    const m = document.createElement("div");
+    m.style.cssText = `
+      font-size:11px;color:${P.text3};margin-top:1px;
+      font-variant-numeric:tabular-nums;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    `;
+    m.textContent = metaParts;
+    text.appendChild(m);
+  }
+  row.appendChild(text);
+
+  const arrow = document.createElement("span");
+  arrow.textContent = "→";
+  arrow.style.cssText = `color:${P.text3};font-size:13px;flex-shrink:0;`;
+  row.appendChild(arrow);
+
+  return row;
+}
+
+function populateCard(cluster: PinCluster, onNavigate: (id: number) => void) {
+  const { card } = getCard();
+  card.innerHTML = "";
+
+  const isCluster = cluster.members.length > 1;
+  // `place` already encodes "City, Country" (e.g. "Bangkok, Thailand"), so
+  // don't append country a second time. Only fall back to country alone.
+  const locLabel = cluster.place || cluster.country || "Unknown location";
+
+  // Editorial kicker row
+  const head = document.createElement("div");
+  head.style.cssText = `
+    display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+    padding-bottom:8px;border-bottom:1px solid ${P.rule};margin-bottom:10px;
+  `;
+  const kicker = document.createElement("div");
+  kicker.style.cssText = `
+    font-size:9px;font-weight:700;text-transform:uppercase;
+    letter-spacing:0.26em;color:${P.purple};
+  `;
+  kicker.textContent = "Location";
+  head.appendChild(kicker);
+
+  const tally = document.createElement("div");
+  tally.style.cssText = `
+    font-size:10px;font-weight:700;color:${P.text3};
+    font-variant-numeric:tabular-nums;letter-spacing:0.18em;
+    text-transform:uppercase;
+  `;
+  tally.textContent = `${cluster.members.length} ${cluster.members.length === 1 ? "alum" : "alumni"}`;
+  head.appendChild(tally);
+  card.appendChild(head);
+
+  // Place — bold editorial display
+  const place = document.createElement("div");
+  place.style.cssText = `
+    font-size:18px;font-weight:800;letter-spacing:-0.015em;
+    color:${P.ink};line-height:1.18;margin-bottom:12px;
+  `;
+  place.textContent = locLabel;
+  card.appendChild(place);
+
+  if (!isCluster) {
+    const p = cluster.members[0];
+
+    const row = document.createElement("button");
+    row.type = "button";
+    row.style.cssText = `
+      display:flex;align-items:flex-start;gap:11px;
+      width:100%;padding:0;background:transparent;border:0;
+      cursor:pointer;text-align:left;font-family:inherit;
+    `;
+    row.addEventListener("click", () => {
+      onNavigate(p.user_id);
+      hideCard(0);
+    });
+
+    row.appendChild(avatarEl(p, 44, 14));
+
+    const text = document.createElement("div");
+    text.style.cssText = "min-width:0;flex:1;";
+    const name = document.createElement("div");
+    name.style.cssText = `
+      font-size:15px;font-weight:700;color:${P.ink};
+      letter-spacing:-0.01em;line-height:1.2;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    `;
+    name.textContent = `${p.first_name} ${p.last_name}`;
+    text.appendChild(name);
+
+    const meta = [p.kvis_year ? `K${p.kvis_year}` : null, p.mbti]
+      .filter(Boolean)
+      .join(" · ");
+    if (meta) {
+      const m = document.createElement("div");
+      m.style.cssText = `
+        font-size:11px;color:${P.text3};margin-top:3px;
+        font-variant-numeric:tabular-nums;letter-spacing:0.04em;
+      `;
+      m.textContent = meta;
+      text.appendChild(m);
+    }
+    if (p.current_job) {
+      const j = document.createElement("div");
+      j.style.cssText = `
+        font-size:12px;color:${P.text2};margin-top:5px;line-height:1.35;
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+        overflow:hidden;
+      `;
+      j.textContent = p.current_job;
+      text.appendChild(j);
+    }
+    row.appendChild(text);
+    card.appendChild(row);
+
+    const link = document.createElement("div");
+    link.style.cssText = `
+      margin-top:11px;padding-top:8px;border-top:1px solid ${P.rule};
+      font-size:10px;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.24em;color:${P.purple};
+    `;
+    link.textContent = "View profile →";
+    card.appendChild(link);
+    return;
+  }
+
+  // Cluster: scrollable list of members
+  const list = document.createElement("div");
+  list.style.cssText = `
+    max-height:248px;overflow-y:auto;
+    margin:0 -6px;
+    scrollbar-width:thin;
+  `;
+  cluster.members.forEach((m) => list.appendChild(makeMemberRow(m, onNavigate)));
+  card.appendChild(list);
+
+  const hint = document.createElement("div");
+  hint.style.cssText = `
+    margin-top:9px;padding-top:8px;border-top:1px solid ${P.rule};
+    font-size:9px;font-weight:700;text-transform:uppercase;
+    letter-spacing:0.24em;color:${P.text3};
+    font-variant-numeric:tabular-nums;
+  `;
+  hint.textContent = `Tap a name to open profile`;
+  card.appendChild(hint);
+}
+
+function makePinEl(
+  cluster: PinCluster,
+  onNavigate: (id: number) => void,
+): HTMLElement {
+  const first = cluster.members[0];
+  const isCluster = cluster.members.length > 1;
+  const size = 44;
 
   const wrap = document.createElement("div");
-  wrap.style.cssText = "cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;";
-
-  const avatar = document.createElement("div");
-  avatar.style.cssText = `
-    width:54px;height:54px;border-radius:50%;
-    border:3px solid #3b82f6;
-    background:#1e3a5f;
-    overflow:hidden;
+  wrap.style.cssText = `
+    cursor:pointer;
     display:flex;align-items:center;justify-content:center;
-    font-size:15px;font-weight:700;color:white;
-    font-family:system-ui,sans-serif;
-    box-shadow:0 3px 14px rgba(0,0,0,0.75);
-    transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;
-    user-select:none;
-    will-change:transform;
+    pointer-events:auto;
   `;
 
-  if (pin.profile_pic_url) {
+  // Inner positioning context so the badge can anchor without giving the
+  // outer wrap a `position`, which would conflict with react-globe.gl's
+  // CSS3DRenderer transforms and stack every pin at the page origin.
+  const inner = document.createElement("div");
+  inner.style.cssText = `
+    position:relative;display:inline-flex;
+    align-items:center;justify-content:center;
+  `;
+  wrap.appendChild(inner);
+
+  const avatar = document.createElement("div");
+  const baseShadow = `0 2px 8px rgba(15,23,42,0.35),0 0 0 2px rgba(255,255,255,0.55)`;
+  avatar.style.cssText = `
+    width:${size}px;height:${size}px;border-radius:50%;
+    background:${P.paper};
+    border:2px solid ${P.purple};
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    font-size:${Math.round(size * 0.28)}px;font-weight:800;color:${P.ink};
+    letter-spacing:-0.02em;
+    font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;
+    box-shadow:${baseShadow};
+    transition:transform 0.16s ease-out,box-shadow 0.16s ease-out;
+    user-select:none;will-change:transform;
+  `;
+  if (first.profile_pic_url) {
     const img = document.createElement("img");
-    img.src = pin.profile_pic_url;
+    img.src = first.profile_pic_url;
     img.loading = "lazy";
     img.decoding = "async";
-    img.style.cssText = "width:100%;height:100%;object-fit:cover;";
-    img.onerror = () => { img.remove(); avatar.textContent = initials; };
+    img.style.cssText = "width:100%;height:100%;object-fit:cover;filter:grayscale(12%);";
+    img.onerror = () => {
+      img.remove();
+      avatar.textContent = initials(first);
+    };
     avatar.appendChild(img);
   } else {
-    avatar.textContent = initials;
+    avatar.textContent = initials(first);
+  }
+  inner.appendChild(avatar);
+
+  if (isCluster) {
+    // Editorial postage-stamp counter: square purple chip, mono numerals.
+    const badge = document.createElement("div");
+    badge.style.cssText = `
+      position:absolute;top:-6px;right:-6px;
+      min-width:24px;height:20px;padding:0 5px;
+      background:${P.purple};color:#fff;
+      border:2px solid ${P.paper};
+      border-radius:2px;
+      display:flex;align-items:center;justify-content:center;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+      font-size:11px;font-weight:800;
+      font-variant-numeric:tabular-nums;letter-spacing:-0.01em;
+      box-shadow:0 1px 3px rgba(15,23,42,0.45);
+      pointer-events:none;
+    `;
+    badge.textContent = String(cluster.members.length);
+    inner.appendChild(badge);
   }
 
   wrap.addEventListener("mouseenter", () => {
-    const card = getGlobalCard();
-    populateCard(card, pin);
-
-    const rect = wrap.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cardLeft = Math.max(8, Math.min(cx - 110, window.innerWidth - 228));
-
-    card.style.left = `${cardLeft}px`;
-    card.style.top = `${rect.top - 8}px`;
-    card.style.transform = "translateY(-100%)";
-    card.style.opacity = "1";
-
-    avatar.style.transform = "scale(1.18)";
-    avatar.style.borderColor = "#60a5fa";
-    avatar.style.boxShadow = "0 0 18px rgba(96,165,250,0.6)";
+    cancelHide();
+    populateCard(cluster, onNavigate);
+    showCardAt(wrap);
+    avatar.style.transform = "scale(1.12)";
+    avatar.style.boxShadow = `0 8px 22px rgba(15,23,42,0.5),0 0 0 3px oklch(44% 0.26 294 / 0.35)`;
   });
 
   wrap.addEventListener("mouseleave", () => {
-    const card = getGlobalCard();
-    card.style.opacity = "0";
+    hideCard(220);
     avatar.style.transform = "scale(1)";
-    avatar.style.borderColor = "#3b82f6";
-    avatar.style.boxShadow = "0 3px 14px rgba(0,0,0,0.75)";
+    avatar.style.boxShadow = baseShadow;
   });
 
-  wrap.addEventListener("click", () => onClick(pin.user_id));
+  wrap.addEventListener("click", () => {
+    // Singles navigate directly. Clusters require user to pick from card list.
+    if (!isCluster) onNavigate(first.user_id);
+  });
 
-  wrap.appendChild(avatar);
   return wrap;
 }
 
+// --------- map data ---------
 const COUNTRY_URL = "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson";
 const PROVINCE_URL = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_1_states_provinces.geojson";
 const CITIES_URL = "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_populated_places_simple.geojson";
@@ -186,16 +492,34 @@ const CITIES_URL = "https://raw.githubusercontent.com/vasturiano/react-globe.gl/
 const GLOBE_IMG = "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg";
 const BG_IMG = "https://unpkg.com/three-globe/example/img/night-sky.png";
 
-interface LabelPoint { lat: number; lng: number; name: string; tier: "country" | "province" | "city"; pop?: number; }
+interface LabelPoint {
+  lat: number;
+  lng: number;
+  name: string;
+  tier: "country" | "province" | "city";
+  pop?: number;
+}
 
-type Tier = 0 | 1 | 2; // 0: country only, 1: + province, 2: + city
+type Tier = 0 | 1 | 2;
 function altitudeToTier(alt: number): Tier {
   if (alt < 0.8) return 2;
   if (alt < 1.2) return 1;
   return 0;
 }
 
-export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
+const TRANSPARENT = () => "transparent";
+const POLY_GEOM = (f: any) => f.geometry;
+const LABEL_LAT_FN = (d: object) => (d as LabelPoint).lat;
+const LABEL_LNG_FN = (d: object) => (d as LabelPoint).lng;
+const LABEL_TEXT_FN = (d: object) => (d as LabelPoint).name;
+const LABEL_SIZE_FN = (d: object) => {
+  const t = (d as LabelPoint).tier;
+  return t === "country" ? 0.55 : t === "province" ? 0.35 : 0.25;
+};
+const CLUSTER_LAT_FN = (c: object) => (c as PinCluster).latitude;
+const CLUSTER_LNG_FN = (c: object) => (c as PinCluster).longitude;
+
+function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   const globeRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -217,7 +541,7 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
 
   useEffect(() => {
     let cancelled = false;
-    fetch(COUNTRY_URL).then(r => r.json()).then(d => {
+    fetch(COUNTRY_URL).then((r) => r.json()).then((d) => {
       if (cancelled) return;
       const features = d.features ?? [];
       setCountryFeatures(features);
@@ -229,7 +553,7 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
             lng: f.properties.LABEL_X,
             name: f.properties.NAME ?? f.properties.ADMIN ?? "",
             tier: "country" as const,
-          }))
+          })),
       );
     });
     return () => { cancelled = true; };
@@ -238,7 +562,7 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
   const loadProvinces = useCallback(() => {
     if (provincesLoadedRef.current) return;
     provincesLoadedRef.current = true;
-    fetch(PROVINCE_URL).then(r => r.json()).then(d => {
+    fetch(PROVINCE_URL).then((r) => r.json()).then((d) => {
       const features = d.features ?? [];
       setProvinceFeatures(features);
       setProvinceLabels(
@@ -249,7 +573,7 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
             lng: f.properties.LABEL_X,
             name: f.properties.name ?? f.properties.NAME ?? "",
             tier: "province" as const,
-          }))
+          })),
       );
     });
   }, []);
@@ -257,7 +581,7 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
   const loadCities = useCallback(() => {
     if (citiesLoadedRef.current) return;
     citiesLoadedRef.current = true;
-    fetch(CITIES_URL).then(r => r.json()).then(d => {
+    fetch(CITIES_URL).then((r) => r.json()).then((d) => {
       setCityLabels(
         (d.features ?? [])
           .filter((f: any) => (f.properties?.pop_max ?? 0) > 300_000)
@@ -267,7 +591,7 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
             name: f.properties.name ?? f.properties.NAME ?? "",
             tier: "city" as const,
             pop: f.properties.pop_max,
-          }))
+          })),
       );
     });
   }, []);
@@ -285,7 +609,10 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
       });
     });
     ro.observe(containerRef.current);
-    return () => { ro.disconnect(); if (rafId) cancelAnimationFrame(rafId); };
+    return () => {
+      ro.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   useEffect(() => {
@@ -331,9 +658,10 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
   }, [filteredPins]);
 
   const polygonsData = useMemo(
-    () => (tier >= 1 && provinceFeatures.length > 0
-      ? [...countryFeatures, ...provinceFeatures]
-      : countryFeatures),
+    () =>
+      tier >= 1 && provinceFeatures.length > 0
+        ? [...countryFeatures, ...provinceFeatures]
+        : countryFeatures,
     [tier, countryFeatures, provinceFeatures],
   );
 
@@ -344,18 +672,50 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
   }, [tier, countryLabels, provinceLabels, cityLabels]);
 
   const displayPins = filteredPins !== undefined ? filteredPins : pins;
+  const clusters = useMemo(() => clusterPins(displayPins), [displayPins]);
 
-  const handlePinClick = useCallback((userId: number) => {
+  const handleNavigate = useCallback((userId: number) => {
     routerRef.current.push(`/profile/${userId}`);
   }, []);
 
   const htmlElementFn = useCallback(
-    (p: object) => makePinEl(p as GlobePin, handlePinClick),
-    [handlePinClick],
+    (c: object) => makePinEl(c as PinCluster, handleNavigate),
+    [handleNavigate],
+  );
+
+  const polygonStrokeColor = useCallback(
+    (f: any) =>
+      isDarkSky
+        ? f.properties?.scalerank !== undefined
+          ? "rgba(255,255,255,0.12)"
+          : "rgba(255,255,255,0.25)"
+        : f.properties?.scalerank !== undefined
+          ? "rgba(15,23,42,0.18)"
+          : "rgba(15,23,42,0.35)",
+    [isDarkSky],
+  );
+
+  const labelColor = useCallback(
+    (d: object) => {
+      const t = (d as LabelPoint).tier;
+      if (isDarkSky) {
+        return t === "country"
+          ? "rgba(255,255,255,0.85)"
+          : t === "province"
+            ? "rgba(255,255,255,0.55)"
+            : "rgba(255,220,100,0.75)";
+      }
+      return t === "country"
+        ? "rgba(15,23,42,0.9)"
+        : t === "province"
+          ? "rgba(15,23,42,0.6)"
+          : "rgba(180,83,9,0.85)";
+    },
+    [isDarkSky],
   );
 
   return (
-    <div ref={containerRef} className="w-full h-full">
+    <div ref={containerRef} className="relative w-full h-full isolate" style={{ zIndex: 0 }}>
       <Globe
         ref={globeRef}
         width={size.w}
@@ -364,52 +724,30 @@ export default function AlumniGlobe({ pins, filteredPins }: AlumniGlobeProps) {
         backgroundImageUrl={isDarkSky ? BG_IMG : null}
         backgroundColor={isDarkSky ? "#000000" : "#ffffff"}
         polygonsData={polygonsData}
-        polygonGeoJsonGeometry={(f: any) => f.geometry}
-        polygonCapColor={() => "transparent"}
-        polygonSideColor={() => "transparent"}
-        polygonStrokeColor={(f: any) =>
-          isDarkSky
-            ? (f.properties?.scalerank !== undefined
-                ? "rgba(255,255,255,0.12)"
-                : "rgba(255,255,255,0.25)")
-            : (f.properties?.scalerank !== undefined
-                ? "rgba(15,23,42,0.18)"
-                : "rgba(15,23,42,0.35)")
-        }
+        polygonGeoJsonGeometry={POLY_GEOM}
+        polygonCapColor={TRANSPARENT}
+        polygonSideColor={TRANSPARENT}
+        polygonStrokeColor={polygonStrokeColor}
         polygonAltitude={0.001}
         labelsData={labelsData}
-        labelLat={(d: object) => (d as LabelPoint).lat}
-        labelLng={(d: object) => (d as LabelPoint).lng}
-        labelText={(d: object) => (d as LabelPoint).name}
-        labelSize={(d: object) => {
-          const t = (d as LabelPoint).tier;
-          return t === "country" ? 0.55 : t === "province" ? 0.35 : 0.25;
-        }}
-        labelColor={(d: object) => {
-          const t = (d as LabelPoint).tier;
-          if (isDarkSky) {
-            return t === "country"
-              ? "rgba(255,255,255,0.85)"
-              : t === "province"
-              ? "rgba(255,255,255,0.55)"
-              : "rgba(255,220,100,0.75)";
-          }
-          return t === "country"
-            ? "rgba(15,23,42,0.9)"
-            : t === "province"
-            ? "rgba(15,23,42,0.6)"
-            : "rgba(180,83,9,0.85)";
-        }}
+        labelLat={LABEL_LAT_FN}
+        labelLng={LABEL_LNG_FN}
+        labelText={LABEL_TEXT_FN}
+        labelSize={LABEL_SIZE_FN}
+        labelColor={labelColor}
         labelDotRadius={0}
         labelAltitude={0.002}
         labelResolution={2}
-        htmlElementsData={displayPins}
-        htmlLat={(p: object) => (p as GlobePin).latitude}
-        htmlLng={(p: object) => (p as GlobePin).longitude}
+        htmlElementsData={clusters}
+        htmlLat={CLUSTER_LAT_FN}
+        htmlLng={CLUSTER_LNG_FN}
         htmlElement={htmlElementFn}
-        atmosphereColor="#3b82f6"
+        atmosphereColor="#7c3aed"
         atmosphereAltitude={0.15}
       />
     </div>
   );
 }
+
+const AlumniGlobe = memo(AlumniGlobeImpl);
+export default AlumniGlobe;

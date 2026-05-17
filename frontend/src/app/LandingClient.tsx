@@ -2,10 +2,12 @@
 import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { searchApi, userApi } from "@/lib/api";
+import { keys } from "@/lib/cache/keys";
 import { SearchFilters } from "@/components/search/SearchFilters";
 import type { SearchParams, GlobePin } from "@/lib/types";
 import { useState, useEffect, useMemo } from "react";
 import { SlidersHorizontal, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
 
@@ -28,7 +30,7 @@ export function LandingClient({ initialPins }: Props) {
   }, [setVariant, isDarkSky]);
 
   const { data: pins = initialPins } = useQuery({
-    queryKey: ["globe-pins"],
+    queryKey: keys.globe.pins(),
     queryFn: userApi.getGlobePins,
     initialData: initialPins,
     staleTime: 5 * 60 * 1000,
@@ -37,7 +39,7 @@ export function LandingClient({ initialPins }: Props) {
   const hasFilter = Object.keys(searchParams).length > 0;
 
   const { data: searchResults = [] } = useQuery({
-    queryKey: ["search", searchParams],
+    queryKey: keys.search.query(searchParams),
     queryFn: () => searchApi.search(searchParams),
     enabled: hasFilter,
   });
@@ -51,18 +53,19 @@ export function LandingClient({ initialPins }: Props) {
   const resultCount = hasFilter ? (filteredPins?.length ?? 0) : pins.length;
 
   return (
-    <div className={`relative w-full h-full overflow-hidden ${isDarkSky ? "bg-black" : "bg-white"}`}>
+    <div className={`relative w-full h-full overflow-hidden isolate ${isDarkSky ? "bg-black" : "bg-white"}`}>
       <AlumniGlobe pins={pins} filteredPins={filteredPins} />
 
       {!panelOpen && (
-        <button
+        <Button
+          variant="outline"
           onClick={() => setPanelOpen(true)}
-          className={`absolute z-20 flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${isDarkSky ? "text-white" : "text-slate-900"}`}
-          style={{ top: 76, left: 20, background: "transparent", border: isDarkSky ? "1.5px solid rgba(255,255,255,0.5)" : "1.5px solid rgba(15,23,42,0.4)" }}
+          className={`absolute z-20 h-auto gap-2 rounded-lg bg-transparent px-3 py-1.5 text-sm font-medium ${isDarkSky ? "border-white/50 text-white hover:bg-white/10 hover:text-white" : "border-slate-900/40 text-slate-900 hover:bg-slate-900/5 hover:text-slate-900"}`}
+          style={{ top: 76, left: 20, borderWidth: "1.5px" }}
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
           Filter
-        </button>
+        </Button>
       )}
 
       {panelOpen && (
@@ -72,9 +75,10 @@ export function LandingClient({ initialPins }: Props) {
             top: 76,
             left: 20,
             maxHeight: "calc(100vh - 96px)",
-            background: "transparent",
+            background: isDarkSky ? "rgba(2,6,18,0.55)" : "rgba(255,255,255,0.55)",
             border: isDarkSky ? "1px solid rgba(255,255,255,0.6)" : "1px solid rgba(15,23,42,0.25)",
-            backdropFilter: "blur(12px)",
+            backdropFilter: "blur(6px)",
+            WebkitBackdropFilter: "blur(6px)",
           }}
         >
           <div className={`flex items-center justify-between px-4 pt-4 pb-2 border-b ${isDarkSky ? "border-white/30" : "border-slate-900/15"}`}>
@@ -84,12 +88,14 @@ export function LandingClient({ initialPins }: Props) {
                 {hasFilter ? `${resultCount} found` : `${pins.length} worldwide`}
               </p>
             </div>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setPanelOpen(false)}
-              className={`p-1.5 rounded-lg transition-colors ${isDarkSky ? "text-white/70 hover:text-white hover:bg-white/10" : "text-slate-500 hover:text-slate-900 hover:bg-slate-900/5"}`}
+              className={`h-7 w-7 rounded-lg ${isDarkSky ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"}`}
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
           <div className="px-4 py-4">
             <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />

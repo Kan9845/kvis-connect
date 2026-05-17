@@ -4,11 +4,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
+
+const INPUT_BORDER = "oklch(35% 0.005 294)";
+const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
 
 export default function RegisterPage() {
   const { user, loading, refetch } = useAuth();
@@ -28,8 +28,8 @@ export default function RegisterPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="min-h-full flex items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
       </div>
     );
   }
@@ -66,104 +66,138 @@ export default function RegisterPage() {
     }
   }
 
+  const focusable = {
+    onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
+      e.currentTarget.style.borderColor = INPUT_BORDER_FOCUS;
+    },
+    onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+      e.currentTarget.style.borderColor = INPUT_BORDER;
+    },
+  };
+
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-6">
-          <div className="text-primary font-bold text-xl">
-            KVIS Connect
+    <AuthShell
+      numeral="02"
+      kicker="Register · KVIS alumni only"
+      title="Join the masthead."
+      lede="Open an account with your name and a working email. You can verify your @kvis.ac.th address afterwards to unlock the KVIS-Verified badge."
+      footer={
+        <span>
+          Already a member?{" "}
+          <Link
+            href="/auth/login"
+            className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
+            style={{ textDecorationColor: P.purple }}
+          >
+            Sign in →
+          </Link>
+        </span>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <FieldLabel>First name</FieldLabel>
+            <input
+              id="firstName"
+              placeholder="Ada"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              autoComplete="given-name"
+              className={editorialInputClass}
+              style={{ borderColor: INPUT_BORDER }}
+              {...focusable}
+            />
+          </div>
+          <div>
+            <FieldLabel>Last name</FieldLabel>
+            <input
+              id="lastName"
+              placeholder="Lovelace"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              autoComplete="family-name"
+              className={editorialInputClass}
+              style={{ borderColor: INPUT_BORDER }}
+              {...focusable}
+            />
           </div>
         </div>
 
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle>Create account</CardTitle>
-            <CardDescription>KVIS alumni only · use your @kvis.ac.th email</CardDescription>
-          </CardHeader>
+        <div>
+          <FieldLabel>Email</FieldLabel>
+          <input
+            id="email"
+            type="email"
+            placeholder="you@kvis.ac.th"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            className={editorialInputClass}
+            style={{ borderColor: INPUT_BORDER }}
+            {...focusable}
+          />
+        </div>
 
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="flex gap-2">
-                <div className="space-y-1 flex-1">
-                  <Label htmlFor="firstName">First name</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Ada"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    required
-                    autoComplete="given-name"
-                  />
-                </div>
-                <div className="space-y-1 flex-1">
-                  <Label htmlFor="lastName">Last name</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="Lovelace"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    required
-                    autoComplete="family-name"
-                  />
-                </div>
-              </div>
+        <div>
+          <FieldLabel hint={<span className="text-[10px] tabular-nums" style={{ color: P.text3 }}>min. 8 chars</span>}>
+            Password
+          </FieldLabel>
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            className={editorialInputClass}
+            style={{ borderColor: INPUT_BORDER }}
+            {...focusable}
+          />
+        </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@kvis.ac.th"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                />
-              </div>
+        <div>
+          <FieldLabel>Confirm password</FieldLabel>
+          <input
+            id="confirm"
+            type="password"
+            placeholder="••••••••"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+            autoComplete="new-password"
+            className={editorialInputClass}
+            style={{ borderColor: INPUT_BORDER }}
+            {...focusable}
+          />
+        </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-              </div>
+        {error && (
+          <p
+            className="text-xs font-medium uppercase tracking-[0.18em] py-2 px-3"
+            style={{
+              color: "oklch(70% 0.18 25)",
+              background: "oklch(20% 0.04 25)",
+              border: "1px solid oklch(40% 0.12 25)",
+            }}
+          >
+            {error}
+          </p>
+        )}
 
-              <div className="space-y-1">
-                <Label htmlFor="confirm">Confirm password</Label>
-                <Input
-                  id="confirm"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                />
-              </div>
-
-              {error && <p className="text-sm text-destructive">{error}</p>}
-
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Create account
-              </Button>
-
-              <p className="text-center text-xs text-muted-foreground pt-1">
-                Already have an account?{" "}
-                <Link href="/auth/login" className="text-primary hover:underline">
-                  Sign in
-                </Link>
-              </p>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs uppercase tracking-[0.28em] font-bold disabled:opacity-50"
+        >
+          {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+          Create account
+        </button>
+      </form>
+    </AuthShell>
   );
 }

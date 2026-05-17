@@ -17,6 +17,11 @@ class Settings(BaseSettings):
 
     FRONTEND_URL: str = "http://localhost:3000"
 
+    REDIS_URL: str = "redis://localhost:6380/0"
+    CACHE_ENABLED: bool = True
+    CACHE_TTL_SHORT: int = 120
+    CACHE_TTL_LONG: int = 300
+
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
@@ -25,6 +30,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 
 settings = Settings()

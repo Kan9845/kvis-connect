@@ -9,6 +9,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { DEGREES, JOB_FIELDS, KVIS_YEARS } from "@/lib/constants/options";
 import { COUNTRIES } from "@/lib/constants/countries";
 import type { SearchParams } from "@/lib/types";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -153,13 +154,14 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
 
           {hasAny && (
             <div className="flex pt-3">
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={handleClear}
-                className={cn("text-xs underline-offset-2 hover:underline transition-colors", clearBtnCls)}
+                className={cn("h-auto p-0 text-xs no-underline underline-offset-2 hover:underline", clearBtnCls)}
               >
                 Reset filters
-              </button>
+              </Button>
             </div>
           )}
     </div>
