@@ -30,7 +30,11 @@ oauth.register(
 
 KVIS_DOMAIN = "kvis.ac.th"
 
-COOKIE_OPTS = dict(httponly=True, samesite="lax", secure=False)  # set secure=True in production
+COOKIE_OPTS = dict(
+    httponly=True,
+    samesite="none" if settings.is_production else "lax",
+    secure=settings.is_production,
+)
 
 # In-memory OTP store: {email: {"otp": str, "expires_at": datetime}}
 _otp_store: dict[str, dict] = {}

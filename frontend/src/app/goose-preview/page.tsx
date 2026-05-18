@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-// KVIS Today mascot — pixel sprite draft.
-// Visit /goose-preview in the dev server. Delete this route after sign-off.
+// TODO(remove-soon): sprite signed off. This whole route is slated for deletion —
+// the live mascot now lives in `components/goose/PixelGoose.tsx`. The frame data
+// duplicated below is intentionally kept frozen until this file is removed.
 
 const KVIS = {
   purple: "oklch(44% 0.26 294)",
@@ -20,12 +21,14 @@ const PALETTE: Record<string, { color: string; label: string }> = {
   S: { color: "oklch(92% 0.014 80)", label: "Body shadow" },
   T: { color: "oklch(94% 0.018 80)", label: "Top tuft" },
   B: { color: "oklch(78% 0.17 65)", label: "Bill / feet orange" },
-  P: { color: "oklch(83% 0.10 25)", label: "Cheek pink" },
+  P: { color: "oklch(80% 0.14 20)", label: "Cheek pink" },
   K: { color: "oklch(18% 0.01 80)", label: "Eye" },
   e: { color: "oklch(99% 0.005 90)", label: "Eye highlight" },
+  L: { color: "oklch(30% 0.05 60)", label: "Outline" },
 };
 
-// 32×32 grid. Every row must be exactly 32 chars.
+// 32×32 base grid — interior only. Outline computed at render.
+// Eyes are 2×2 dots, spaced far apart. Far-set eyes read friendly; close eyes read sinister.
 const FRAME_IDLE = [
   "................................",
   "..............TT................",
@@ -33,22 +36,22 @@ const FRAME_IDLE = [
   "..........WWWWWWWWWW............",
   ".........WWWWWWWWWWWW...........",
   "........WWWWWWWWWWWWWW..........",
-  "........WWKeWWWWWWeKWW..........",
-  "........WWKKWWWWWWKKWW..........",
-  "........WWKKWWWWWWKKWW..........",
-  "........WPWWWWWWWWWWPW..........",
+  ".......WWWWWWWWWWWWWWWW.........",
+  ".......WWWWWWWWWWWWWWWW.........",
+  ".......WWWKKWWWWWWKKWWW.........",
+  ".......WWWKKWWWWWWKKWWW.........",
+  ".......WWWWWWWWWWWWWWWW.........",
+  ".......WPPWWWWWWWWWWPPW.........",
+  ".......WWWWWBBBBBBWWWWW.........",
   "........WWWWBBBBBBWWWW..........",
   ".........WWWBBBBBBWWW...........",
   "...........BBBBBB...............",
   "............WWWWWW..............",
-  ".............WWWW...............",
-  ".............WWWW...............",
-  "............WWWWWW..............",
+  "...........WWWWWWWW.............",
   "..........WWWWWWWWWW............",
   ".........WWWWWWWWWWWW...........",
   "........WWWWWWWWWWWWWW..........",
   ".......WWWWWWWWWWWWWWWW.........",
-  "......WWWWWWWWWWWWWWWWWWS.......",
   "......WWWWWWWWWWWWWWWWWWS.......",
   "......WWWWWWWWWWWWWWWWWWS.......",
   ".......WWWWWWWWWWWWWWWWS........",
@@ -61,12 +64,36 @@ const FRAME_IDLE = [
   "................................",
 ];
 
-// Blink: eyes squint into a thin line.
+// Blink: eyes vanish on top row, single 2-pixel line on bottom row (closed-lid).
 const FRAME_BLINK = FRAME_IDLE.map((row, i) => {
-  if (i === 6 || i === 8) return "........WWWWWWWWWWWWWW..........";
-  if (i === 7) return "........WWKKWWWWWWKKWW..........";
+  if (i === 8) return ".......WWWWWWWWWWWWWWWW.........";
+  if (i === 9) return ".......WWWKKWWWWWWKKWWW.........";
   return row;
 });
+
+// Add 1-pixel outline around any non-transparent silhouette.
+function withOutline(frame: string[]): string[] {
+  const rows = frame.length;
+  const cols = frame[0].length;
+  const grid = frame.map((r) => r.split(""));
+  const isBody = (r: number, c: number) =>
+    r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] !== ".";
+  const out = grid.map((r) => [...r]);
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (grid[r][c] !== ".") continue;
+      if (
+        isBody(r - 1, c) ||
+        isBody(r + 1, c) ||
+        isBody(r, c - 1) ||
+        isBody(r, c + 1)
+      ) {
+        out[r][c] = "L";
+      }
+    }
+  }
+  return out.map((r) => r.join(""));
+}
 
 function PixelGoose({
   frame,
@@ -75,10 +102,11 @@ function PixelGoose({
   frame: string[];
   scale?: number;
 }) {
+  const outlined = useMemo(() => withOutline(frame), [frame]);
   const size = 32;
   const rects: React.ReactNode[] = [];
-  for (let r = 0; r < frame.length; r++) {
-    const row = frame[r];
+  for (let r = 0; r < outlined.length; r++) {
+    const row = outlined[r];
     for (let c = 0; c < row.length; c++) {
       const ch = row[c];
       const entry = PALETTE[ch];
@@ -123,22 +151,8 @@ function AnimatedGoose({ scale = 6 }: { scale?: number }) {
   }, []);
 
   return (
-    <div
-      style={{
-        animation: "duck-bob 1.6s ease-in-out infinite alternate",
-        willChange: "transform",
-      }}
-    >
+    <div className="goose-bob">
       <PixelGoose frame={blinking ? FRAME_BLINK : FRAME_IDLE} scale={scale} />
-      <style>{`
-        @keyframes duck-bob {
-          from { transform: translateY(0); }
-          to   { transform: translateY(-3px); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          [style*="duck-bob"] { animation: none !important; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -160,8 +174,8 @@ function Card({
           background: bg,
           padding: "28px",
           border: `1px solid ${KVIS.rule}`,
-          minHeight: 260,
-          minWidth: 260,
+          minHeight: 280,
+          minWidth: 280,
         }}
       >
         {children}
@@ -188,15 +202,15 @@ export default function GoosePreview() {
             KVIS Connect · Internal draft
           </p>
           <h1 className="text-4xl md:text-5xl font-black tracking-[-0.025em] leading-[1.02]">
-            KVIS pixel mascot · take 2
+            KVIS pixel mascot · take 3
           </h1>
           <p
             className="mt-3 text-sm max-w-[60ch] leading-relaxed"
             style={{ color: KVIS.text2 }}
           >
-            32×32 sprite based on the KVIS Today mascot. Big round eyes with inner
-            highlights, pink cheek blush, wide duck bill, top tuft, webbed feet.
-            Two frames (idle + blink). Animated version bobs and blinks.
+            32×32 sprite. Eyes redrawn as 2×2 dots, set wide apart — small + far-set
+            reads friendly, oversized reads monstrous. 1-pixel outline so the white
+            body shows on any background. Two frames (idle + blink), animated bob.
           </p>
         </header>
 
@@ -277,14 +291,20 @@ export default function GoosePreview() {
             className="text-xs uppercase tracking-[0.28em] font-bold mb-5"
             style={{ color: KVIS.text3 }}
           >
-            Animated · bob + blink
+            Animated · bob + blink, varied backgrounds
           </p>
-          <div className="grid grid-cols-2 gap-6">
-            <Card label="On paper" bg={KVIS.paper}>
-              <AnimatedGoose scale={7} />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <Card label="Paper" bg={KVIS.paper}>
+              <AnimatedGoose scale={6} />
             </Card>
-            <Card label="On stats purple tint" bg="oklch(95% 0.035 294)">
-              <AnimatedGoose scale={7} />
+            <Card label="Purple tint" bg="oklch(95% 0.035 294)">
+              <AnimatedGoose scale={6} />
+            </Card>
+            <Card label="Pure white" bg="#ffffff">
+              <AnimatedGoose scale={6} />
+            </Card>
+            <Card label="Dark" bg="oklch(18% 0.015 294)">
+              <AnimatedGoose scale={6} />
             </Card>
           </div>
         </section>

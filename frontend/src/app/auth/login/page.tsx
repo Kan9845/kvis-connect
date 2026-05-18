@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,6 +8,20 @@ import { Loader2 } from "lucide-react";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-full flex items-center justify-center bg-background">
+          <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
+        </div>
+      }
+    >
+      <LoginInner />
+    </Suspense>
+  );
+}
+
+function LoginInner() {
   const { user, loading, refetch } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

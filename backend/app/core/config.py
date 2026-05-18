@@ -7,6 +7,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    ENVIRONMENT: str = "development"  # "production" enables cross-site cookies (SameSite=None; Secure)
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.lower() == "production"
+
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
 
@@ -16,6 +22,10 @@ class Settings(BaseSettings):
     S3_BUCKET: str = "kvis-connect"
 
     FRONTEND_URL: str = "http://localhost:3000"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [o.strip() for o in self.FRONTEND_URL.split(",") if o.strip()]
 
     REDIS_URL: str = "redis://localhost:6380/0"
     CACHE_ENABLED: bool = True

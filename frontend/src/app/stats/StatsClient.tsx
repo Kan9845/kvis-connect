@@ -6,6 +6,8 @@ import { keys } from "@/lib/cache/keys";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { FilterPill } from "@/components/ui/filter-pill";
+// TODO(draft): re-enable scroll-following goose once the animation pipeline is sorted.
+// import { ScrollGoose } from "@/components/goose/ScrollGoose";
 import type { UserCard, Education } from "@/lib/types";
 
 const P = {
@@ -527,6 +529,7 @@ export default function StatsClient() {
           </>
         )}
       </div>
+      {/* TODO(draft): <ScrollGoose scale={4} appearAt={320} hideBelow={160} /> */}
     </div>
   );
 }
