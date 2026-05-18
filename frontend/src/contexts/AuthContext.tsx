@@ -18,7 +18,8 @@ const AUTH_DISABLED =
   process.env.NEXT_PUBLIC_DISABLE_AUTH === "true";
 
 const DEV_MOCK_USER: UserMe = {
-  id: 1,
+  id: "00000000-0000-0000-0000-000000000001",
+  slug: "dev-user",
   first_name: "Dev",
   last_name: "User",
   email: "dev@kvis.local",
