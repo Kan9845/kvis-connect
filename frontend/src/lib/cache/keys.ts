@@ -9,7 +9,7 @@ export const keys = {
 
   user: {
     all: () => ["user"] as const,
-    detail: (id: number) => ["user", id] as const,
+    detail: (slug: string) => ["user", slug] as const,
   },
 
   blog: {

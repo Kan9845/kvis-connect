@@ -13,6 +13,7 @@ from app.core.security import hash_password, verify_password, create_access_toke
 from app.core.config import settings
 from app.core.deps import get_current_user
 from app.core.cache import invalidate_tags
+from app.core.slug import unique_user_slug
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody
 
@@ -104,11 +105,13 @@ async def register(body: RegisterRequest, response: Response, session: Session =
     if len(body.password) < 6:
         raise HTTPException(400, detail="Password must be at least 6 characters")
 
+    slug = unique_user_slug(session, body.first_name, body.last_name)
     user = User(
         email=body.email,
         hashed_password=hash_password(body.password),
         first_name=body.first_name,
         last_name=body.last_name,
+        slug=slug,
     )
     session.add(user)
     session.commit()
@@ -196,7 +199,8 @@ async def verify_otp(body: OTPVerifyBody, response: Response, session: Session =
     user = session.exec(select(User).where(User.email == body.email)).first()
     is_new_user = user is None
     if not user:
-        user = User(email=body.email, first_name="", last_name="", email_verified=True)
+        slug = unique_user_slug(session, "", "")
+        user = User(email=body.email, first_name="", last_name="", email_verified=True, slug=slug)
         session.add(user)
     else:
         user.email_verified = True
@@ -267,12 +271,14 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
             user.email_verified = True
         else:
             name_parts = userinfo.get("name", "").split(" ", 1)
+            slug = unique_user_slug(session, name_parts[0] if name_parts else "", name_parts[1] if len(name_parts) > 1 else "")
             user = User(
                 email=email,
                 google_id=google_id,
                 first_name=name_parts[0] if name_parts else "",
                 last_name=name_parts[1] if len(name_parts) > 1 else "",
                 email_verified=True,
+                slug=slug,
             )
         session.add(user)
         session.commit()

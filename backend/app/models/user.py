@@ -1,11 +1,12 @@
+import uuid
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional, List
 from datetime import datetime
 
 
 class Education(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
 
     uni_name: str
     degree: str
@@ -20,8 +21,8 @@ class Education(SQLModel, table=True):
 
 
 class Career(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
 
     job_title: str
     employer: str
@@ -36,7 +37,7 @@ class Career(SQLModel, table=True):
 
 
 class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
     # Auth
     email: str = Field(unique=True, index=True)
@@ -47,6 +48,7 @@ class User(SQLModel, table=True):
     kvis_email: Optional[str] = None  # the verified @kvis.ac.th email
 
     # Basic info
+    slug: str = Field(unique=True, index=True)
     first_name: str
     last_name: str
     kvis_year: Optional[int] = Field(default=None, index=True)

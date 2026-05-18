@@ -27,8 +27,8 @@ function makeQueryClient() {
 
 // Inner component — lives inside AuthProvider so useAuth() works.
 // Keyed by userId in layout so it fully remounts on login/logout, giving a fresh client + namespace.
-function RQProviders({ userId, children }: { userId: number | "anon"; children: React.ReactNode }) {
-  const prevUserIdRef = useRef<number | "anon">(userId);
+function RQProviders({ userId, children }: { userId: string | "anon"; children: React.ReactNode }) {
+  const prevUserIdRef = useRef<string | "anon">(userId);
   // Stable client for this mount lifetime.
   const [queryClient] = useState(makeQueryClient);
 

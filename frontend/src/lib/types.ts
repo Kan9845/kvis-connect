@@ -1,5 +1,5 @@
 export interface Education {
-  id: number;
+  id: string;
   uni_name: string;
   degree: string;
   major: string;
@@ -11,7 +11,7 @@ export interface Education {
 }
 
 export interface Career {
-  id: number;
+  id: string;
   job_title: string;
   employer: string;
   job_field: string;
@@ -23,7 +23,8 @@ export interface Career {
 }
 
 export interface UserCard {
-  id: number;
+  id: string;
+  slug: string;
   first_name: string;
   last_name: string;
   kvis_year?: number;
@@ -61,7 +62,8 @@ export interface UserMe extends UserPublic {
 }
 
 export interface GlobePin {
-  user_id: number;
+  user_id: string;
+  slug: string;
   first_name: string;
   last_name: string;
   latitude: number;
@@ -75,7 +77,8 @@ export interface GlobePin {
 }
 
 export interface BlogAuthor {
-  id: number;
+  id: string;
+  slug: string;
   first_name: string;
   last_name: string;
   profile_pic_url?: string;
@@ -83,7 +86,7 @@ export interface BlogAuthor {
 }
 
 export interface BlogRead {
-  id: number;
+  id: string;
   slug: string;
   title: string;
   excerpt?: string;

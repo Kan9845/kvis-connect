@@ -65,11 +65,11 @@ function LoginInner() {
     <AuthShell
       numeral="01"
       kicker="Sign in · Returning member"
-      title="Welcome back to the desk."
-      lede="The alumni network for KVIS — stories, maps, and a directory that follows you around the world."
+      title="Welcome back to the network."
+      lede="The alumni network for KVIS — profiles, maps, and a directory that follows you around the world."
       footer={
-        <span>
-          No account yet?{" "}
+        <div className="flex items-center justify-between gap-6">
+          <span>No account yet?</span>
           <Link
             href="/auth/register"
             className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
@@ -77,7 +77,7 @@ function LoginInner() {
           >
             Register →
           </Link>
-        </span>
+        </div>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-7">

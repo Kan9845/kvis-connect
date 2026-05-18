@@ -28,6 +28,7 @@ def _blog_to_read(blog: Blog) -> dict:
         "created_at": blog.created_at,
         "author": {
             "id": blog.author.id,
+            "slug": blog.author.slug,
             "first_name": blog.author.first_name,
             "last_name": blog.author.last_name,
             "profile_pic_url": blog.author.profile_pic_url,

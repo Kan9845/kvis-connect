@@ -79,7 +79,7 @@ function captionStudent(u: UserCard): string {
 function Portrait({ u, caption }: { u: UserCard; caption: string }) {
   const name = `${u.first_name} ${u.last_name}`;
   return (
-    <Link href={`/profile/${u.id}`} className="group block">
+    <Link href={`/profile/${u.slug}`} className="group block">
       <div className="relative aspect-square overflow-hidden bg-muted">
         {u.profile_pic_url ? (
           <Image

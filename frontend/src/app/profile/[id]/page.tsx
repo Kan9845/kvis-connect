@@ -5,11 +5,11 @@ import { userApi } from "@/lib/api";
 import ProfileClient from "./ProfileClient";
 
 export default async function ProfilePage({ params }: { params: { id: string } }) {
-  const userId = parseInt(params.id);
+  const slug = params.id;
   const qc = getQueryClient();
   await qc.prefetchQuery({
-    queryKey: keys.user.detail(userId),
-    queryFn: () => userApi.getUser(userId),
+    queryKey: keys.user.detail(slug),
+    queryFn: () => userApi.getUser(slug),
   });
 
   return (

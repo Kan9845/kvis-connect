@@ -3,11 +3,11 @@ import type { Persister } from "@tanstack/react-query-persist-client";
 
 const CACHE_VERSION = "v1";
 
-function namespacedKey(userId: number | "anon") {
+function namespacedKey(userId: string | "anon") {
   return `kvis-cache:${CACHE_VERSION}:user-${userId}`;
 }
 
-export function makePersister(userId: number | "anon"): Persister {
+export function makePersister(userId: string | "anon"): Persister {
   return createSyncStoragePersister({
     storage: typeof window === "undefined" ? undefined : window.localStorage,
     key: namespacedKey(userId),
@@ -17,7 +17,7 @@ export function makePersister(userId: number | "anon"): Persister {
 
 // Clear every namespace older than this version, plus the current key when
 // explicitly requested (e.g. logout). Cheap because localStorage is small.
-export function clearPersistedCache(userId: number | "anon") {
+export function clearPersistedCache(userId: string | "anon") {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.removeItem(namespacedKey(userId));

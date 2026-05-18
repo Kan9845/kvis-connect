@@ -86,7 +86,7 @@ export const authApi = {
 export const userApi = {
   getMe: () => api.get<UserMe>("/api/users/me").then((r) => r.data),
   updateMe: (data: Partial<UserMe>) => api.patch<UserMe>("/api/users/me", data).then((r) => r.data),
-  getUser: (id: number) => api.get<UserPublic>(`/api/users/${id}`).then((r) => r.data),
+  getUser: (slug: string) => api.get<UserPublic>(`/api/users/${slug}`).then((r) => r.data),
   updateEducation: (items: Omit<Education, "id">[]) =>
     api.put("/api/users/me/education", items).then((r) => r.data),
   updateCareer: (items: Omit<Career, "id">[]) =>

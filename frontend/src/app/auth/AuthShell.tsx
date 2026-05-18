@@ -65,7 +65,7 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
               {children}
               {footer && (
                 <div
-                  className="mt-10 pt-5 border-t text-xs"
+                  className="mt-16 pt-6 border-t text-xs"
                   style={{ borderColor: P.rule, color: P.text3 }}
                 >
                   {footer}

@@ -9,6 +9,7 @@ Usage:
 import ctypes
 import os
 import sys
+import uuid
 from datetime import datetime, timezone
 
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -16,6 +17,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.security import hash_password
+from app.core.slug import slugify_name
 from app.models.blog import Blog
 from app.models.user import Career, Education, User
 
@@ -144,7 +146,6 @@ def generate_alumni_backfill(existing: list[dict]) -> list[dict]:
             u["kvis_year"] = ((u["kvis_year"] - 10 + 900) % 9) + 1
 
     R = make_rng(42)
-    next_id = max(u["id"] for u in alumni) + 1
 
     for cohort in range(1, 10):
         have = sum(1 for u in alumni if u.get("kvis_year") == cohort)
@@ -159,8 +160,7 @@ def generate_alumni_backfill(existing: list[dict]) -> list[dict]:
             place_data = pick(R, places)
             first = pick(R, FIRSTS)
             last = pick(R, LASTS)
-            uid = next_id
-            next_id += 1
+            uid = uuid.uuid4()
             start_year = 2014 + cohort + 2
             month = 1 + int(R() * 12)
             day = 1 + int(R() * 28)
@@ -194,7 +194,6 @@ def generate_current_students(existing_max_id: int) -> list[dict]:
     """Mirrors mock-server seedCurrentStudents()."""
     HOUSES = ["earth", "water", "air", "fire"]
     R = make_rng(2026)
-    next_id = existing_max_id + 1
     used_handles: set[str] = set()
     students = []
 
@@ -219,8 +218,7 @@ def generate_current_students(existing_max_id: int) -> list[dict]:
             female = R() < 0.5
             first = pick(R, FIRSTS_F if female else FIRSTS_M)
             last = pick(R, LASTS_S)
-            uid = next_id
-            next_id += 1
+            uid = uuid.uuid4()
             handle = f"{first.lower()}.{last[0].lower()}{uid}"
             while handle in used_handles:
                 handle += "x"
@@ -270,19 +268,38 @@ def seed(db_url: str, clear: bool = False) -> None:
             print(f"DB already has {len(existing_users)} users. Use --clear to re-seed.")
             return
 
+        # Assign UUIDs to RAW_ALUMNI and build int-to-UUID map for blog authors
+        int_to_uuid_map = {}
+        for u in RAW_ALUMNI:
+            original_int_id = u["id"]
+            new_uuid = uuid.uuid4()
+            int_to_uuid_map[original_int_id] = new_uuid
+            u["id"] = new_uuid
+
         print("Generating alumni backfill...")
         alumni_dicts = generate_alumni_backfill(RAW_ALUMNI)
         print(f"  {len(alumni_dicts)} alumni total")
 
-        max_alumni_id = max(u["id"] for u in alumni_dicts)
         print("Generating current students...")
-        student_dicts = generate_current_students(max_alumni_id)
+        student_dicts = generate_current_students(0)
         print(f"  {len(student_dicts)} current students")
 
         all_users = alumni_dicts + student_dicts
         print(f"Inserting {len(all_users)} users...")
 
-        # Give user id=1 (Somsak) a password so you can log in
+        # Assign unique slugs to each user
+        used_slugs: set[str] = set()
+        for ud in all_users:
+            base = slugify_name(ud["first_name"], ud["last_name"])
+            candidate = base
+            n = 2
+            while candidate in used_slugs:
+                candidate = f"{base}-{n}"
+                n += 1
+            used_slugs.add(candidate)
+            ud["slug"] = candidate
+
+        # Give Somsak (somsak.k@kvis.ac.th) a password so you can log in
         test_password = hash_password("password")
 
         for ud in all_users:
@@ -291,7 +308,8 @@ def seed(db_url: str, clear: bool = False) -> None:
                 email=ud["email"],
                 first_name=ud["first_name"],
                 last_name=ud["last_name"],
-                hashed_password=test_password if ud["id"] == 1 else None,
+                slug=ud["slug"],
+                hashed_password=test_password if ud.get("email") == "somsak.k@kvis.ac.th" else None,
                 kvis_year=ud.get("kvis_year"),
                 place=ud.get("place"),
                 latitude=ud.get("latitude"),
@@ -316,11 +334,11 @@ def seed(db_url: str, clear: bool = False) -> None:
 
         session.flush()
 
-        edu_id = 1
+        education_count = 0
         for ud in all_users:
             for e in ud.get("education", []):
                 session.add(Education(
-                    id=edu_id,
+                    id=uuid.uuid4(),
                     user_id=ud["id"],
                     uni_name=e["uni_name"],
                     degree=e["degree"],
@@ -331,13 +349,13 @@ def seed(db_url: str, clear: bool = False) -> None:
                     start_year=e.get("start_year"),
                     end_year=e.get("end_year"),
                 ))
-                edu_id += 1
+                education_count += 1
 
-        career_id = 1
+        career_count = 0
         for ud in all_users:
             for c in ud.get("career", []):
                 session.add(Career(
-                    id=career_id,
+                    id=uuid.uuid4(),
                     user_id=ud["id"],
                     job_title=c["job_title"],
                     employer=c["employer"],
@@ -348,13 +366,13 @@ def seed(db_url: str, clear: bool = False) -> None:
                     start_year=c.get("start_year"),
                     end_year=c.get("end_year"),
                 ))
-                career_id += 1
+                career_count += 1
 
         print("Inserting 3 blogs...")
-        for i, bd in enumerate(RAW_BLOGS, start=1):
+        for bd in RAW_BLOGS:
             session.add(Blog(
-                id=i,
-                author_id=bd["author_id"],
+                id=uuid.uuid4(),
+                author_id=int_to_uuid_map[bd["author_id"]],
                 slug=bd["slug"],
                 title=bd["title"],
                 content=bd["content"],
@@ -368,7 +386,7 @@ def seed(db_url: str, clear: bool = False) -> None:
             ))
 
         session.commit()
-        print(f"Done. {len(all_users)} users, {edu_id-1} education records, {career_id-1} careers, 3 blogs.")
+        print(f"Done. {len(all_users)} users, {education_count} education records, {career_count} careers, 3 blogs.")
         print("Test login: somsak.k@kvis.ac.th / password")
 
 

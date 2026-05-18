@@ -94,8 +94,8 @@ export default function VerifyKvisPage() {
       title="Stamp your name with the KVIS seal."
       lede="Confirm ownership of your @kvis.ac.th address to earn the KVIS-Verified badge on your profile, blog posts, and directory card."
       footer={
-        <span>
-          Not now —{" "}
+        <div className="flex items-center justify-between gap-6">
+          <span>Not now —</span>
           <button
             type="button"
             onClick={() => router.push("/")}
@@ -104,7 +104,7 @@ export default function VerifyKvisPage() {
           >
             Continue without verifying →
           </button>
-        </span>
+        </div>
       }
     >
       {/* Step indicator */}

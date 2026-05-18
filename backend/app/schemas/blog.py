@@ -1,10 +1,12 @@
+import uuid
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 
 
 class BlogAuthor(BaseModel):
-    id: int
+    id: uuid.UUID
+    slug: str
     first_name: str
     last_name: str
     profile_pic_url: Optional[str]
@@ -12,7 +14,7 @@ class BlogAuthor(BaseModel):
 
 
 class BlogRead(BaseModel):
-    id: int
+    id: uuid.UUID
     slug: str
     title: str
     excerpt: Optional[str]

@@ -67,7 +67,7 @@ function AlumniSearch({ solid = false, dark = false }: { solid?: boolean; dark?:
           {results.map((p) => (
             <button
               key={p.user_id}
-              onMouseDown={() => { router.push(`/profile/${p.user_id}`); setOpen(false); setQuery(""); }}
+              onMouseDown={() => { router.push(`/profile/${p.slug}`); setOpen(false); setQuery(""); }}
               className="flex items-center gap-3 w-full px-4 py-2.5 transition-all text-left group hover:bg-accent hover:text-accent-foreground"
             >
               <div
@@ -188,7 +188,7 @@ export function Navbar() {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href={`/profile/${user.id}`} className="cursor-pointer">
+          <Link href={`/profile/${user.slug}`} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" /> My Profile
           </Link>
         </DropdownMenuItem>

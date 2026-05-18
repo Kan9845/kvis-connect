@@ -1,10 +1,11 @@
+import uuid
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
 
 
 class EducationRead(BaseModel):
-    id: int
+    id: uuid.UUID
     uni_name: str
     degree: str
     major: str
@@ -27,7 +28,7 @@ class EducationWrite(BaseModel):
 
 
 class CareerRead(BaseModel):
-    id: int
+    id: uuid.UUID
     job_title: str
     employer: str
     job_field: str
@@ -50,7 +51,8 @@ class CareerWrite(BaseModel):
 
 
 class UserPublic(BaseModel):
-    id: int
+    id: uuid.UUID
+    slug: str
     first_name: str
     last_name: str
     kvis_year: Optional[int]
@@ -103,7 +105,8 @@ class UserUpdate(BaseModel):
 
 class UserCard(BaseModel):
     """Lightweight user for cards/search results."""
-    id: int
+    id: uuid.UUID
+    slug: str
     first_name: str
     last_name: str
     kvis_year: Optional[int]
@@ -119,7 +122,8 @@ class UserCard(BaseModel):
 
 
 class GlobePin(BaseModel):
-    user_id: int
+    user_id: uuid.UUID
+    slug: str
     first_name: str
     last_name: str
     latitude: float

@@ -281,7 +281,7 @@ export default function EditPage() {
             <span>{me.email}</span>
             <span aria-hidden>·</span>
             <Link
-              href={`/profile/${me.id}`}
+              href={`/profile/${me.slug}`}
               className="hover:text-foreground transition-colors underline decoration-1 underline-offset-4"
             >
               View public profile

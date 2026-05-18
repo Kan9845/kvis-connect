@@ -79,11 +79,11 @@ export default function RegisterPage() {
     <AuthShell
       numeral="02"
       kicker="Register · KVIS alumni only"
-      title="Join the masthead."
+      title="Add your alumni record."
       lede="Open an account with your name and a working email. You can verify your @kvis.ac.th address afterwards to unlock the KVIS-Verified badge."
       footer={
-        <span>
-          Already a member?{" "}
+        <div className="flex items-center justify-between gap-6">
+          <span>Already a member?</span>
           <Link
             href="/auth/login"
             className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
@@ -91,7 +91,7 @@ export default function RegisterPage() {
           >
             Sign in →
           </Link>
-        </span>
+        </div>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-6">

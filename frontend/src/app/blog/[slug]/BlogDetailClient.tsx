@@ -79,7 +79,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
       {/* Author + date */}
       <div className="flex items-center justify-between mb-8 pb-6 border-b">
-        <Link href={`/profile/${blog.author.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <Link href={`/profile/${blog.author.slug}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <Avatar className="h-10 w-10">
             <AvatarImage src={blog.author.profile_pic_url ?? ""} />
             <AvatarFallback>{initials}</AvatarFallback>

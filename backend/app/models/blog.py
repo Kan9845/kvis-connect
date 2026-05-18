@@ -1,3 +1,4 @@
+import uuid
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
 from datetime import datetime
@@ -6,8 +7,8 @@ from app.models.user import User
 
 
 class Blog(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    author_id: int = Field(foreign_key="user.id", index=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    author_id: uuid.UUID = Field(foreign_key="user.id", index=True)
 
     title: str
     slug: str = Field(unique=True, index=True)

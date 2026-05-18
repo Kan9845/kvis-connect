@@ -175,12 +175,12 @@ function ContactRow({
 }
 
 export default function ProfileClient({ params }: { params: { id: string } }) {
-  const userId = parseInt(params.id);
+  const slug = params.id;
   const { user: me } = useAuth();
 
   const { data: user, isLoading, error } = useQuery({
-    queryKey: keys.user.detail(userId),
-    queryFn: () => userApi.getUser(userId),
+    queryKey: keys.user.detail(slug),
+    queryFn: () => userApi.getUser(slug),
   });
 
   if (isLoading) {
@@ -229,7 +229,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
     );
   }
 
-  const isMe = me?.id === userId;
+  const isMe = me?.slug === slug;
   const initials = `${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase();
   const interests = parseInterests(user.interests);
   const currentRole = user.career?.find((c) => c.is_current) ?? user.career?.[0];

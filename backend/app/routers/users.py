@@ -8,6 +8,7 @@ from app.core.database import get_session
 from app.core.deps import get_current_user, get_optional_user
 from app.core.config import settings
 from app.core.cache import cached, invalidate_tags
+from app.core.slug import unique_user_slug
 from app.models.user import User, Education, Career
 from app.schemas.user import (
     UserMe, UserPublic, UserUpdate, UserCard,
@@ -30,14 +31,19 @@ async def update_me(
     session: Session = Depends(get_session),
 ):
     user = session.get(User, current_user.id)
+    old_slug = user.slug
     data = body.model_dump(exclude_unset=True)
+    name_changed = ("first_name" in data and data["first_name"] != user.first_name) or \
+                   ("last_name" in data and data["last_name"] != user.last_name)
     for k, v in data.items():
         setattr(user, k, v)
+    if name_changed:
+        user.slug = unique_user_slug(session, user.first_name, user.last_name, exclude_id=user.id)
     user.updated_at = datetime.utcnow()
     session.add(user)
     session.commit()
     session.refresh(user)
-    await invalidate_tags("users", f"user:{current_user.id}")
+    await invalidate_tags("users", f"user:{old_slug}", f"user:{user.slug}")
     return _user_to_me(user)
 
 
@@ -66,14 +72,15 @@ async def upload_profile_pic(
     user.updated_at = datetime.utcnow()
     session.add(user)
     session.commit()
-    await invalidate_tags("users", f"user:{current_user.id}")
+    session.refresh(user)
+    await invalidate_tags("users", f"user:{user.slug}")
     return {"url": url}
 
 
-@router.get("/{user_id}", response_model=UserPublic)
-@cached(key=lambda user_id, session: f"user:{user_id}", tags=lambda user_id, session: ["users", f"user:{user_id}"], ttl=settings.CACHE_TTL_LONG)
-def get_user(user_id: int, session: Session = Depends(get_session)):
-    user = session.get(User, user_id)
+@router.get("/{slug}", response_model=UserPublic)
+@cached(key=lambda slug, session: f"user:{slug}", tags=lambda slug, session: ["users", f"user:{slug}"], ttl=settings.CACHE_TTL_LONG)
+def get_user(slug: str, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.slug == slug)).first()
     if not user:
         raise HTTPException(404, detail="User not found")
     return _user_to_public(user)
@@ -92,7 +99,7 @@ async def replace_education(
     for item in items:
         session.add(Education(user_id=current_user.id, **item.model_dump()))
     session.commit()
-    await invalidate_tags("users", f"user:{current_user.id}")
+    await invalidate_tags("users", f"user:{current_user.slug}")
     return {"message": "Education updated"}
 
 
@@ -109,7 +116,7 @@ async def replace_career(
     for item in items:
         session.add(Career(user_id=current_user.id, **item.model_dump()))
     session.commit()
-    await invalidate_tags("users", f"user:{current_user.id}")
+    await invalidate_tags("users", f"user:{current_user.slug}")
     return {"message": "Career updated"}
 
 
@@ -126,6 +133,7 @@ def get_globe_pins(session: Session = Depends(get_session)):
     return [
         GlobePin(
             user_id=u.id,
+            slug=u.slug,
             first_name=u.first_name,
             last_name=u.last_name,
             latitude=u.latitude,
@@ -167,7 +175,7 @@ def _career_list(user: User):
 
 def _user_to_public(user: User) -> dict:
     return {
-        "id": user.id, "first_name": user.first_name, "last_name": user.last_name,
+        "id": user.id, "slug": user.slug, "first_name": user.first_name, "last_name": user.last_name,
         "kvis_year": user.kvis_year,
         "current_grade": user.current_grade, "current_class": user.current_class,
         "current_elemental": user.current_elemental,

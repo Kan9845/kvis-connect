@@ -201,7 +201,7 @@ function avatarEl(p: GlobePin, size: number, fontSize: number): HTMLElement {
   return av;
 }
 
-function makeMemberRow(p: GlobePin, onNavigate: (id: number) => void): HTMLElement {
+function makeMemberRow(p: GlobePin, onNavigate: (slug: string) => void): HTMLElement {
   const row = document.createElement("button");
   row.type = "button";
   row.style.cssText = `
@@ -219,7 +219,7 @@ function makeMemberRow(p: GlobePin, onNavigate: (id: number) => void): HTMLEleme
     row.style.background = "transparent";
   });
   row.addEventListener("click", () => {
-    onNavigate(p.user_id);
+    onNavigate(p.slug);
     hideCard(0);
   });
 
@@ -259,7 +259,7 @@ function makeMemberRow(p: GlobePin, onNavigate: (id: number) => void): HTMLEleme
   return row;
 }
 
-function populateCard(cluster: PinCluster, onNavigate: (id: number) => void) {
+function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
   const { card } = getCard();
   card.innerHTML = "";
 
@@ -312,7 +312,7 @@ function populateCard(cluster: PinCluster, onNavigate: (id: number) => void) {
       cursor:pointer;text-align:left;font-family:inherit;
     `;
     row.addEventListener("click", () => {
-      onNavigate(p.user_id);
+      onNavigate(p.slug);
       hideCard(0);
     });
 
@@ -388,7 +388,7 @@ function populateCard(cluster: PinCluster, onNavigate: (id: number) => void) {
 
 function makePinEl(
   cluster: PinCluster,
-  onNavigate: (id: number) => void,
+  onNavigate: (slug: string) => void,
 ): HTMLElement {
   const first = cluster.members[0];
   const isCluster = cluster.members.length > 1;
@@ -478,7 +478,7 @@ function makePinEl(
 
   wrap.addEventListener("click", () => {
     // Singles navigate directly. Clusters require user to pick from card list.
-    if (!isCluster) onNavigate(first.user_id);
+    if (!isCluster) onNavigate(first.slug);
   });
 
   return wrap;
@@ -674,8 +674,8 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   const displayPins = filteredPins !== undefined ? filteredPins : pins;
   const clusters = useMemo(() => clusterPins(displayPins), [displayPins]);
 
-  const handleNavigate = useCallback((userId: number) => {
-    routerRef.current.push(`/profile/${userId}`);
+  const handleNavigate = useCallback((slug: string) => {
+    routerRef.current.push(`/profile/${slug}`);
   }, []);
 
   const htmlElementFn = useCallback(

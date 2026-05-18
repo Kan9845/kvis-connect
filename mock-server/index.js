@@ -1776,7 +1776,7 @@ app.post("/api/auth/login", (req, res) => {
 });
 
 app.post("/api/auth/logout", (req, res) => {
-  res.clearCookie("access_token");
+  res.clearCookie("access_token", { httpOnly: true, sameSite: "lax", path: "/" });
   res.json({ message: "Logged out" });
 });
 

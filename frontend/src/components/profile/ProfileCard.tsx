@@ -34,7 +34,7 @@ export function UserCard({ user }: Props) {
   const currentJob = user.career.find((c) => c.is_current) ?? user.career[user.career.length - 1];
 
   return (
-    <Link href={`/profile/${user.id}`}>
+    <Link href={`/profile/${user.slug}`}>
       <Card className="group hover:shadow-md hover:border-primary/30 transition-all duration-200 h-full cursor-pointer">
         <CardContent className="p-5">
           <div className="flex items-start gap-3 mb-3">

@@ -111,6 +111,7 @@ def _matches_career(career, job_title, employer, job_field) -> bool:
 def _to_card(user: User) -> dict:
     return {
         "id": user.id,
+        "slug": user.slug,
         "first_name": user.first_name,
         "last_name": user.last_name,
         "kvis_year": user.kvis_year,
