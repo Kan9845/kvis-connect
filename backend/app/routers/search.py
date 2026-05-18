@@ -33,7 +33,7 @@ def search_users(
     # Sort & pagination
     sort: str = Query(default="name"),
     order: str = Query(default="asc"),
-    limit: int = Query(default=50, le=200),
+    limit: int = Query(default=50, le=2000),
     offset: int = Query(default=0),
 ):
     query = select(User)
