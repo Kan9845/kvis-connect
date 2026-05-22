@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -271,7 +271,7 @@ function DonutChart({
     return () => obs.disconnect();
   }, []);
 
-  // Recharts SVG clips labels by default — force overflow visible after mount
+  // Recharts SVG clips labels by default - force overflow visible after mount
   useEffect(() => {
     const svg = svgWrapRef.current?.querySelector("svg");
     if (svg) (svg as SVGElement).style.overflow = "visible";

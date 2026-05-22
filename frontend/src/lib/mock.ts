@@ -1,4 +1,4 @@
-import MockAdapter from "axios-mock-adapter";
+﻿import MockAdapter from "axios-mock-adapter";
 import api from "./api";
 
 const REGISTERED_EMAILS = new Set(["00123@kvis.ac.th"]);
@@ -33,7 +33,7 @@ mock.onPost("/api/auth/login").reply((config) => {
 // POST /api/auth/logout
 mock.onPost("/api/auth/logout").reply(200, { message: "Logged out" });
 
-// POST /api/auth/refresh — always succeeds in mock (no real cookie TTL)
+// POST /api/auth/refresh - always succeeds in mock (no real cookie TTL)
 mock.onPost("/api/auth/refresh").reply(200, { message: "Token refreshed" });
 
 // POST /api/auth/password-reset/request
@@ -72,7 +72,7 @@ mock.onPost("/api/auth/password-reset/confirm").reply((config) => {
   return [200, { message: "Password reset successfully." }];
 });
 
-// GET /api/users/me — return 401 (not logged in by default in mock)
+// GET /api/users/me - return 401 (not logged in by default in mock)
 mock.onGet("/api/users/me").reply(401, { detail: "Not authenticated" });
 
 // Pass through everything else

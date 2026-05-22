@@ -79,6 +79,8 @@ class User(SQLModel, table=True):
     mbti: Optional[str] = None           # e.g. "INTJ"
     interests: Optional[str] = None      # comma-separated tags
 
+    profile_setup_done: bool = Field(default=False)
+
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,7 @@ export default function AuthCallbackPage() {
       return;
     }
 
-    router.replace(user.kvis_year ? "/" : "/edit");
+    router.replace(user.profile_setup_done ? "/" : "/onboarding");
   }, [done, user, router]);
 
   const issueLabel = new Date().toLocaleDateString("en-US", {
@@ -54,7 +54,7 @@ export default function AuthCallbackPage() {
         </h1>
 
         <p className="mt-6 text-base text-muted-foreground max-w-[42ch] leading-relaxed">
-          Verifying your session with Google and reaching back to the desk —
+          Verifying your session with Google and reaching back to the desk -
           this only takes a moment.
         </p>
 

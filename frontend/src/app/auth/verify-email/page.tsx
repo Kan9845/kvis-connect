@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
@@ -95,7 +95,7 @@ export default function VerifyKvisPage() {
       lede="Confirm ownership of your @kvis.ac.th address to earn the KVIS-Verified badge on your profile, blog posts, and directory card."
       footer={
         <div className="flex items-center justify-between gap-6">
-          <span>Not now —</span>
+          <span>Not now -</span>
           <button
             type="button"
             onClick={() => router.push("/")}

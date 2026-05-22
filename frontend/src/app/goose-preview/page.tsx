@@ -1,8 +1,8 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 
-// TODO(remove-soon): sprite signed off. This whole route is slated for deletion —
+// TODO(remove-soon): sprite signed off. This whole route is slated for deletion -
 // the live mascot now lives in `components/goose/PixelGoose.tsx`. The frame data
 // duplicated below is intentionally kept frozen until this file is removed.
 
@@ -27,7 +27,7 @@ const PALETTE: Record<string, { color: string; label: string }> = {
   L: { color: "oklch(30% 0.05 60)", label: "Outline" },
 };
 
-// 32×32 base grid — interior only. Outline computed at render.
+// 32×32 base grid - interior only. Outline computed at render.
 // Eyes are 2×2 dots, spaced far apart. Far-set eyes read friendly; close eyes read sinister.
 const FRAME_IDLE = [
   "................................",
@@ -208,7 +208,7 @@ export default function GoosePreview() {
             className="mt-3 text-sm max-w-[60ch] leading-relaxed"
             style={{ color: KVIS.text2 }}
           >
-            32×32 sprite. Eyes redrawn as 2×2 dots, set wide apart — small + far-set
+            32×32 sprite. Eyes redrawn as 2×2 dots, set wide apart - small + far-set
             reads friendly, oversized reads monstrous. 1-pixel outline so the white
             body shows on any background. Two frames (idle + blink), animated bob.
           </p>
@@ -254,16 +254,16 @@ export default function GoosePreview() {
             Scale comparison · idle frame
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <Card label="1× — 32px (favicon)">
+            <Card label="1× - 32px (favicon)">
               <PixelGoose frame={FRAME_IDLE} scale={1} />
             </Card>
-            <Card label="3× — 96px (corner)">
+            <Card label="3× - 96px (corner)">
               <PixelGoose frame={FRAME_IDLE} scale={3} />
             </Card>
-            <Card label="5× — 160px (masthead)">
+            <Card label="5× - 160px (masthead)">
               <PixelGoose frame={FRAME_IDLE} scale={5} />
             </Card>
-            <Card label="8× — 256px (hero)">
+            <Card label="8× - 256px (hero)">
               <PixelGoose frame={FRAME_IDLE} scale={8} />
             </Card>
           </div>
@@ -277,10 +277,10 @@ export default function GoosePreview() {
             Frames · 7× zoom
           </p>
           <div className="grid grid-cols-2 gap-6">
-            <Card label="Frame A — idle">
+            <Card label="Frame A - idle">
               <PixelGoose frame={FRAME_IDLE} scale={7} />
             </Card>
-            <Card label="Frame B — blink">
+            <Card label="Frame B - blink">
               <PixelGoose frame={FRAME_BLINK} scale={7} />
             </Card>
           </div>
@@ -339,7 +339,7 @@ export default function GoosePreview() {
                 className="mt-4 text-sm max-w-[60ch] leading-relaxed"
                 style={{ color: KVIS.text2 }}
               >
-                Where KVIS alumni went to study after graduation — the faculties they
+                Where KVIS alumni went to study after graduation - the faculties they
                 chose, the universities that took them in, and the countries they
                 ended up in.
               </p>
@@ -351,7 +351,7 @@ export default function GoosePreview() {
           className="mt-10 pt-6 border-t text-xs uppercase tracking-[0.22em]"
           style={{ borderColor: KVIS.ink, color: KVIS.text3 }}
         >
-          — Draft preview · delete this route after sign-off —
+          - Draft preview · delete this route after sign-off -
         </footer>
       </div>
     </div>

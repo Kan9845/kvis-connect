@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { memo, useRef, useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
 
-// Editorial palette — matches /blog, /stats, /kvisian.
+// Editorial palette - matches /blog, /stats, /kvisian.
 const P = {
   purple: "oklch(44% 0.26 294)",
   purpleSoft: "oklch(95% 0.035 294)",
@@ -34,7 +34,7 @@ interface PinCluster {
 function clusterPins(pins: GlobePin[]): PinCluster[] {
   const map = new Map<string, PinCluster>();
   for (const p of pins) {
-    // 4dp ≈ 11m — only merges true coincident points, not nearby cities.
+    // 4dp ≈ 11m - only merges true coincident points, not nearby cities.
     const key = `${p.latitude.toFixed(4)},${p.longitude.toFixed(4)}`;
     const existing = map.get(key);
     if (existing) {
@@ -142,7 +142,7 @@ function showCardAt(anchor: HTMLElement) {
   } else if (spaceBelow >= ch) {
     top = rect.bottom + gap;
   } else {
-    // Neither side fits — clamp to viewport, biasing toward whichever has more room.
+    // Neither side fits - clamp to viewport, biasing toward whichever has more room.
     top = spaceAbove >= spaceBelow ? margin : vh - ch - margin;
   }
   top = Math.max(margin, Math.min(top, vh - ch - margin));
@@ -292,7 +292,7 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
   head.appendChild(tally);
   card.appendChild(head);
 
-  // Place — bold editorial display
+  // Place - bold editorial display
   const place = document.createElement("div");
   place.style.cssText = `
     font-size:18px;font-weight:800;letter-spacing:-0.015em;

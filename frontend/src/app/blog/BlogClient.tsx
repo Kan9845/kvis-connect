@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -192,7 +192,7 @@ export default function BlogClient() {
                 Stories
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
-                Essays, updates, and reflections from KVIS alumni — at home and abroad.
+                Essays, updates, and reflections from KVIS alumni - at home and abroad.
               </p>
             </div>
             {user && (
@@ -319,7 +319,7 @@ export default function BlogClient() {
           <footer
             className="mt-16 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between"
           >
-            <span>— end —</span>
+            <span>- end -</span>
             <span className="tabular-nums">
               KVIS Connect · {now.getFullYear()}
             </span>

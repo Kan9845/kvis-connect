@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Dot } from "lucide-react";
 import { userApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import { Button } from "@/components/ui/button";
@@ -129,7 +129,7 @@ function EntryRow({
         className="text-sm font-mono tabular-nums text-right whitespace-nowrap"
         style={{ color: P.text3 }}
       >
-        {years ?? "—"}
+        {years ?? "-"}
       </span>
     </div>
   );
@@ -267,7 +267,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
   const numeralFor = (key: string) => {
     const idx = sections.findIndex((s) => s.key === key);
-    return ["I.", "II.", "III.", "IV.", "V."][idx] ?? "·";
+    return ["I.", "II.", "III.", "IV.", "V."][idx] ?? "-";
   };
 
   return (
@@ -279,7 +279,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             className="text-xs font-bold uppercase tracking-[0.3em] mb-5"
             style={{ color: P.purple }}
           >
-            KVIS Connect · Alumni Dossier
+            KVIS Connect / Alumni Dossier
           </p>
 
           <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 items-start">
@@ -331,13 +331,13 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 {user.mbti && (
                   <span style={{ color: P.purple }}>{user.mbti}</span>
                 )}
-                {user.mbti && user.kvis_year && <span aria-hidden>·</span>}
+                {user.mbti && user.kvis_year && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
                 {user.kvis_year && (
                   <span>
                     K{user.kvis_year} / {genLabel(user.kvis_year)}
                   </span>
                 )}
-                {user.kvis_year && user.place && <span aria-hidden>·</span>}
+                {user.kvis_year && user.place && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
                 {user.place && <span>{user.place}</span>}
               </div>
 
@@ -371,12 +371,12 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             style={{ color: P.text3 }}
           >
             <span>Joined {formatDate(user.created_at).toUpperCase()}</span>
-            <span aria-hidden>·</span>
+            <Dot className="h-3 w-3 shrink-0" aria-hidden />
             <span>
               {user.education?.length ?? 0}{" "}
               {(user.education?.length ?? 0) === 1 ? "school" : "schools"}
             </span>
-            <span aria-hidden>·</span>
+            <Dot className="h-3 w-3 shrink-0" aria-hidden />
             <span>
               {user.career?.length ?? 0}{" "}
               {(user.career?.length ?? 0) === 1 ? "role" : "roles"}
@@ -433,16 +433,16 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 const place = [e.state, e.country].filter(Boolean).join(", ");
                 const subtitle = [degreeLabel(e.degree), e.major]
                   .filter(Boolean)
-                  .join(" · ");
+                  .join(" / ");
                 const meta = [
                   place,
                   e.scholarship ? `${e.scholarship} Scholar` : null,
                 ]
                   .filter(Boolean)
-                  .join("  ·  ");
+                  .join("  /  ");
                 const years =
                   e.start_year || e.end_year
-                    ? `${e.start_year ?? "?"} – ${e.end_year ?? "Present"}`
+                    ? `${e.start_year ?? "?"} - ${e.end_year ?? "Present"}`
                     : undefined;
                 return (
                   <EntryRow
@@ -472,10 +472,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 const place = [c.state, c.country].filter(Boolean).join(", ");
                 const subtitle = [c.employer, jobFieldLabel(c.job_field)]
                   .filter(Boolean)
-                  .join(" · ");
+                  .join(" / ");
                 const years =
                   c.start_year || c.end_year
-                    ? `${c.start_year ?? "?"} – ${c.is_current ? "Present" : c.end_year ?? "?"}`
+                    ? `${c.start_year ?? "?"} - ${c.is_current ? "Present" : c.end_year ?? "?"}`
                     : c.is_current
                       ? "Present"
                       : undefined;

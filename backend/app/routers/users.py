@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from datetime import datetime
 import boto3
 import uuid
+import httpx
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, get_optional_user
@@ -16,6 +17,22 @@ from app.schemas.user import (
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+async def _geocode(query: str) -> tuple[float, float] | None:
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            r = await client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params={"q": query, "format": "json", "limit": 1},
+                headers={"User-Agent": "kvis-connect/1.0 (contact@kvis.ac.th)"},
+            )
+            results = r.json()
+            if results:
+                return float(results[0]["lat"]), float(results[0]["lon"])
+    except Exception:
+        pass
+    return None
 
 
 @router.get("/me", response_model=UserMe)
@@ -39,6 +56,11 @@ async def update_me(
         setattr(user, k, v)
     if name_changed:
         user.slug = unique_user_slug(session, user.first_name, user.last_name, exclude_id=user.id)
+    # Geocode whenever place is explicitly provided
+    if "place" in data and data["place"]:
+        coords = await _geocode(data["place"])
+        if coords:
+            user.latitude, user.longitude = coords
     user.updated_at = datetime.utcnow()
     session.add(user)
     session.commit()
@@ -53,20 +75,25 @@ async def upload_profile_pic(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    if not settings.S3_ENDPOINT_URL:
+    if not settings.S3_ACCESS_KEY:
         raise HTTPException(503, detail="Storage not configured")
 
-    s3 = boto3.client(
-        "s3",
-        endpoint_url=settings.S3_ENDPOINT_URL,
-        aws_access_key_id=settings.S3_ACCESS_KEY,
-        aws_secret_access_key=settings.S3_SECRET_KEY,
-    )
+    s3_kwargs = {
+        "aws_access_key_id": settings.S3_ACCESS_KEY,
+        "aws_secret_access_key": settings.S3_SECRET_KEY,
+    }
+    if settings.S3_ENDPOINT_URL:
+        s3_kwargs["endpoint_url"] = settings.S3_ENDPOINT_URL
+
+    s3 = boto3.client("s3", **s3_kwargs)
     ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
     key = f"profiles/{current_user.id}/{uuid.uuid4()}.{ext}"
     s3.upload_fileobj(file.file, settings.S3_BUCKET, key, ExtraArgs={"ContentType": file.content_type})
 
-    url = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET}/{key}"
+    if settings.S3_ENDPOINT_URL:
+        url = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET}/{key}"
+    else:
+        url = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{key}"
     user = session.get(User, current_user.id)
     user.profile_pic_url = url
     user.updated_at = datetime.utcnow()
@@ -192,4 +219,4 @@ def _user_to_public(user: User) -> dict:
 def _user_to_me(user: User) -> dict:
     return {**_user_to_public(user), "email": user.email, "line_id": user.line_id,
             "email_verified": user.email_verified, "is_verified": user.is_verified,
-            "kvis_email": user.kvis_email}
+            "kvis_email": user.kvis_email, "profile_setup_done": user.profile_setup_done}

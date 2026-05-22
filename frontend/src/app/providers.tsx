@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { ThemeProvider } from "next-themes";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { QueryClient } from "@tanstack/react-query";
@@ -25,7 +25,7 @@ function makeQueryClient() {
   });
 }
 
-// Inner component — lives inside AuthProvider so useAuth() works.
+// Inner component - lives inside AuthProvider so useAuth() works.
 // Keyed by userId in layout so it fully remounts on login/logout, giving a fresh client + namespace.
 function RQProviders({ userId, children }: { userId: string | "anon"; children: React.ReactNode }) {
   const prevUserIdRef = useRef<string | "anon">(userId);
@@ -39,7 +39,7 @@ function RQProviders({ userId, children }: { userId: string | "anon"; children: 
   useEffect(() => {
     const prev = prevUserIdRef.current;
     if (prev !== userId && prev !== "anon") {
-      // User logged out — clear their persisted namespace.
+      // User logged out - clear their persisted namespace.
       clearPersistedCache(prev);
     }
     prevUserIdRef.current = userId;

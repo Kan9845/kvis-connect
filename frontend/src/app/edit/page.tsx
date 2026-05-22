@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -272,7 +272,7 @@ export default function EditPage() {
             Edit profile
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
-            Update your dossier — the page other alumni see when they look you up.
+            Update your dossier - the page other alumni see when they look you up.
           </p>
           <div
             className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
@@ -369,7 +369,7 @@ export default function EditPage() {
               </div>
             </section>
 
-            {/* II. Credential — auto-awarded, not editable */}
+            {/* II. Credential - auto-awarded, not editable */}
             <section>
               <SectionHead
                 numeral="II."
@@ -383,7 +383,7 @@ export default function EditPage() {
                     borderColor: me.is_verified ? P.green : P.rule,
                   }}
                 >
-                  {/* Top strap — credential status + serial */}
+                  {/* Top strap - credential status + serial */}
                   <div
                     className="flex items-center justify-between gap-3 px-5 py-2.5 border-b"
                     style={{
@@ -444,7 +444,7 @@ export default function EditPage() {
                     )}
                   </div>
 
-                  {/* Footnote — explains automatic issuance */}
+                  {/* Footnote - explains automatic issuance */}
                   <div
                     className="px-5 py-3 border-t"
                     style={{ borderColor: P.rule }}

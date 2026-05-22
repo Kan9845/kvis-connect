@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -118,7 +118,7 @@ export default function NewBlogPage() {
       router.push(`/blog/${blog.slug}`);
     },
     onError: () => {
-      toast({ title: "Couldn't post — try again.", variant: "destructive" });
+      toast({ title: "Couldn't post - try again.", variant: "destructive" });
     },
   });
 
@@ -170,12 +170,12 @@ export default function NewBlogPage() {
         </header>
 
         <form onSubmit={handleSubmit((d) => mutation.mutate(d))}>
-          {/* I — Headline */}
+          {/* I - Headline */}
           <section className={sectionGrid} style={{ borderColor: P.ruleHeavy }}>
             <SectionHead
               numeral="01"
               label="Title"
-              hint="Keep it short — twelve words or fewer."
+              hint="Keep it short - twelve words or fewer."
             />
             <div>
               <input
@@ -187,7 +187,7 @@ export default function NewBlogPage() {
             </div>
           </section>
 
-          {/* II — Deck */}
+          {/* II - Deck */}
           <section className={sectionGrid} style={{ borderColor: P.rule }}>
             <SectionHead
               numeral="02"
@@ -198,18 +198,18 @@ export default function NewBlogPage() {
               <textarea
                 {...register("excerpt")}
                 rows={2}
-                placeholder="A short summary — why someone should read this."
+                placeholder="A short summary - why someone should read this."
                 className="w-full bg-transparent border-0 text-lg md:text-xl leading-relaxed text-foreground/80 placeholder:text-muted-foreground/45 focus:outline-none resize-none"
               />
             </div>
           </section>
 
-          {/* III — Cover plate */}
+          {/* III - Cover plate */}
           <section className={sectionGrid} style={{ borderColor: P.rule }}>
             <SectionHead
               numeral="03"
               label="Cover image"
-              hint="Optional — a photo to lead the post."
+              hint="Optional - a photo to lead the post."
             />
             <div>
               <input
@@ -222,7 +222,7 @@ export default function NewBlogPage() {
             </div>
           </section>
 
-          {/* IV — Sections (tags) */}
+          {/* IV - Sections (tags) */}
           <section className={sectionGrid} style={{ borderColor: P.rule }}>
             <SectionHead
               numeral="04"
@@ -252,7 +252,7 @@ export default function NewBlogPage() {
             </div>
           </section>
 
-          {/* 05 — Body */}
+          {/* 05 - Body */}
           <section
             className="pt-10 lg:pt-12 border-t-2"
             style={{ borderColor: P.ruleHeavy }}
@@ -340,7 +340,7 @@ export default function NewBlogPage() {
                       className="text-center text-xs uppercase tracking-[0.28em] py-20"
                       style={{ color: P.text3 }}
                     >
-                      Nothing to preview yet — start writing.
+                      Nothing to preview yet - start writing.
                     </p>
                   )}
                 </div>

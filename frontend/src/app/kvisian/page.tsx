@@ -55,14 +55,20 @@ function initials(u: UserCard) {
 }
 
 function captionAlumni(u: UserCard): string {
+  const currentEdu = u.education?.find((e) => !e.end_year) ?? u.education?.[0];
   const job = u.career?.find((c) => c.is_current) ?? u.career?.[0];
-  if (job?.job_title) {
-    const where = job.employer || job.job_field;
-    return [job.job_title, where && `@ ${where}`].filter(Boolean).join(" ");
+  if (currentEdu && !job) {
+    return [currentEdu.major || currentEdu.degree, currentEdu.uni_name].filter(Boolean).join(" · ");
   }
-  const edu = u.education?.[0];
-  if (edu) {
-    return [edu.major || edu.degree, edu.uni_name].filter(Boolean).join(" · ");
+  if (job) {
+    if (job.job_title) {
+      const where = job.employer || job.job_field;
+      return [job.job_title, where && `@ ${where}`].filter(Boolean).join(" ");
+    }
+    if (job.job_field) return job.job_field;
+  }
+  if (currentEdu) {
+    return [currentEdu.major || currentEdu.degree, currentEdu.uni_name].filter(Boolean).join(" · ");
   }
   return "Profile pending";
 }
@@ -252,6 +258,7 @@ function SearchPageInner() {
 
   useEffect(() => {
     if (!authLoading && !user) router.replace("/auth/login?next=/kvisian");
+    if (!authLoading && user && !user.profile_setup_done) router.replace("/onboarding");
   }, [authLoading, user, router]);
 
   const [tab, setTab] = useState<Tab>(initialTab);

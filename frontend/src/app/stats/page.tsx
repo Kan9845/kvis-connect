@@ -1,4 +1,4 @@
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+﻿import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/cache/getQueryClient";
 import { keys } from "@/lib/cache/keys";
 import api from "@/lib/api";
@@ -8,7 +8,7 @@ import StatsClient from "./StatsClient";
 export const metadata = {
   title: "By the Numbers · KVIS Connect",
   description:
-    "Where KVIS alumni went to study after graduation — faculties, universities, and countries, by cohort.",
+    "Where KVIS alumni went to study after graduation - faculties, universities, and countries, by cohort.",
 };
 
 export default async function StatsPage() {

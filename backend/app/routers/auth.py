@@ -15,7 +15,7 @@ from app.core.deps import get_current_user
 from app.core.cache import invalidate_tags
 from app.core.slug import unique_user_slug
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody
+from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -94,32 +94,77 @@ def _set_auth_cookies(response: Response, user_id: int):
 
 
 @router.post("/register")
-async def register(body: RegisterRequest, response: Response, session: Session = Depends(get_session)):
+async def register(body: RegisterRequest, session: Session = Depends(get_session)):
     if not body.email.endswith(f"@{KVIS_DOMAIN}"):
         raise HTTPException(400, detail="Only @kvis.ac.th emails are allowed")
 
     existing = session.exec(select(User).where(User.email == body.email)).first()
-    if existing:
+    if existing and existing.email_verified:
         raise HTTPException(400, detail="Email already registered")
 
     if len(body.password) < 6:
         raise HTTPException(400, detail="Password must be at least 6 characters")
 
-    slug = unique_user_slug(session, body.first_name, body.last_name)
-    user = User(
-        email=body.email,
-        hashed_password=hash_password(body.password),
-        first_name=body.first_name,
-        last_name=body.last_name,
-        slug=slug,
-    )
+    if existing and not existing.email_verified:
+        # Update credentials in case they changed name/password
+        existing.hashed_password = hash_password(body.password)
+        existing.first_name = body.first_name
+        existing.last_name = body.last_name
+        session.add(existing)
+        session.commit()
+        user = existing
+    else:
+        slug = unique_user_slug(session, body.first_name, body.last_name)
+        user = User(
+            email=body.email,
+            hashed_password=hash_password(body.password),
+            first_name=body.first_name,
+            last_name=body.last_name,
+            slug=slug,
+            email_verified=False,
+        )
+        session.add(user)
+        session.commit()
+        await invalidate_tags("users")
+
+    otp = _generate_otp()
+    _otp_store[body.email] = {
+        "otp": otp,
+        "expires_at": datetime.now(timezone.utc) + timedelta(minutes=OTP_TTL_MINUTES),
+    }
+    try:
+        _send_otp_email(body.email, otp)
+    except Exception:
+        del _otp_store[body.email]
+        raise HTTPException(500, detail="Account created but failed to send verification email. Check SMTP config.")
+
+    return {"message": "Account created. Check your email for a verification code.", "email": body.email}
+
+
+@router.post("/email/verify")
+async def verify_registration_email(body: EmailVerifyBody, response: Response, session: Session = Depends(get_session)):
+    record = _otp_store.get(body.email)
+    if not record:
+        raise HTTPException(400, detail="No verification code found. Request a new one.")
+    if datetime.now(timezone.utc) > record["expires_at"]:
+        del _otp_store[body.email]
+        raise HTTPException(400, detail="Code expired. Request a new one.")
+    if record["otp"] != body.otp:
+        raise HTTPException(400, detail="Invalid code.")
+
+    del _otp_store[body.email]
+
+    user = session.exec(select(User).where(User.email == body.email)).first()
+    if not user:
+        raise HTTPException(404, detail="Account not found.")
+
+    user.email_verified = True
     session.add(user)
     session.commit()
-    await invalidate_tags("users")
     session.refresh(user)
 
     _set_auth_cookies(response, user.id)
-    return {"message": "Registered successfully", "user_id": user.id}
+    return {"message": "Email verified", "user_id": user.id}
 
 
 @router.post("/login")

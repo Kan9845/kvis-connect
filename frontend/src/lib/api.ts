@@ -80,6 +80,10 @@ export const authApi = {
     api.post("/api/auth/otp/verify", { email, otp }),
   verifyKvis: (kvis_email: string, otp: string) =>
     api.post("/api/auth/kvis/verify", { kvis_email, otp }),
+  verifyEmail: (email: string, otp: string) =>
+    api.post("/api/auth/email/verify", { email, otp }),
+  resendVerification: (email: string) =>
+    api.post("/api/auth/otp/request", { email }),
 };
 
 // Users

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
@@ -66,7 +66,7 @@ function LoginInner() {
       numeral="01"
       kicker="Sign in · Returning member"
       title="Welcome back to the network."
-      lede="The alumni network for KVIS — profiles, maps, and a directory that follows you around the world."
+      lede="The alumni network for KVIS - profiles, maps, and a directory that follows you around the world."
       footer={
         <div className="flex items-center justify-between gap-6">
           <span>No account yet?</span>

@@ -1,5 +1,7 @@
-"use client";
+﻿"use client";
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
@@ -21,7 +23,7 @@ const P = {
 };
 
 const ISO_MAP: Record<string, string> = {
-  Thailand: "th", "United States": "us", USA: "us", "United Kingdom": "gb", UK: "gb",
+  Thailand: "th", "United States": "us", "United States of America": "us", USA: "us", "United Kingdom": "gb", UK: "gb",
   Germany: "de", Singapore: "sg", Canada: "ca", France: "fr", Netherlands: "nl",
   Switzerland: "ch", Japan: "jp", Australia: "au", "South Korea": "kr", Sweden: "se",
   Denmark: "dk", Norway: "no", Finland: "fi", Italy: "it", Spain: "es",
@@ -69,6 +71,15 @@ function classifyFaculty(major: string): string {
   if (/psycholog|sociolog|politic|anthropo|internat|public policy/.test(m)) return "Social Sciences";
   if (/environment|earth|geolog|atmospher|ocean|climate/.test(m)) return "Earth & Environment";
   return "Other Fields";
+}
+
+function normalizeDegree(degree: string | null | undefined): string {
+  const d = (degree ?? "").toLowerCase();
+  if (/bachelor|undergrad|\bbs\b|\bba\b|\bbsc\b|\bbeng\b|\bb\.s\b|\bb\.a\b|\bb\.eng\b/.test(d)) return "Bachelor's";
+  if (/master|graduate|\bms\b|\bma\b|\bmsc\b|\bmeng\b|\bm\.s\b|\bm\.a\b|\bmba\b/.test(d)) return "Master's";
+  if (/\bphd\b|\bph\.d\b|doctor/.test(d)) return "PhD";
+  if (d) return "Other";
+  return "Unknown";
 }
 
 // Prefer bachelor-level; fall back to earliest entry.
@@ -311,6 +322,33 @@ export default function StatsClient() {
     return toRanked(c, totalEdu);
   }, [filtered, totalEdu]);
 
+  const degreeRanked = useMemo(() => {
+    const c = new Map<string, number>();
+    filtered.forEach((u) => {
+      (u.education ?? []).forEach((e) => {
+        const level = normalizeDegree(e.degree);
+        if (level === "Unknown") return;
+        c.set(level, (c.get(level) ?? 0) + 1);
+      });
+    });
+    const order = ["Bachelor's", "Master's", "PhD", "Other"];
+    const total = Array.from(c.values()).reduce((s, v) => s + v, 0);
+    return order
+      .filter((k) => c.has(k))
+      .map((k, i) => ({
+        key: k,
+        label: k,
+        count: c.get(k)!,
+        pct: total > 0 ? (c.get(k)! / total) * 100 : 0,
+        rank: i + 1,
+      }));
+  }, [filtered]);
+
+  const totalDegrees = useMemo(
+    () => degreeRanked.reduce((s, r) => s + r.count, 0),
+    [degreeRanked],
+  );
+
   const totalAlumni = filtered.length;
   const uniqueUnis = uniRanked.length;
   const uniqueCountries = countryRanked.length;
@@ -336,21 +374,28 @@ export default function StatsClient() {
             By the Numbers
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
-            Where KVIS alumni went to study after graduation — the faculties
+            Where KVIS alumni went to study after graduation - the faculties
             they chose, the universities that took them in, and the countries
             they ended up in.
           </p>
-          <div
-            className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
-            style={{ color: P.text3 }}
-          >
-            <span>{dateline}</span>
-            <span aria-hidden>·</span>
-            <span>
-              {alumni.length} alumni
-            </span>
-            <span aria-hidden>·</span>
-            <span>{cohorts.length} cohorts</span>
+          <div className="flex items-center justify-between flex-wrap gap-4 mt-6">
+            <div
+              className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
+              style={{ color: P.text3 }}
+            >
+              <span>{dateline}</span>
+              <span aria-hidden>·</span>
+              <span>{alumni.length} alumni</span>
+              <span aria-hidden>·</span>
+              <span>{cohorts.length} cohorts</span>
+            </div>
+            <Link
+              href="/edit"
+              className="text-xs font-bold uppercase tracking-[0.22em] px-4 h-9 inline-flex items-center border transition-colors hover:bg-foreground hover:text-background"
+              style={{ borderColor: P.purple, color: P.purple }}
+            >
+              Add your stats <ArrowRight className="h-3 w-3 ml-1" />
+            </Link>
           </div>
         </header>
 
@@ -454,7 +499,7 @@ export default function StatsClient() {
                         Math.round(facultyRanked[0].pct)
                       }% of declared majors${
                         cohort ? ` in K${cohort}` : " across all cohorts"
-                      } — ${facultyRanked.length} distinct fields represented in total.`
+                      } - ${facultyRanked.length} distinct fields represented in total.`
                     : undefined
                 }
               />
@@ -516,11 +561,32 @@ export default function StatsClient() {
               )}
             </section>
 
+            {/* IV. Degree Level */}
+            <section>
+              <SectionHead
+                numeral="IV."
+                kicker="By degree level"
+                title="Bachelor's, Master's, or PhD?"
+                lede={
+                  totalDegrees > 0
+                    ? `${totalDegrees} degree${totalDegrees !== 1 ? "s" : ""} recorded${
+                        cohort ? ` for K${cohort}` : " across all cohorts"
+                      }. Counts all education entries, not just primary.`
+                    : undefined
+                }
+              />
+              {degreeRanked.length > 0 ? (
+                <RankedList items={degreeRanked} />
+              ) : (
+                <EmptyRow label="degrees" />
+              )}
+            </section>
+
             <footer
               className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between flex-wrap gap-2"
             >
               <span>
-                — Based on {alumni.length} alumni profiles · {cohortLabel} —
+                - Based on {alumni.length} alumni profiles · {cohortLabel} -
               </span>
               <span className="tabular-nums">
                 Updated {now.getFullYear()}

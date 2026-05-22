@@ -81,6 +81,7 @@ class UserMe(UserPublic):
     email_verified: bool
     is_verified: bool
     kvis_email: Optional[str]
+    profile_setup_done: bool
 
 
 class UserUpdate(BaseModel):
@@ -101,6 +102,7 @@ class UserUpdate(BaseModel):
     linkedin_url: Optional[str] = None
     line_id: Optional[str] = None
     website_url: Optional[str] = None
+    profile_setup_done: Optional[bool] = None
 
 
 class UserCard(BaseModel):

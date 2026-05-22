@@ -39,3 +39,8 @@ class PasswordResetConfirm(BaseModel):
 class KvisVerifyBody(BaseModel):
     kvis_email: EmailStr
     otp: str
+
+
+class EmailVerifyBody(BaseModel):
+    email: EmailStr
+    otp: str
