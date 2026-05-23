@@ -1,10 +1,10 @@
 ﻿"use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { blogApi } from "@/lib/api";
+import { blogApi, userApi } from "@/lib/api";
 import { onBlogMutationSuccess } from "@/lib/cache/invalidate";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -90,6 +90,8 @@ export default function NewBlogPage() {
   const router = useRouter();
   const qc = useQueryClient();
   const [tab, setTab] = useState<"write" | "preview">("write");
+  const coverImageRef = useRef<HTMLInputElement>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.push("/auth/login");
@@ -121,6 +123,22 @@ export default function NewBlogPage() {
       toast({ title: "Couldn't post - try again.", variant: "destructive" });
     },
   });
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverUploading(true);
+    try {
+      const { url } = await userApi.uploadProfilePic(file);
+      setValue("cover_image_url", url, { shouldValidate: true });
+      toast({ title: "Cover image uploaded" });
+    } catch {
+      toast({ title: "Upload failed", variant: "destructive" });
+    } finally {
+      setCoverUploading(false);
+      e.target.value = "";
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -217,6 +235,32 @@ export default function NewBlogPage() {
                 placeholder="https://…"
                 className={`${inputBare} font-mono text-sm`}
                 style={{ borderColor: P.rule }}
+              />
+              <div className="flex items-center gap-3 mt-3">
+                <button
+                  type="button"
+                  onClick={() => coverImageRef.current?.click()}
+                  disabled={coverUploading}
+                  className="text-xs font-bold uppercase tracking-[0.26em] px-4 py-2 border border-foreground/60 hover:bg-foreground/5 transition-colors disabled:opacity-40 inline-flex items-center gap-2"
+                >
+                  {coverUploading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : null}
+                  {coverUploading ? "Uploading…" : "Upload image"}
+                </button>
+                <span
+                  className="text-xs uppercase tracking-[0.2em]"
+                  style={{ color: P.text3 }}
+                >
+                  or paste a URL above
+                </span>
+              </div>
+              <input
+                ref={coverImageRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleCoverUpload}
               />
               <FieldError msg={errors.cover_image_url?.message} />
             </div>
