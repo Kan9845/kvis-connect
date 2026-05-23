@@ -9,7 +9,7 @@ import { Loader2, ArrowRight } from "lucide-react";
 import { P, FieldLabel, editorialInputClass } from "@/app/auth/AuthShell";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UniversityCombobox } from "@/components/ui/university-combobox";
-import { CountrySelect, CitySelect } from "@/components/ui/location-selects";
+import { CountrySelect, CitySelect, CITY_STATE_COUNTRIES } from "@/components/ui/location-selects";
 import { MajorCombobox } from "@/components/ui/major-combobox";
 import { JOB_FIELDS } from "@/lib/constants/universities";
 
@@ -21,7 +21,12 @@ const GRADES = [
   { value: 12, label: "M.6" },
 ];
 const ELEMENTALS = ["earth", "water", "air", "fire"] as const;
-const DEGREES = ["Bachelor's", "Master's", "PhD", "Other"];
+const DEGREES = [
+  { value: "Bachelor", label: "Bachelor's" },
+  { value: "Master", label: "Master's" },
+  { value: "PhD", label: "PhD" },
+  { value: "Other", label: "Other" },
+];
 
 const INPUT_BORDER = "oklch(35% 0.005 294)";
 const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
@@ -103,6 +108,14 @@ export default function OnboardingPage() {
     if (!loading && !user) router.replace("/auth/login");
   }, [user, loading, router]);
 
+  useEffect(() => {
+    if (CITY_STATE_COUNTRIES.has(eduCountry)) setEduCity(eduCountry);
+  }, [eduCountry]);
+
+  useEffect(() => {
+    if (CITY_STATE_COUNTRIES.has(jobCountry)) setJobCity(jobCountry);
+  }, [jobCountry]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -114,13 +127,31 @@ export default function OnboardingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
+    // Validate before setting submitting so React doesn't batch the true+false updates
+    if (role === "student") {
+      if (!grade || !elemental || !classNum) {
+        setError("Please fill in all fields.");
+        return;
+      }
+    } else {
+      if (!kvisYear || stillStudying === null) {
+        setError("Please fill in all required fields.");
+        return;
+      }
+      if (stillStudying && (!uniName || !degree || !major || !eduCountry || !eduCity)) {
+        setError("Please fill in all education fields.");
+        return;
+      }
+      if (!stillStudying && (!jobTitle || !jobField || !employer || !jobCountry || !jobCity)) {
+        setError("Please fill in all job fields.");
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       if (role === "student") {
-        if (!grade || !elemental || !classNum) {
-          setError("Please fill in all fields.");
-          return;
-        }
         await userApi.updateMe({
           current_grade: grade,
           current_elemental: elemental,
@@ -128,18 +159,6 @@ export default function OnboardingPage() {
           profile_setup_done: true,
         });
       } else {
-        if (!kvisYear || stillStudying === null) {
-          setError("Please fill in all required fields.");
-          return;
-        }
-        if (stillStudying && (!uniName || !degree || !major || !eduCountry || !eduCity)) {
-          setError("Please fill in all education fields.");
-          return;
-        }
-        if (!stillStudying && (!jobTitle || !jobField || !employer || !jobCountry || !jobCity)) {
-          setError("Please fill in all job fields.");
-          return;
-        }
         const country = stillStudying ? eduCountry : jobCountry;
         const city = stillStudying ? eduCity : jobCity;
         await userApi.updateMe({
@@ -174,12 +193,12 @@ export default function OnboardingPage() {
   const issueLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-full bg-background">
       <div className="mx-auto max-w-6xl px-6 lg:px-12 py-10 lg:py-16">
         <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-20">
 
           {/* Left column */}
-          <section className="lg:pr-10 lg:border-r lg:sticky lg:top-10 lg:self-start" style={{ borderColor: P.rule }}>
+          <section className="lg:pr-10 lg:border-r lg:sticky lg:top-16 lg:self-start" style={{ borderColor: P.rule }}>
             <div className="flex items-baseline gap-4 mb-5">
               <span className="font-mono font-black text-2xl tabular-nums" style={{ color: P.green, letterSpacing: "-0.02em" }}>03</span>
               <span className="text-[11px] uppercase tracking-[0.32em] font-bold" style={{ color: P.text3 }}>
@@ -307,7 +326,7 @@ export default function OnboardingPage() {
                             </SelectTrigger>
                             <SelectContent>
                               {DEGREES.map((d) => (
-                                <SelectItem key={d} value={d}>{d}</SelectItem>
+                                <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -316,19 +335,21 @@ export default function OnboardingPage() {
                           <FieldLabel>Country</FieldLabel>
                           <CountrySelect
                             value={eduCountry}
-                            onChange={(v) => { setEduCountry(v); setEduCity(""); }}
+                            onChange={(v) => { setEduCountry(v); setEduCity(CITY_STATE_COUNTRIES.has(v) ? v : ""); }}
                             borderColor={INPUT_BORDER}
                           />
                         </div>
-                        <div>
-                          <FieldLabel>City / Province</FieldLabel>
-                          <CitySelect
-                            country={eduCountry}
-                            value={eduCity}
-                            onChange={setEduCity}
-                            borderColor={INPUT_BORDER}
-                          />
-                        </div>
+                        {!CITY_STATE_COUNTRIES.has(eduCountry) && (
+                          <div>
+                            <FieldLabel>City / Province</FieldLabel>
+                            <CitySelect
+                              country={eduCountry}
+                              value={eduCity}
+                              onChange={setEduCity}
+                              borderColor={INPUT_BORDER}
+                            />
+                          </div>
+                        )}
                         <div>
                           <FieldLabel>Major / Field of study</FieldLabel>
                           <MajorCombobox
@@ -385,19 +406,21 @@ export default function OnboardingPage() {
                           <FieldLabel>Country</FieldLabel>
                           <CountrySelect
                             value={jobCountry}
-                            onChange={(v) => { setJobCountry(v); setJobCity(""); }}
+                            onChange={(v) => { setJobCountry(v); setJobCity(CITY_STATE_COUNTRIES.has(v) ? v : ""); }}
                             borderColor={INPUT_BORDER}
                           />
                         </div>
-                        <div>
-                          <FieldLabel>City / Province</FieldLabel>
-                          <CitySelect
-                            country={jobCountry}
-                            value={jobCity}
-                            onChange={setJobCity}
-                            borderColor={INPUT_BORDER}
-                          />
-                        </div>
+                        {!CITY_STATE_COUNTRIES.has(jobCountry) && (
+                          <div>
+                            <FieldLabel>City / Province</FieldLabel>
+                            <CitySelect
+                              country={jobCountry}
+                              value={jobCity}
+                              onChange={setJobCity}
+                              borderColor={INPUT_BORDER}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

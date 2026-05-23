@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
 
 export default function LoginPage() {
@@ -75,7 +75,7 @@ function LoginInner() {
             className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
             style={{ textDecorationColor: P.purple }}
           >
-            Register →
+            Register <ArrowRight className="h-3.5 w-3.5 ml-1 inline" />
           </Link>
         </div>
       }

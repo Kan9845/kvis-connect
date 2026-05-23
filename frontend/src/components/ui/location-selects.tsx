@@ -11,6 +11,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 const BASE = "https://countriesnow.space/api/v0.1";
 
+// Countries that are effectively a single city — no city selection needed.
+export const CITY_STATE_COUNTRIES = new Set([
+  "Singapore", "Monaco", "Vatican City", "San Marino", "Liechtenstein",
+  "Maldives", "Bahrain", "Luxembourg", "Malta", "Andorra",
+]);
+
 let countriesCache: string[] | null = null;
 const citiesCache: Record<string, string[]> = {};
 
@@ -19,14 +25,14 @@ async function fetchCountries(): Promise<string[]> {
   const res = await fetch(`${BASE}/countries/iso`);
   const json = await res.json();
   countriesCache = (json.data as { name: string }[])
-    .map((c) => c.name === "United States" ? "United States of America" : c.name)
+    .map((c) => c.name)
     .sort();
   return countriesCache!;
 }
 
 async function fetchCities(country: string): Promise<string[]> {
   if (citiesCache[country]) return citiesCache[country];
-  const apiCountry = country === "United States of America" ? "United States" : country;
+  const apiCountry = country;
   const res = await fetch(`${BASE}/countries/cities`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -43,9 +49,10 @@ interface CountrySelectProps {
   value: string;
   onChange: (v: string) => void;
   borderColor?: string;
+  variant?: "bordered" | "underline";
 }
 
-export function CountrySelect({ value, onChange, borderColor }: CountrySelectProps) {
+export function CountrySelect({ value, onChange, borderColor, variant = "bordered" }: CountrySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [countries, setCountries] = useState<string[]>([]);
@@ -58,6 +65,10 @@ export function CountrySelect({ value, onChange, borderColor }: CountrySelectPro
     ? countries.filter((c) => c.toLowerCase().includes(query.toLowerCase())).slice(0, 40)
     : countries.slice(0, 40);
 
+  const triggerCls = variant === "underline"
+    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent"
+    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors";
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -65,8 +76,8 @@ export function CountrySelect({ value, onChange, borderColor }: CountrySelectPro
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors"
-          style={{ borderColor, background: "transparent" }}
+          className={triggerCls}
+          style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
           onClick={() => setOpen((o) => !o)}
         >
           <span className={cn(value ? "text-foreground" : "text-foreground/25")}>
@@ -127,6 +138,8 @@ export function CitySelect({ country, value, onChange, borderColor }: CitySelect
     setManualMode(false);
     setManualText("");
   }, [country]);
+
+  if (country && CITY_STATE_COUNTRIES.has(country)) return null;
 
   const disabled = !country;
   const placeholder = !country

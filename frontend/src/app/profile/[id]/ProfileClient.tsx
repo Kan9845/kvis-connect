@@ -275,12 +275,22 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
       <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
         {/* Masthead */}
         <header className="pb-8 border-b border-foreground/60">
-          <p
-            className="text-xs font-bold uppercase tracking-[0.3em] mb-5"
-            style={{ color: P.purple }}
-          >
-            KVIS Connect / Alumni Dossier
-          </p>
+          <div className="flex items-center justify-between mb-5">
+            <p
+              className="text-xs font-bold uppercase tracking-[0.3em]"
+              style={{ color: P.purple }}
+            >
+              KVIS Connect / Alumni Dossier
+            </p>
+            {isMe && (
+              <Button
+                asChild
+                className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90"
+              >
+                <Link href="/edit">Edit profile</Link>
+              </Button>
+            )}
+          </div>
 
           <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 items-start">
             {/* Portrait */}
@@ -341,17 +351,9 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 {user.place && <span>{user.place}</span>}
               </div>
 
-              {/* Edit + tertiary meta */}
-              <div className="mt-6 flex items-center gap-5 flex-wrap">
-                {isMe && (
-                  <Button
-                    asChild
-                    className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90"
-                  >
-                    <Link href="/edit">Edit profile</Link>
-                  </Button>
-                )}
-                {currentRole && (
+              {/* Current role */}
+              {currentRole && (
+                <div className="mt-6">
                   <p
                     className="text-xs uppercase tracking-[0.22em]"
                     style={{ color: P.text3 }}
@@ -360,8 +362,8 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     {currentRole.job_title}
                     {currentRole.employer && ` @ ${currentRole.employer}`}
                   </p>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 

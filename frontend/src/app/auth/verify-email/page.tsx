@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AxiosError } from "axios";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
@@ -102,7 +102,7 @@ export default function VerifyKvisPage() {
             className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
             style={{ textDecorationColor: P.purple }}
           >
-            Continue without verifying →
+            Continue without verifying <ArrowRight className="h-3.5 w-3.5 ml-1 inline" />
           </button>
         </div>
       }

@@ -29,7 +29,7 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
       <div className="mx-auto max-w-6xl px-6 lg:px-12 py-10 lg:py-16">
         <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-20 items-start">
           <section
-            className="lg:pr-10 lg:border-r lg:sticky lg:top-10"
+            className="lg:pr-10 lg:border-r lg:sticky lg:top-16 lg:self-start"
             style={{ borderColor: P.rule }}
           >
             <div className="flex items-baseline gap-4 mb-5">

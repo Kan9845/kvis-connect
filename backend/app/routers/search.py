@@ -81,7 +81,7 @@ def _matches_education(education, uni_name, degree, major, scholarship) -> bool:
         match = True
         if uni_name and uni_name.lower() not in (e.uni_name or "").lower():
             match = False
-        if degree and e.degree != degree:
+        if degree and degree.lower() not in (e.degree or "").lower():
             match = False
         if major and major.lower() not in (e.major or "").lower():
             match = False

@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowRight, Mail } from "lucide-react";
+import { Loader2, ArrowRight, ArrowLeft, Mail } from "lucide-react";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
 import { AxiosError } from "axios";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -135,7 +135,7 @@ export default function RegisterPage() {
               className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
               style={{ textDecorationColor: P.purple }}
             >
-              ← Back
+              <ArrowLeft className="h-3.5 w-3.5 mr-1 inline" /> Back
             </button>
           </div>
         }
@@ -193,7 +193,7 @@ export default function RegisterPage() {
             className="font-bold uppercase tracking-[0.18em] text-foreground hover:underline underline-offset-[5px]"
             style={{ textDecorationColor: P.purple }}
           >
-            Sign in →
+            Sign in <ArrowRight className="h-3.5 w-3.5 ml-1 inline" />
           </Link>
         </div>
       }

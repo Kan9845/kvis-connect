@@ -84,6 +84,8 @@ async def upload_profile_pic(
     }
     if settings.S3_ENDPOINT_URL:
         s3_kwargs["endpoint_url"] = settings.S3_ENDPOINT_URL
+    else:
+        s3_kwargs["region_name"] = settings.S3_REGION
 
     s3 = boto3.client("s3", **s3_kwargs)
     ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
@@ -92,6 +94,8 @@ async def upload_profile_pic(
 
     if settings.S3_ENDPOINT_URL:
         url = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET}/{key}"
+    elif settings.S3_REGION:
+        url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION}.amazonaws.com/{key}"
     else:
         url = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{key}"
     user = session.get(User, current_user.id)

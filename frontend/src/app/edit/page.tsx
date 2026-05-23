@@ -36,7 +36,7 @@ import {
   MBTI_TYPES,
   KVIS_YEARS,
 } from "@/lib/constants/options";
-import { COUNTRIES } from "@/lib/constants/countries";
+import { CountrySelect } from "@/components/ui/location-selects";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Education, Career } from "@/lib/types";
@@ -157,6 +157,7 @@ export default function EditPage() {
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [picPreview, setPicPreview] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [tab, setTab] = useState<Tab>("general");
 
   useEffect(() => {
@@ -199,7 +200,18 @@ export default function EditPage() {
   }, [me]);
 
   const saveGeneral = async (data: GeneralForm) => {
-    const updated = await userApi.updateMe(data);
+    let picUrl: string | undefined;
+    if (pendingFile) {
+      try {
+        const { url } = await userApi.uploadProfilePic(pendingFile);
+        picUrl = url;
+        setPendingFile(null);
+      } catch {
+        toast({ title: "Photo upload failed", variant: "destructive" });
+        return;
+      }
+    }
+    const updated = await userApi.updateMe(picUrl ? { ...data, profile_pic_url: picUrl } : data);
     onMeUpdateSuccess(qc, updated);
     await refetch();
     toast({ title: "Profile updated" });
@@ -220,21 +232,11 @@ export default function EditPage() {
     toast({ title: "Career saved" });
   };
 
-  const handlePicChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setPicPreview(URL.createObjectURL(file));
-    try {
-      const { url } = await userApi.uploadProfilePic(file);
-      await userApi.updateMe({ profile_pic_url: url });
-      // Fetch fresh me to get full updated user, then hydrate cache.
-      const fresh = await userApi.getMe();
-      onMeUpdateSuccess(qc, fresh);
-      await refetch();
-      toast({ title: "Profile picture updated" });
-    } catch {
-      toast({ title: "Upload failed", variant: "destructive" });
-    }
+    setPendingFile(file);
   };
 
   if (loading || !me) {
@@ -543,21 +545,11 @@ export default function EditPage() {
                   />
                 </FieldRow>
                 <FieldRow label="Country">
-                  <Select
-                    defaultValue={me.country ?? undefined}
-                    onValueChange={(v) => setValue("country", v, { shouldDirty: true })}
-                  >
-                    <SelectTrigger className={selectTriggerCls}>
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COUNTRIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <CountrySelect
+                    variant="underline"
+                    value={me.country ?? ""}
+                    onChange={(v) => setValue("country", v, { shouldDirty: true })}
+                  />
                 </FieldRow>
               </section>
 
@@ -601,13 +593,13 @@ export default function EditPage() {
               <div className="pt-8 flex items-center gap-4 flex-wrap">
                 <Button
                   type="submit"
-                  disabled={isSubmitting || !isDirty}
+                  disabled={isSubmitting || (!isDirty && !pendingFile)}
                   className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2"
                 >
                   {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
                   Save changes
                 </Button>
-                {!isDirty && !isSubmitting && (
+                {!isDirty && !pendingFile && !isSubmitting && (
                   <span
                     className="text-xs uppercase tracking-[0.22em]"
                     style={{ color: P.text3 }}
@@ -722,27 +714,17 @@ export default function EditPage() {
                     />
                   </FieldRow>
                   <FieldRow label="Country">
-                    <Select
+                    <CountrySelect
+                      variant="underline"
                       value={edu.country}
-                      onValueChange={(v) =>
+                      onChange={(v) =>
                         setEducation((prev) =>
                           prev.map((x, j) =>
                             j === i ? { ...x, country: v } : x,
                           ),
                         )
                       }
-                    >
-                      <SelectTrigger className={selectTriggerCls}>
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COUNTRIES.map((c) => (
-                          <SelectItem key={c.value} value={c.value}>
-                            {c.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
                   </FieldRow>
                   <FieldRow label="Scholarship" hint="Optional.">
                     <Input
@@ -942,27 +924,17 @@ export default function EditPage() {
                     </Select>
                   </FieldRow>
                   <FieldRow label="Country">
-                    <Select
+                    <CountrySelect
+                      variant="underline"
                       value={job.country}
-                      onValueChange={(v) =>
+                      onChange={(v) =>
                         setCareer((prev) =>
                           prev.map((x, j) =>
                             j === i ? { ...x, country: v } : x,
                           ),
                         )
                       }
-                    >
-                      <SelectTrigger className={selectTriggerCls}>
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {COUNTRIES.map((c) => (
-                          <SelectItem key={c.value} value={c.value}>
-                            {c.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    />
                   </FieldRow>
                   <FieldRow label="Years">
                     <div className="grid grid-cols-2 gap-4">

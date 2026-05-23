@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, BarChart2, Users, User, LogOut, Settings, Sun, Moon, ShieldCheck } from "lucide-react";
+import { Search, Newspaper, BarChart2, Users, User, LogOut, Settings, Sun, Moon, ShieldCheck } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
@@ -234,7 +234,7 @@ export function Navbar() {
             className="flex items-center rounded-full overflow-hidden shrink-0"
             style={{ background: dark ? "transparent" : "oklch(95% 0.005 294)", border: dark ? "1px solid rgba(255,255,255,0.6)" : "1px solid oklch(88% 0.008 294)" }}
           >
-            <NavLink href="/blog" icon={BookOpen} label="Blog" pathname={pathname} dark={dark} />
+            <NavLink href="/blog" icon={Newspaper} label="Blog" pathname={pathname} dark={dark} />
             <div className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`} />
             <NavLink href="/stats" icon={BarChart2} label="Stats" pathname={pathname} dark={dark} />
             <div className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`} />
@@ -269,7 +269,7 @@ export function Navbar() {
           <AlumniSearch solid />
         </div>
         <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-hidden shrink-0">
-          <NavLink href="/blog" icon={BookOpen} label="Blog" pathname={pathname} dark={false} />
+          <NavLink href="/blog" icon={Newspaper} label="Blog" pathname={pathname} dark={false} />
           <div className="w-px h-4 bg-border" />
           <NavLink href="/stats" icon={BarChart2} label="Stats" pathname={pathname} dark={false} />
           <div className="w-px h-4 bg-border" />

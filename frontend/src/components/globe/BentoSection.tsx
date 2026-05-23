@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useRef, useEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { PieChart, Pie, Cell } from "recharts";
@@ -676,7 +677,7 @@ export function BentoSection({ summary, posts }: Props) {
                   className="text-xs font-bold flex-shrink-0"
                   style={{ color: P.purple }}
                 >
-                  Read →
+                  Read <ArrowRight className="h-3 w-3 ml-1 inline" />
                 </span>
               </div>
             </Link>

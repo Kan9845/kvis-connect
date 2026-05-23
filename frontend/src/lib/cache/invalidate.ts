@@ -14,7 +14,7 @@ export function onBlogDeleteSuccess(qc: QueryClient, slug: string) {
 
 export function onMeUpdateSuccess(qc: QueryClient, me: UserMe) {
   qc.setQueryData(keys.me(), me);
-  qc.setQueryData(keys.user.detail(me.id), me);
+  qc.setQueryData(keys.user.detail(me.slug), me);
   qc.invalidateQueries({ queryKey: keys.user.all() });
   qc.invalidateQueries({ queryKey: keys.globe.pins() });
 }

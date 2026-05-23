@@ -83,6 +83,12 @@ async def close_cache() -> None:
 def _json_default(o: Any) -> Any:
     if isinstance(o, (datetime, date)):
         return o.isoformat()
+    import uuid
+    if isinstance(o, uuid.UUID):
+        return str(o)
+    # Pydantic v2 models
+    if hasattr(o, "model_dump"):
+        return o.model_dump()
     raise TypeError(f"not serialisable: {type(o)}")
 
 

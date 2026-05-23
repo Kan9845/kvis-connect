@@ -41,8 +41,8 @@ const ELEMENT_LABEL: Record<Element, string> = {
 };
 
 function cohortGradYear(k: number) {
-  // K1 graduated 2016, K9 graduated 2024
-  return 2015 + k;
+  // K7 = class of 2024, K8 = class of 2025, etc.
+  return 2017 + k;
 }
 
 function gradeLabel(g: number) {

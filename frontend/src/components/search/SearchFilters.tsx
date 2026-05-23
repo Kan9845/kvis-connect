@@ -82,10 +82,10 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
           <Separator className={sepCls} />
 
           {/* Class Year */}
-          <Section title="Class Year" dark={dark}>
+          <Section title="KVIS Batch" dark={dark}>
             <Select onValueChange={(v) => setValue("kvis_year", v ? parseInt(v) : undefined)}>
               <SelectTrigger className={triggerCls}>
-                <SelectValue placeholder="Any year" />
+                <SelectValue placeholder="Any batch" />
               </SelectTrigger>
               <SelectContent>
                 {KVIS_YEARS.map((y) => (
