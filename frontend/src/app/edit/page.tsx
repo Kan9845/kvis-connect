@@ -40,6 +40,12 @@ import { CountrySelect } from "@/components/ui/location-selects";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Education, Career } from "@/lib/types";
+import { AvatarCustomizer } from "@/components/avatar/AvatarCustomizer";
+import { AvatarPreview } from "@/components/avatar/AvatarPreview";
+import { defaultAvatar } from "@/components/avatar/avatarData";
+import { AvatarConfig } from "@/lib/avatarTypes";
+import { avatarConfigToFile } from "@/lib/avatarExport";
+import html2canvas from "html2canvas";
 
 const P = {
   purple: "oklch(44% 0.26 294)",
@@ -160,6 +166,10 @@ export default function EditPage() {
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [tab, setTab] = useState<Tab>("general");
 
+  const [gooseConfig, setGooseConfig] = useState<AvatarConfig>(defaultAvatar);
+  const avatarRef = useRef<HTMLDivElement>(null);
+  const [profileMode, setProfileMode] = useState<"upload" | "goose">("upload");
+
   useEffect(() => {
     if (!loading && !me) router.push("/auth/login");
   }, [loading, me, router]);
@@ -237,6 +247,57 @@ export default function EditPage() {
     if (!file) return;
     setPicPreview(URL.createObjectURL(file));
     setPendingFile(file);
+  };
+
+  const handleUseGooseProfile = async () => {
+    if (!avatarRef.current) return;
+
+    try {
+      const canvas = await html2canvas(avatarRef.current, {
+        backgroundColor: null,
+        scale: 2,
+      });
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+
+        const file = new File(
+          [blob],
+          "goose-profile.png",
+          {
+            type: "image/png",
+          }
+        );
+
+        // use SAME S3 upload flow
+        const { url } =
+          await userApi.uploadProfilePic(file);
+
+        // save to profile
+        const updated = await userApi.updateMe({
+          profile_pic_url: url,
+        });
+
+        onMeUpdateSuccess(qc, updated);
+
+        await refetch();
+
+        setPicPreview(url);
+
+        toast({
+          title: "Goose profile updated",
+        });
+
+      }, "image/png");
+
+    } catch (err) {
+      console.error(err);
+
+      toast({
+        title: "Failed to generate goose profile",
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading || !me) {
@@ -324,49 +385,137 @@ export default function EditPage() {
             {/* I. Portrait */}
             <section>
               <SectionHead numeral="I." kicker="Portrait" title="Profile picture" />
+                    
               <div
-                className="grid grid-cols-[100px_1fr] md:grid-cols-[140px_1fr] gap-6 md:gap-8 items-center py-4 border-b"
+                className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-12 py-6 border-b items-start"
                 style={{ borderColor: P.rule }}
               >
-                <div className="relative aspect-square overflow-hidden bg-muted">
-                  {previewUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={previewUrl}
-                      alt={`${me.first_name} ${me.last_name}`}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="absolute inset-0 flex items-center justify-center text-white font-black"
-                      style={{
-                        background: P.purple,
-                        fontSize: "clamp(1.75rem, 6vw, 3rem)",
-                      }}
+              
+                {/* LEFT COLUMN */}
+                <div className="space-y-6 sticky top-6 self-start">
+                  <div
+                    ref={profileMode === "goose" ? avatarRef : undefined}
+                    className="relative w-full max-w-[320px] aspect-square overflow-hidden rounded-[48px] bg-muted"
+                  >
+                    {profileMode === "goose" ? (
+                      <AvatarPreview config={gooseConfig} />
+                    ) : previewUrl ? (
+                      <img
+                        src={previewUrl}
+                        alt={`${me.first_name} ${me.last_name}`}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="absolute inset-0 flex items-center justify-center text-white font-black"
+                        style={{
+                          background: P.purple,
+                          fontSize: "clamp(2rem, 8vw, 4rem)",
+                        }}
+                      >
+                        {initials}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                  
+                {/* RIGHT COLUMN */}
+                <div className="w-full max-w-2xl space-y-8">
+                  
+                  {/* MODE SWITCH */}
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      variant={profileMode === "upload" ? "default" : "outline"}
+                      onClick={() => setProfileMode("upload")}
                     >
-                      {initials}
+                      Upload Photo
+                    </Button>
+                  
+                    <Button
+                      type="button"
+                      variant={profileMode === "goose" ? "default" : "outline"}
+                      onClick={() => setProfileMode("goose")}
+                    >
+                      Goose Profile
+                    </Button>
+                  </div>
+                  
+                  {/* UPLOAD MODE */}
+                  {profileMode === "upload" && (
+                    <div className="space-y-6">
+                    
+                      <div>
+                        <h3 className="text-xl font-black tracking-tight mb-2">
+                          Upload a profile photo
+                        </h3>
+                                    
+                        <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+                          JPG or PNG. Square images work best.
+                        </p>
+                      </div>
+                                    
+                      <label
+                        className="
+                          flex h-40 w-full max-w-md cursor-pointer
+                          items-center justify-center rounded-3xl
+                          border border-dashed border-foreground/20
+                          transition-colors hover:border-foreground/50
+                        "
+                      >
+                        <input
+                          ref={fileRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePicChange}
+                        />
+                  
+                        <div className="text-center">
+                          <Upload className="mx-auto mb-3 h-6 w-6" />
+                          <p className="text-sm font-medium">
+                            Click to upload
+                          </p>
+                        </div>
+                      </label>
+                                    
                     </div>
                   )}
-                </div>
-                <div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => fileRef.current?.click()}
-                    className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2"
-                  >
-                    <Upload className="h-3.5 w-3.5" /> Change photo
-                  </Button>
-                  <p className="text-xs text-muted-foreground mt-3 max-w-[40ch]">
-                    Square images work best. JPG or PNG, up to ~5MB.
-                  </p>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handlePicChange}
-                  />
+            
+                  {/* GOOSE MODE */}
+                  {profileMode === "goose" && (
+                    <div className="space-y-6">
+                    
+                      <div>
+                        <h3 className="text-xl font-black tracking-tight mb-2">
+                          Customize your goose
+                        </h3>
+
+                        <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+                          Create a playful illustrated profile avatar.
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl">
+                        <AvatarCustomizer
+                          value={gooseConfig}
+                          onChange={setGooseConfig}
+                        />
+                      </div>
+
+                    </div>
+                  )}
+
+                  <div className="pt-8">
+                    <Button
+                      type="button"
+                      className="h-12 px-8 rounded-2xl"
+                      onClick={profileMode === "goose" ? handleUseGooseProfile : undefined}
+                    >
+                      {profileMode === "goose" ? "Save goose profile" : "Save profile"}
+                    </Button>
+                  </div>
+            
                 </div>
               </div>
             </section>

@@ -11,5 +11,8 @@
     "migration": "cd backend && .venv\\Scripts\\alembic revision --autogenerate -m",
     "install:be": "cd backend && python -m venv .venv && .venv\\Scripts\\pip install -r requirements.txt",
     "install:fe": "cd frontend && pnpm install"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1"
   }
 }

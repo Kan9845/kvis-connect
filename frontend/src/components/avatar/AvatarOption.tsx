@@ -1,0 +1,52 @@
+"use client";
+
+interface Props {
+  asset: string;
+  category: string;
+  selected: boolean;
+  onClick: () => void;
+}
+
+export function AvatarOption({ asset, category, selected, onClick }: Props) {
+  const isBackground = category === "background";
+
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative w-20 h-20 rounded-2xl overflow-hidden
+        border transition-all duration-300
+        ${selected
+          ? "border-black scale-105 shadow-xl"
+          : "border-gray-200 hover:border-gray-400"
+        }
+      `}
+    >
+      {/* bg color behind everything */}
+      {!isBackground && (
+        <img
+          src="/goose/bg_blue.png"
+          alt=""
+          className="absolute inset-0 w-full h-full object-contain"
+        />
+      )}
+
+      {/* goose base (skip for background category) */}
+      {!isBackground && (
+        <img
+          src="/goose/goose_base.png"
+          alt=""
+          className="absolute inset-0 w-full h-full object-contain"
+        />
+      )}
+
+      {/* the actual asset */}
+      <img
+        src={`/goose/${asset}.png`}
+        alt={asset}
+        className="absolute inset-0 w-full h-full object-contain"
+        draggable={false}
+      />
+    </button>
+  );
+}
