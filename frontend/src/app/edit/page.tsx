@@ -510,9 +510,26 @@ export default function EditPage() {
                     <Button
                       type="button"
                       className="h-12 px-8 rounded-2xl"
-                      onClick={profileMode === "goose" ? handleUseGooseProfile : undefined}
+                      onClick={async () => {
+                        if (profileMode === "goose") {
+                          await handleUseGooseProfile();
+                        } else if (pendingFile) {
+                          try {
+                            const { url } = await userApi.uploadProfilePic(pendingFile);
+                            const updated = await userApi.updateMe({ profile_pic_url: url });
+                            onMeUpdateSuccess(qc, updated);
+                            await refetch();
+                            setPicPreview(url);
+                            setPendingFile(null);
+                            toast({ title: "Profile picture updated" });
+                          } catch {
+                            toast({ title: "Upload failed", variant: "destructive" });
+                          }
+                        }
+                      }}
+                      disabled={profileMode === "upload" && !pendingFile}
                     >
-                      {profileMode === "goose" ? "Save goose profile" : "Save profile"}
+                      {profileMode === "goose" ? "Save goose profile" : "Save photo"}
                     </Button>
                   </div>
             

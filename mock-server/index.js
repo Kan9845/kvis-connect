@@ -2,8 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
+
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 app.use(
   cors({
@@ -17,6 +21,7 @@ app.use(
 const MOCK_ALUMNI = [
   {
     id: 1,
+    slug: "somsak-khamchoo",
     email: "somsak.k@kvis.ac.th",
     first_name: "Somsak",
     last_name: "Khamchoo",
@@ -1729,7 +1734,7 @@ let MOCK_BLOGS = [
 })();
 
 // Logged-in mock user (id=1)
-const MOCK_ME = MOCK_ALUMNI[0];
+const MOCK_ME = { ...MOCK_ALUMNI[0], slug: "somsak-khamchoo" };
 
 // ─── Auth Helpers ─────────────────────────────────────────────────────────────
 
@@ -1790,8 +1795,16 @@ app.patch("/api/users/me", requireAuth, (req, res) => {
   res.json(MOCK_ME);
 });
 
-app.post("/api/users/me/profile-pic", requireAuth, (req, res) => {
-  res.json({ url: "https://via.placeholder.com/150" });
+app.post("/api/users/me/profile-pic", requireAuth, upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ detail: "No file provided" });
+  
+  // Convert uploaded file to base64 data URL so it persists in memory
+  const base64 = req.file.buffer.toString("base64");
+  const mimeType = req.file.mimetype;
+  const dataUrl = `data:${mimeType};base64,${base64}`;
+  
+  MOCK_ME.profile_pic_url = dataUrl;
+  res.json({ url: dataUrl });
 });
 
 app.put("/api/users/me/education", requireAuth, (req, res) => {
@@ -1829,7 +1842,10 @@ app.get("/api/users/globe/pins", (req, res) => {
 
 // User by ID — must come after /me and /globe/pins
 app.get("/api/users/:id", (req, res) => {
-  const user = MOCK_ALUMNI.find((u) => u.id === parseInt(req.params.id));
+  const param = req.params.id;
+  const user = MOCK_ALUMNI.find(
+    (u) => u.id === parseInt(param) || u.slug === param
+  );
   if (!user) return res.status(404).json({ detail: "User not found" });
   res.json(user);
 });

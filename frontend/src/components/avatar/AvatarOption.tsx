@@ -27,7 +27,7 @@ export function AvatarOption({ asset, category, selected, onClick }: Props) {
         <img
           src="/goose/bg_blue.png"
           alt=""
-          className="absolute inset-0 w-full h-full object-contain"
+          className="absolute inset-0 w-full h-full object-contain scale-150"
         />
       )}
 
@@ -36,7 +36,7 @@ export function AvatarOption({ asset, category, selected, onClick }: Props) {
         <img
           src="/goose/goose_base.png"
           alt=""
-          className="absolute inset-0 w-full h-full object-contain"
+          className="absolute inset-0 w-full h-full object-contain scale-150"
         />
       )}
 
@@ -44,7 +44,7 @@ export function AvatarOption({ asset, category, selected, onClick }: Props) {
       <img
         src={`/goose/${asset}.png`}
         alt={asset}
-        className="absolute inset-0 w-full h-full object-contain"
+        className="absolute inset-0 w-full h-full object-contain scale-150"
         draggable={false}
       />
     </button>
