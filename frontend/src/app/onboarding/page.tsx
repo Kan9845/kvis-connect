@@ -154,7 +154,7 @@ export default function OnboardingPage() {
       if (role === "student") {
         await userApi.updateMe({
           current_grade: grade ?? undefined,
-          current_elemental: elemental ?? undefined,
+          current_elemental: elemental as "earth" | "water" | "air" | "fire" | undefined,
           current_class: classNum ?? undefined,
           profile_setup_done: true,
         });
