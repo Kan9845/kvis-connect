@@ -1792,18 +1792,19 @@ app.get("/api/users/me", requireAuth, (req, res) => {
 
 app.patch("/api/users/me", requireAuth, (req, res) => {
   Object.assign(MOCK_ME, req.body);
+  Object.assign(MOCK_ALUMNI[0], req.body); // keep MOCK_ALUMNI in sync
   res.json(MOCK_ME);
 });
 
 app.post("/api/users/me/profile-pic", requireAuth, upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).json({ detail: "No file provided" });
   
-  // Convert uploaded file to base64 data URL so it persists in memory
   const base64 = req.file.buffer.toString("base64");
   const mimeType = req.file.mimetype;
   const dataUrl = `data:${mimeType};base64,${base64}`;
   
   MOCK_ME.profile_pic_url = dataUrl;
+  MOCK_ALUMNI[0].profile_pic_url = dataUrl; // ← add this line
   res.json({ url: dataUrl });
 });
 
