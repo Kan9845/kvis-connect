@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        nav: "1080px",
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

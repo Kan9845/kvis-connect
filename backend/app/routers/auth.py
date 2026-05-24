@@ -131,9 +131,10 @@ async def register(body: RegisterRequest, session: Session = Depends(get_session
     }
     try:
         _send_otp_email(body.email, otp)
-    except Exception:
+    except Exception as e:
         del _otp_store[body.email]
-        raise HTTPException(500, detail="Account created but failed to send verification email. Check SMTP config.")
+        logging.getLogger(__name__).error(f"SMTP error during registration: {e}")
+        raise HTTPException(500, detail=f"Account created but failed to send verification email: {e}")
 
     return {"message": "Account created. Check your email for a verification code.", "email": body.email}
 

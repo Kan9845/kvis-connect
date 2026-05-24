@@ -521,7 +521,7 @@ export function Navbar() {
       >
         {/* Top bar — hidden on mobile when panel is open */}
         <div
-          className={`${mobileOpen ? "hidden lg:flex" : "flex"} items-center justify-between gap-4 px-6 h-16`}
+          className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-6 h-16`}
         >
           <Link
             href="/"
@@ -535,7 +535,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden lg:flex items-center gap-3 pointer-events-auto">
+          <div className="hidden nav:flex items-center gap-3 pointer-events-auto">
             <div
               className="flex items-center rounded-full overflow-visible w-[338px]"
               style={{
@@ -596,14 +596,14 @@ export function Navbar() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className={`hidden lg:inline-flex ${dark ? "text-white hover:text-white hover:bg-white/10" : "text-gray-700"}`}
+                  className={`hidden nav:inline-flex ${dark ? "text-white hover:text-white hover:bg-white/10" : "text-gray-700"}`}
                   asChild
                 >
                   <Link href="/auth/login">Sign in</Link>
                 </Button>
                 <Button
                   size="sm"
-                  className={`hidden lg:inline-flex ${dark ? "bg-transparent text-white border border-white/60 hover:bg-white/10" : "text-white"}`}
+                  className={`hidden nav:inline-flex ${dark ? "bg-transparent text-white border border-white/60 hover:bg-white/10" : "text-white"}`}
                   style={dark ? {} : { background: PURPLE }}
                   asChild
                 >
@@ -613,7 +613,7 @@ export function Navbar() {
             )}
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden pointer-events-auto flex items-center justify-center w-9 h-9 rounded-full transition-colors"
+              className="nav:hidden pointer-events-auto flex items-center justify-center w-9 h-9 rounded-full transition-colors"
               style={{
                 color: dark ? "white" : "oklch(22% 0.18 294)",
                 background: mobileOpen
@@ -639,7 +639,7 @@ export function Navbar() {
 
         {/* Mobile panel */}
         {mobileOpen && (
-          <div className="lg:hidden">
+          <div className="nav:hidden">
             <MobileNavPanel
               dark={dark}
               pathname={pathname}
@@ -656,14 +656,14 @@ export function Navbar() {
   return (
     <header className="relative z-50 w-full bg-background">
       <div
-        className={`${mobileOpen ? "hidden lg:flex" : "flex"} items-center justify-between gap-4 px-6 h-16`}
+        className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-6 h-16`}
       >
         <Link href="/" className="font-bold text-lg shrink-0 text-foreground">
           KVIS Connect
         </Link>
 
         {/* Desktop nav */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden nav:flex items-center gap-3">
           <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-visible w-[338px]">
             <AlumniSearch solid />
           </div>
@@ -704,14 +704,14 @@ export function Navbar() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="hidden lg:inline-flex text-muted-foreground"
+                className="hidden nav:inline-flex text-muted-foreground"
                 asChild
               >
                 <Link href="/auth/login">Sign in</Link>
               </Button>
               <Button
                 size="sm"
-                className="hidden lg:inline-flex text-white"
+                className="hidden nav:inline-flex text-white"
                 style={{ background: PURPLE }}
                 asChild
               >
@@ -721,7 +721,7 @@ export function Navbar() {
           )}
           {/* Mobile hamburger */}
           <button
-            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-full transition-colors text-foreground hover:bg-muted"
+            className="nav:hidden flex items-center justify-center w-9 h-9 rounded-full transition-colors text-foreground hover:bg-muted"
             style={{ background: mobileOpen ? undefined : "transparent" }}
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
