@@ -52,55 +52,111 @@ export function LandingClient({ initialPins }: Props) {
 
   const resultCount = hasFilter ? (filteredPins?.length ?? 0) : pins.length;
 
+  const panelHeaderCls = `flex items-center justify-between px-4 pt-4 pb-2 border-b ${isDarkSky ? "border-white/30" : "border-slate-900/15"}`;
+  const closeBtnCls = `h-7 w-7 rounded-lg ${isDarkSky ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"}`;
+  const filterBtnCls = `absolute z-20 h-auto gap-2 rounded-xl bg-transparent px-3 py-1.5 text-sm font-medium ${isDarkSky ? "border-white/50 text-white hover:bg-white/10 hover:text-white" : "border-slate-900/40 text-slate-900 hover:bg-slate-900/5 hover:text-slate-900"}`;
+
+  const panelContent = (
+    <>
+      <div className={panelHeaderCls}>
+        <div>
+          <p className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}>Filter Alumni</p>
+          <p className={`text-xs mt-0.5 ${isDarkSky ? "text-white/70" : "text-slate-600"}`}>
+            {hasFilter ? `${resultCount} found` : `${pins.length} worldwide`}
+          </p>
+        </div>
+        <Button variant="ghost" size="icon" onClick={() => setPanelOpen(false)} className={closeBtnCls}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="px-4 py-4">
+        <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />
+      </div>
+    </>
+  );
+
   return (
     <div className={`relative w-full h-full overflow-hidden isolate ${isDarkSky ? "bg-black" : "bg-white"}`}>
       <AlumniGlobe pins={pins} filteredPins={filteredPins} />
 
       {!panelOpen && (
-        <Button
-          variant="outline"
-          onClick={() => setPanelOpen(true)}
-          className={`absolute z-20 h-auto gap-2 rounded-lg bg-transparent px-3 py-1.5 text-sm font-medium ${isDarkSky ? "border-white/50 text-white hover:bg-white/10 hover:text-white" : "border-slate-900/40 text-slate-900 hover:bg-slate-900/5 hover:text-slate-900"}`}
-          style={{ top: 76, left: 20, borderWidth: "1.5px" }}
-        >
-          <SlidersHorizontal className="h-3.5 w-3.5" />
-          Filter
-        </Button>
+        <>
+          {/* Desktop: top-left */}
+          <Button
+            variant="outline"
+            onClick={() => setPanelOpen(true)}
+            className={`hidden md:flex ${filterBtnCls}`}
+            style={{ top: 76, left: 20, borderWidth: "1.5px" }}
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Filter
+          </Button>
+
+          {/* Mobile: bottom-center */}
+          <Button
+            variant="outline"
+            onClick={() => setPanelOpen(true)}
+            className={`md:hidden ${filterBtnCls} bottom-6 left-1/2 -translate-x-1/2`}
+            style={{ borderWidth: "1.5px" }}
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Filter Alumni
+          </Button>
+        </>
       )}
 
       {panelOpen && (
-        <div
-          className="absolute z-20 w-72 rounded-2xl overflow-y-auto"
-          style={{
-            top: 76,
-            left: 20,
-            maxHeight: "calc(100vh - 96px)",
-            background: isDarkSky ? "rgba(2,6,18,0.55)" : "rgba(255,255,255,0.55)",
-            border: isDarkSky ? "1px solid rgba(255,255,255,0.6)" : "1px solid rgba(15,23,42,0.25)",
-            backdropFilter: "blur(6px)",
-            WebkitBackdropFilter: "blur(6px)",
-          }}
-        >
-          <div className={`flex items-center justify-between px-4 pt-4 pb-2 border-b ${isDarkSky ? "border-white/30" : "border-slate-900/15"}`}>
-            <div>
-              <p className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}>Filter Alumni</p>
-              <p className={`text-xs mt-0.5 ${isDarkSky ? "text-white/70" : "text-slate-600"}`}>
-                {hasFilter ? `${resultCount} found` : `${pins.length} worldwide`}
-              </p>
+        <>
+          {/* Desktop: side panel */}
+          <div
+            className="hidden md:block absolute z-20 w-72 rounded-2xl overflow-y-auto"
+            style={{
+              top: 76,
+              left: 20,
+              maxHeight: "calc(100vh - 96px)",
+              background: isDarkSky ? "rgba(2,6,18,0.55)" : "rgba(255,255,255,0.55)",
+              border: isDarkSky ? "1px solid rgba(255,255,255,0.6)" : "1px solid rgba(15,23,42,0.25)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
+            }}
+          >
+            {panelContent}
+          </div>
+
+          {/* Mobile: bottom sheet */}
+          <div
+            className="md:hidden absolute z-20 inset-x-0 bottom-0 rounded-t-2xl flex flex-col"
+            style={{
+              maxHeight: "72dvh",
+              background: isDarkSky ? "rgba(2,6,18,0.92)" : "rgba(255,255,255,0.92)",
+              border: isDarkSky ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(15,23,42,0.12)",
+              borderBottom: "none",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+            }}
+          >
+            {/* Drag handle */}
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className={`w-10 h-1 rounded-full ${isDarkSky ? "bg-white/25" : "bg-slate-300"}`} />
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setPanelOpen(false)}
-              className={`h-7 w-7 rounded-lg ${isDarkSky ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"}`}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex-shrink-0">
+              <div className={`flex items-center justify-between px-4 pt-2 pb-2 border-b ${isDarkSky ? "border-white/20" : "border-slate-900/10"}`}>
+                <div>
+                  <p className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}>Filter Alumni</p>
+                  <p className={`text-xs mt-0.5 ${isDarkSky ? "text-white/60" : "text-slate-500"}`}>
+                    {hasFilter ? `${resultCount} found` : `${pins.length} worldwide`}
+                  </p>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => setPanelOpen(false)} className={closeBtnCls}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />
+            </div>
           </div>
-          <div className="px-4 py-4">
-            <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />
-          </div>
-        </div>
+        </>
       )}
 
       {hasFilter && filteredPins?.length === 0 && (

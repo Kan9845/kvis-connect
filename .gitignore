@@ -12,5 +12,4 @@ build/
 venv/
 *.log
 .DS_Store
-docs/
 context/

@@ -95,9 +95,6 @@ def _set_auth_cookies(response: Response, user_id: int):
 
 @router.post("/register")
 async def register(body: RegisterRequest, session: Session = Depends(get_session)):
-    if not body.email.endswith(f"@{KVIS_DOMAIN}"):
-        raise HTTPException(400, detail="Only @kvis.ac.th emails are allowed")
-
     existing = session.exec(select(User).where(User.email == body.email)).first()
     if existing and existing.email_verified:
         raise HTTPException(400, detail="Email already registered")
@@ -183,8 +180,9 @@ def login(body: LoginRequest, response: Response, session: Session = Depends(get
         }
         try:
             _send_otp_email(user.email, otp)
-        except Exception:
-            pass
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to send OTP email: {e}")
         raise HTTPException(403, detail="EMAIL_NOT_VERIFIED")
 
     _set_auth_cookies(response, user.id)

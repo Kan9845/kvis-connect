@@ -262,6 +262,24 @@ function makeMemberRow(p: GlobePin, onNavigate: (slug: string) => void): HTMLEle
 function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
   const { card } = getCard();
   card.innerHTML = "";
+  card.style.position = "fixed";
+
+  // Close button — always present, critical for touch where hover-out never fires
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.style.cssText = `
+    position:absolute;top:8px;right:8px;
+    width:22px;height:22px;padding:0;
+    background:transparent;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    color:${P.text3};font-size:13px;line-height:1;
+    border-radius:4px;
+  `;
+  closeBtn.textContent = "×";
+  closeBtn.addEventListener("mouseenter", () => { closeBtn.style.color = P.ink; });
+  closeBtn.addEventListener("mouseleave", () => { closeBtn.style.color = P.text3; });
+  closeBtn.addEventListener("click", (e) => { e.stopPropagation(); hideCard(0); });
+  card.appendChild(closeBtn);
 
   const isCluster = cluster.members.length > 1;
   // `place` already encodes "City, Country" (e.g. "Bangkok, Thailand"), so
@@ -477,8 +495,21 @@ function makePinEl(
   });
 
   wrap.addEventListener("click", () => {
-    // Singles navigate directly. Clusters require user to pick from card list.
-    if (!isCluster) onNavigate(first.slug);
+    if (!isCluster) {
+      onNavigate(first.slug);
+      return;
+    }
+    // On touch devices (pointer: coarse), tap to toggle the card since hover doesn't fire.
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      const { card } = getCard();
+      const alreadyVisible = parseFloat(card.style.opacity) > 0;
+      if (alreadyVisible) {
+        hideCard(0);
+      } else {
+        populateCard(cluster, onNavigate);
+        showCardAt(wrap);
+      }
+    }
   });
 
   return wrap;

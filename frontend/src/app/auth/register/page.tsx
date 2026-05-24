@@ -68,7 +68,7 @@ function RegisterInner() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (password !== confirm) { setError("Passwords do not match."); return; }
+if (password !== confirm) { setError("Passwords do not match."); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     setSubmitting(true);
     try {
@@ -183,7 +183,7 @@ function RegisterInner() {
       numeral="02"
       kicker="Register · KVIS alumni only"
       title="Add your alumni record."
-      lede="Open an account with your @kvis.ac.th email. We'll send a verification code before you can log in."
+      lede="Create an account to join the KVIS alumni network. We'll send a verification code to your email."
       footer={
         <div className="flex items-center justify-between gap-6">
           <span>Already a member?</span>

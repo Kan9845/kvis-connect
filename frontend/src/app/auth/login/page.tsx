@@ -138,7 +138,7 @@ function LoginInner() {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || loading}
           className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs uppercase tracking-[0.28em] font-bold disabled:opacity-50"
         >
           {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}

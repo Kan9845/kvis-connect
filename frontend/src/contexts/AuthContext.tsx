@@ -61,7 +61,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  useEffect(() => { fetchMe(); }, []);
+  useEffect(() => {
+    const onAuthPage = typeof window !== "undefined" && window.location.pathname.startsWith("/auth/");
+    if (onAuthPage) { setLoading(false); return; }
+    fetchMe();
+  }, []);
 
   const logout = async () => {
     if (AUTH_DISABLED) return;

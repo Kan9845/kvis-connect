@@ -391,7 +391,7 @@ export default function EditPage() {
               >
               
                 {/* LEFT COLUMN */}
-                <div className="space-y-6 sticky top-6 self-start">
+                <div className="space-y-6 self-start">
                   <div
                     ref={profileMode === "goose" ? avatarRef : undefined}
                     className="relative w-full max-w-[320px] aspect-square overflow-hidden bg-muted"
