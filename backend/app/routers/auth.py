@@ -1,6 +1,7 @@
 import logging
 import secrets
 import smtplib
+import threading
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta, timezone
 
@@ -64,7 +65,7 @@ def _send_reset_email(to_email: str, token: str) -> None:
     msg["From"] = settings.SMTP_FROM
     msg["To"] = to_email
 
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
         server.starttls()
         if settings.SMTP_USER:
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
@@ -82,11 +83,20 @@ def _send_otp_email(to_email: str, otp: str) -> None:
     msg["From"] = settings.SMTP_FROM
     msg["To"] = to_email
 
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT, timeout=10) as server:
         server.starttls()
         if settings.SMTP_USER:
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
         server.sendmail(settings.SMTP_FROM, to_email, msg.as_string())
+
+
+def _send_otp_email_async(to_email: str, otp: str) -> None:
+    def _run():
+        try:
+            _send_otp_email(to_email, otp)
+        except Exception as e:
+            logging.getLogger(__name__).error(f"Background OTP send failed: {e}")
+    threading.Thread(target=_run, daemon=True).start()
 
 
 def _set_auth_cookies(response: Response, user_id: int):
@@ -180,11 +190,7 @@ def login(body: LoginRequest, response: Response, session: Session = Depends(get
             "otp": otp,
             "expires_at": datetime.now(timezone.utc) + timedelta(minutes=OTP_TTL_MINUTES),
         }
-        try:
-            _send_otp_email(user.email, otp)
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"Failed to send OTP email: {e}")
+        _send_otp_email_async(user.email, otp)
         raise HTTPException(403, detail="EMAIL_NOT_VERIFIED")
 
     _set_auth_cookies(response, user.id)

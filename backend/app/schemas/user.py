@@ -129,8 +129,8 @@ class GlobePin(BaseModel):
     slug: str
     first_name: str
     last_name: str
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     place: Optional[str]
     kvis_year: Optional[int]
     profile_pic_url: Optional[str]
