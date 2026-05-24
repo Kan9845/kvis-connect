@@ -108,6 +108,14 @@ export default function OnboardingPage() {
     if (!loading && !user) router.replace("/auth/login");
   }, [user, loading, router]);
 
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
+      </div>
+    );
+  }
+
   useEffect(() => {
     if (CITY_STATE_COUNTRIES.has(eduCountry)) setEduCity(eduCountry);
   }, [eduCountry]);
@@ -116,13 +124,6 @@ export default function OnboardingPage() {
     if (CITY_STATE_COUNTRIES.has(jobCountry)) setJobCity(jobCountry);
   }, [jobCountry]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
-      </div>
-    );
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -186,7 +187,6 @@ export default function OnboardingPage() {
       router.replace("/");
     } catch {
       setError("Something went wrong. Please try again.");
-    } finally {
       setSubmitting(false);
     }
   }
@@ -254,7 +254,7 @@ export default function OnboardingPage() {
                     </div>
 
                     <div>
-                      <FieldLabel>Elemental house</FieldLabel>
+                      <FieldLabel>Elemental class</FieldLabel>
                       <ToggleGroup
                         options={ELEMENTALS.map((el) => ({ value: el, label: el }))}
                         value={elemental}

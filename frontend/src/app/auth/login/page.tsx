@@ -33,16 +33,8 @@ function LoginInner() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!loading && user?.email_verified) router.replace(next);
-  }, [user, loading, router, next]);
-
-  if (loading) {
-    return (
-      <div className="min-h-full flex items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
-      </div>
-    );
-  }
+    if (user?.email_verified) router.replace(next);
+  }, [user, router, next]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

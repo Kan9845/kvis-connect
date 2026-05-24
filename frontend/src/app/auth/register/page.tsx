@@ -14,7 +14,7 @@ const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
 const RESEND_COOLDOWN = 60;
 
 export default function RegisterPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
 
   const [step, setStep] = useState<"form" | "verify">("form");
@@ -35,25 +35,14 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // If user lands here already verified (e.g. logged in elsewhere), bounce home.
-    // Only checked once on initial mount via step==="form" guard.
-    if (!loading && user?.email_verified && step === "form") router.replace("/");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+    if (user?.email_verified && step === "form") router.replace("/");
+  }, [user, router, step]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
     const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
     return () => clearTimeout(t);
   }, [cooldown]);
-
-  if (loading) {
-    return (
-      <div className="min-h-full flex items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
-      </div>
-    );
-  }
 
   const focusable = {
     onFocus: (e: React.FocusEvent<HTMLInputElement>) => {
@@ -89,8 +78,6 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       await authApi.verifyEmail(registeredEmail, otp);
-      // Hard navigation forces AuthContext to re-init with the freshly-set cookies
-      // and avoids any router race with the redirect-if-verified guard.
       window.location.assign("/onboarding");
     } catch (err) {
       const msg = err instanceof AxiosError ? err.response?.data?.detail : null;
