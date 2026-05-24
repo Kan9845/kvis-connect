@@ -1,4 +1,3 @@
-import random
 import secrets
 import smtplib
 from email.mime.text import MIMEText
@@ -177,12 +176,12 @@ def login(body: LoginRequest, response: Response, session: Session = Depends(get
     if not user or not user.hashed_password or not verify_password(body.password, user.hashed_password):
         raise HTTPException(401, detail="Invalid credentials")
     if not user.email_verified:
+        otp = _generate_otp()
+        _otp_store[user.email] = {
+            "otp": otp,
+            "expires_at": datetime.now(timezone.utc) + timedelta(minutes=OTP_TTL_MINUTES),
+        }
         try:
-            otp = str(random.randint(100000, 999999))
-            user.otp = otp
-            user.otp_expires_at = datetime.utcnow() + timedelta(minutes=10)
-            session.add(user)
-            session.commit()
             _send_otp_email(user.email, otp)
         except Exception:
             pass

@@ -198,7 +198,7 @@ export function Navbar() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={logout} className="text-destructive cursor-pointer">
+        <DropdownMenuItem onClick={logout} className="text-red-400 cursor-pointer focus:text-red-400">
           <LogOut className="mr-2 h-4 w-4" /> Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
