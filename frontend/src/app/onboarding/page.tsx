@@ -161,26 +161,27 @@ export default function OnboardingPage() {
       } else {
         const country = stillStudying ? eduCountry : jobCountry;
         const city = stillStudying ? eduCity : jobCity;
-        await userApi.updateMe({
-          kvis_year: parseInt(kvisYear),
-          country,
-          place: city && city !== country ? `${city}, ${country}` : country,
-          profile_setup_done: true,
-        });
-        if (stillStudying) {
-          await userApi.updateEducation([{ uni_name: uniName, degree, major, country: eduCountry, state: eduCity }]);
-        } else {
-          await userApi.updateCareer([{
-            job_title: jobTitle,
-            employer,
-            job_field: jobField,
-            country: jobCountry,
-            state: jobCity,
-            is_current: true,
-          }]);
-        }
+        const detailCall = stillStudying
+          ? userApi.updateEducation([{ uni_name: uniName, degree, major, country: eduCountry, state: eduCity }])
+          : userApi.updateCareer([{
+              job_title: jobTitle,
+              employer,
+              job_field: jobField,
+              country: jobCountry,
+              state: jobCity,
+              is_current: true,
+            }]);
+        await Promise.all([
+          userApi.updateMe({
+            kvis_year: parseInt(kvisYear),
+            country,
+            place: city && city !== country ? `${city}, ${country}` : country,
+            profile_setup_done: true,
+          }),
+          detailCall,
+        ]);
       }
-      await refetch();
+      refetch();
       queryClient.invalidateQueries({ queryKey: keys.globe.pins() });
       router.replace("/");
     } catch {
