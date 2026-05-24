@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2, ArrowRight, ArrowLeft, Mail } from "lucide-react";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
@@ -14,11 +14,23 @@ const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
 const RESEND_COOLDOWN = 60;
 
 export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterInner />
+    </Suspense>
+  );
+}
+
+function RegisterInner() {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [step, setStep] = useState<"form" | "verify">("form");
-  const [registeredEmail, setRegisteredEmail] = useState("");
+  const prefilledEmail = searchParams.get("email") ?? "";
+  const prefilledStep = searchParams.get("step") === "verify" ? "verify" : "form";
+
+  const [step, setStep] = useState<"form" | "verify">(prefilledStep);
+  const [registeredEmail, setRegisteredEmail] = useState(prefilledEmail);
 
   // Form fields
   const [firstName, setFirstName] = useState("");

@@ -47,6 +47,10 @@ function LoginInner() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
+      if (msg === "EMAIL_NOT_VERIFIED") {
+        router.push(`/auth/register?email=${encodeURIComponent(email)}&step=verify`);
+        return;
+      }
       setError(msg ?? "Invalid email or password.");
     } finally {
       setSubmitting(false);
