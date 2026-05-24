@@ -33,11 +33,8 @@ class Settings(BaseSettings):
     CACHE_TTL_SHORT: int = 120
     CACHE_TTL_LONG: int = 300
 
-    SMTP_HOST: str = ""
-    SMTP_PORT: int = 587
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
-    SMTP_FROM: str = "noreply@kvis.ac.th"
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "noreply@kvis.ac.th"
 
     class Config:
         env_file = ".env"
