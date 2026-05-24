@@ -164,7 +164,7 @@ export default function OnboardingPage() {
         await userApi.updateMe({
           kvis_year: parseInt(kvisYear),
           country,
-          place: `${city}, ${country}`,
+          place: city && city !== country ? `${city}, ${country}` : country,
           profile_setup_done: true,
         });
         if (stillStudying) {

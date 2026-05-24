@@ -40,9 +40,10 @@ interface Props {
   onCountryChange?: (country: string) => void;
   placeholder?: string;
   inputBorderColor?: string;
+  variant?: "bordered" | "underline";
 }
 
-export function UniversityCombobox({ value, onChange, onCountryChange, placeholder = "Search university…", inputBorderColor }: Props) {
+export function UniversityCombobox({ value, onChange, onCountryChange, placeholder = "Search university…", inputBorderColor, variant = "bordered" }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UniEntry[]>([]);
@@ -69,6 +70,14 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
     setOpen(false);
   }
 
+  const triggerCls = variant === "underline"
+    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent"
+    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors";
+
+  const manualInputCls = variant === "underline"
+    ? "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors"
+    : "w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none";
+
   if (otherMode) {
     return (
       <div className="space-y-2">
@@ -81,10 +90,10 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
             onChange(e.target.value);
           }}
           autoFocus
-          className="w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none"
-          style={{ borderColor: inputBorderColor }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "oklch(78% 0.01 294)")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = inputBorderColor ?? "")}
+          className={manualInputCls}
+          style={variant === "bordered" ? { borderColor: inputBorderColor } : undefined}
+          onFocus={variant === "bordered" ? (e) => (e.currentTarget.style.borderColor = "oklch(78% 0.01 294)") : undefined}
+          onBlur={variant === "bordered" ? (e) => (e.currentTarget.style.borderColor = inputBorderColor ?? "") : undefined}
         />
         <button
           type="button"
@@ -104,8 +113,8 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors"
-          style={{ borderColor: inputBorderColor, background: "transparent" }}
+          className={triggerCls}
+          style={variant === "bordered" ? { borderColor: inputBorderColor, background: "transparent" } : undefined}
         >
           <span className={cn(displayValue ? "text-foreground" : "text-foreground/25")}>
             {displayValue || placeholder}

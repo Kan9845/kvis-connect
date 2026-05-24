@@ -70,6 +70,7 @@ class UserPublic(BaseModel):
     facebook_url: Optional[str]
     linkedin_url: Optional[str]
     website_url: Optional[str]
+    is_verified: bool = False
     education: List[EducationRead] = []
     career: List[CareerRead] = []
     created_at: datetime

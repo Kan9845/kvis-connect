@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Send } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const P = {
   purple: "oklch(44% 0.26 294)",
@@ -116,11 +116,11 @@ export default function NewBlogPage() {
     }),
     onSuccess: (blog) => {
       onBlogMutationSuccess(qc, blog);
-      toast({ title: "Posted." });
+      toast.success("Posted.");
       router.push(`/blog/${blog.slug}`);
     },
     onError: () => {
-      toast({ title: "Couldn't post - try again.", variant: "destructive" });
+      toast.error("Couldn't post - try again.");
     },
   });
 
@@ -131,9 +131,9 @@ export default function NewBlogPage() {
     try {
       const { url } = await userApi.uploadProfilePic(file);
       setValue("cover_image_url", url, { shouldValidate: true });
-      toast({ title: "Cover image uploaded" });
+      toast.success("Cover image uploaded");
     } catch {
-      toast({ title: "Upload failed", variant: "destructive" });
+      toast.error("Upload failed");
     } finally {
       setCoverUploading(false);
       e.target.value = "";

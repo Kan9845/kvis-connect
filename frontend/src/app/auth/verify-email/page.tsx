@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
 
@@ -36,7 +36,7 @@ export default function VerifyKvisPage() {
 
   const sendOtp = async () => {
     if (!kvisEmail.toLowerCase().endsWith("@kvis.ac.th")) {
-      toast({ title: "Must be a @kvis.ac.th email", variant: "destructive" });
+      toast.error("Must be a @kvis.ac.th email");
       return;
     }
     setSending(true);
@@ -44,10 +44,10 @@ export default function VerifyKvisPage() {
       await authApi.requestOtp(kvisEmail);
       setOtpSent(true);
       setCooldown(RESEND_COOLDOWN);
-      toast({ title: `Code sent to ${kvisEmail}` });
+      toast.success(`Code sent to ${kvisEmail}`);
     } catch (err) {
       const msg = err instanceof AxiosError ? err.response?.data?.detail : null;
-      toast({ title: msg ?? "Failed to send code", variant: "destructive" });
+      toast.error(msg ?? "Failed to send code");
     } finally {
       setSending(false);
     }
@@ -60,11 +60,11 @@ export default function VerifyKvisPage() {
     try {
       await authApi.verifyKvis(kvisEmail, otp);
       await refetch();
-      toast({ title: "KVIS email verified! You're now KVIS-Verified." });
+      toast.success("KVIS email verified! You're now KVIS-Verified.");
       router.push("/");
     } catch (err) {
       const msg = err instanceof AxiosError ? err.response?.data?.detail : null;
-      toast({ title: msg ?? "Invalid code", variant: "destructive" });
+      toast.error(msg ?? "Invalid code");
     } finally {
       setSubmitting(false);
     }

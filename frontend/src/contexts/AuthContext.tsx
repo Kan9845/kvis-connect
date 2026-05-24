@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { userApi, authApi } from "@/lib/api";
 import type { UserMe } from "@/lib/types";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface AuthContextValue {
   user: UserMe | null;
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // If user was previously logged in and now gets a 401, show session expired toast
       if (initialised.current && user !== null) {
         setUser(null);
-        toast({ title: "Your session has expired. Please sign in again.", variant: "destructive" });
+        toast.error("Your session has expired. Please sign in again.");
       } else {
         setUser(null);
       }

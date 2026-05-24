@@ -57,9 +57,10 @@ interface Props {
   value: string;
   onChange: (v: string) => void;
   borderColor?: string;
+  variant?: "bordered" | "underline";
 }
 
-export function MajorCombobox({ value, onChange, borderColor }: Props) {
+export function MajorCombobox({ value, onChange, borderColor, variant = "bordered" }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [manualMode, setManualMode] = useState(false);
@@ -75,6 +76,14 @@ export function MajorCombobox({ value, onChange, borderColor }: Props) {
     setOpen(false);
   }
 
+  const triggerCls = variant === "underline"
+    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent"
+    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors";
+
+  const manualInputCls = variant === "underline"
+    ? "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors"
+    : "w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none";
+
   if (manualMode) {
     return (
       <div className="space-y-2">
@@ -84,10 +93,10 @@ export function MajorCombobox({ value, onChange, borderColor }: Props) {
           value={manualText}
           onChange={(e) => { setManualText(e.target.value); onChange(e.target.value); }}
           autoFocus
-          className="w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none"
-          style={{ borderColor }}
-          onFocus={(e) => (e.currentTarget.style.borderColor = "oklch(78% 0.01 294)")}
-          onBlur={(e) => (e.currentTarget.style.borderColor = borderColor ?? "")}
+          className={manualInputCls}
+          style={variant === "bordered" ? { borderColor } : undefined}
+          onFocus={variant === "bordered" ? (e) => (e.currentTarget.style.borderColor = "oklch(78% 0.01 294)") : undefined}
+          onBlur={variant === "bordered" ? (e) => (e.currentTarget.style.borderColor = borderColor ?? "") : undefined}
         />
         <button
           type="button"
@@ -107,8 +116,8 @@ export function MajorCombobox({ value, onChange, borderColor }: Props) {
           type="button"
           role="combobox"
           aria-expanded={open}
-          className="w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors"
-          style={{ borderColor, background: "transparent" }}
+          className={triggerCls}
+          style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
           onClick={() => setOpen((o) => !o)}
         >
           <span className={cn(value ? "text-foreground" : "text-foreground/25")}>

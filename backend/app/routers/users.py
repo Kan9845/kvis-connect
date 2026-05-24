@@ -215,7 +215,8 @@ def _user_to_public(user: User) -> dict:
         "profile_pic_url": user.profile_pic_url, "bio": user.bio,
         "mbti": user.mbti, "interests": user.interests,
         "facebook_url": user.facebook_url, "linkedin_url": user.linkedin_url,
-        "website_url": user.website_url, "created_at": user.created_at,
+        "website_url": user.website_url, "is_verified": user.is_verified,
+        "created_at": user.created_at,
         "education": _edu_list(user), "career": _career_list(user),
     }
 

@@ -193,7 +193,7 @@ export function Navbar() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/edit" className="cursor-pointer">
+          <Link href="/profile/edit" className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" /> Edit Profile
           </Link>
         </DropdownMenuItem>

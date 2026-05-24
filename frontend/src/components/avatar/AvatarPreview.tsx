@@ -18,7 +18,6 @@ export function AvatarPreview({
       style={{
         width: size,
         height: size,
-        borderRadius: 48,
       }}
     >
       <AvatarCanvas config={config} />

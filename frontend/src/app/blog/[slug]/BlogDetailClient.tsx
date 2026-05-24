@@ -15,7 +15,7 @@ import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export default function BlogDetailClient({ params }: { params: { slug: string } }) {
   const { slug } = params;
@@ -33,7 +33,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
     onSuccess: () => {
       onBlogDeleteSuccess(qc, slug);
       router.push("/blog");
-      toast({ title: "Post deleted" });
+      toast.success("Post deleted");
     },
   });
 

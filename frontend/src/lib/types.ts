@@ -50,6 +50,7 @@ export interface UserPublic extends UserCard {
   facebook_url?: string;
   linkedin_url?: string;
   website_url?: string;
+  is_verified: boolean;
   created_at: string;
 }
 
@@ -57,7 +58,6 @@ export interface UserMe extends UserPublic {
   email: string;
   line_id?: string;
   email_verified: boolean;
-  is_verified: boolean;
   kvis_email?: string;
   profile_setup_done: boolean;
 }

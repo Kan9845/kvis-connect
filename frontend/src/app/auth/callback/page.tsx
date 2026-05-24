@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { P } from "../AuthShell";
 
 export default function AuthCallbackPage() {
@@ -18,7 +18,7 @@ export default function AuthCallbackPage() {
     if (!done) return;
 
     if (!user) {
-      toast({ title: "Sign-in failed. Please try again.", variant: "destructive" });
+      toast.error("Sign-in failed. Please try again.");
       router.replace("/auth/login");
       return;
     }

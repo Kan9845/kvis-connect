@@ -159,8 +159,11 @@ async def verify_registration_email(body: EmailVerifyBody, response: Response, s
         raise HTTPException(404, detail="Account not found.")
 
     user.email_verified = True
+    user.is_verified = True
+    user.kvis_email = user.email
     session.add(user)
     session.commit()
+    await invalidate_tags("users", f"user:{user.id}")
     session.refresh(user)
 
     _set_auth_cookies(response, user.id)
@@ -245,15 +248,20 @@ async def verify_otp(body: OTPVerifyBody, response: Response, session: Session =
     is_new_user = user is None
     if not user:
         slug = unique_user_slug(session, "", "")
-        user = User(email=body.email, first_name="", last_name="", email_verified=True, slug=slug)
+        user = User(email=body.email, first_name="", last_name="", email_verified=True,
+                    is_verified=True, kvis_email=body.email, slug=slug)
         session.add(user)
     else:
         user.email_verified = True
+        user.is_verified = True
+        user.kvis_email = body.email
         session.add(user)
 
     session.commit()
     if is_new_user:
         await invalidate_tags("users")
+    else:
+        await invalidate_tags(f"user:{user.id}")
     session.refresh(user)
 
     _set_auth_cookies(response, user.id)
@@ -311,9 +319,13 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
     if not user:
         user = session.exec(select(User).where(User.email == email)).first()
         is_new_user = user is None
+        is_kvis = email.endswith(f"@{KVIS_DOMAIN}")
         if user:
             user.google_id = google_id
             user.email_verified = True
+            if is_kvis and not user.is_verified:
+                user.is_verified = True
+                user.kvis_email = email
         else:
             name_parts = userinfo.get("name", "").split(" ", 1)
             slug = unique_user_slug(session, name_parts[0] if name_parts else "", name_parts[1] if len(name_parts) > 1 else "")
@@ -323,6 +335,8 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
                 first_name=name_parts[0] if name_parts else "",
                 last_name=name_parts[1] if len(name_parts) > 1 else "",
                 email_verified=True,
+                is_verified=is_kvis,
+                kvis_email=email if is_kvis else None,
                 slug=slug,
             )
         session.add(user)

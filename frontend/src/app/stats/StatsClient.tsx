@@ -315,7 +315,7 @@ export default function StatsClient() {
   const totalAlumni = filtered.length;
   const uniqueUnis = uniRanked.length;
   const uniqueCountries = countryRanked.length;
-  const cohortLabel = cohort === null ? "All cohorts" : `Cohort K${cohort}`;
+  const cohortLabel = cohort === null ? "All cohorts" : `KVIS ${cohort}`;
 
   const now = new Date();
   const dateline = now
@@ -452,7 +452,7 @@ export default function StatsClient() {
                     ? `${facultyRanked[0].label} leads with ${
                         Math.round(facultyRanked[0].pct)
                       }% of declared majors${
-                        cohort ? ` in K${cohort}` : " across all cohorts"
+                        cohort ? ` in KVIS ${cohort}` : " across all cohorts"
                       } - ${facultyRanked.length} distinct fields represented in total.`
                     : undefined
                 }
@@ -502,7 +502,7 @@ export default function StatsClient() {
                   const abroad = totalEdu - thai;
                   const pctAbroad = Math.round((abroad / totalEdu) * 100);
                   return `${pctAbroad}% of ${
-                    cohort ? `K${cohort}` : "alumni"
+                    cohort ? `KVIS ${cohort}` : "alumni"
                   } pursued their degree outside Thailand, spreading across ${
                     countryRanked.length
                   } countries around the world.`;

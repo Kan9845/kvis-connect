@@ -19,7 +19,7 @@ export function AvatarCustomizer({ value, onChange }: Props) {
 
   const category = categories[categoryIndex];
   const options = avatarOptions[category];
-  const currentValue = value[category as keyof AvatarConfig];
+  const currentValue = value?.[category as keyof AvatarConfig];
   const isRequired = requiredCategories.includes(category);
 
   const prev = () => setCategoryIndex((i) => Math.max(0, i - 1));

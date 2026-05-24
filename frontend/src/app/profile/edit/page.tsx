@@ -7,7 +7,7 @@ import { userApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { onMeUpdateSuccess } from "@/lib/cache/invalidate";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,7 +36,9 @@ import {
   MBTI_TYPES,
   KVIS_YEARS,
 } from "@/lib/constants/options";
-import { CountrySelect } from "@/components/ui/location-selects";
+import { CountrySelect, CitySelect, CITY_STATE_COUNTRIES } from "@/components/ui/location-selects";
+import { UniversityCombobox } from "@/components/ui/university-combobox";
+import { MajorCombobox } from "@/components/ui/major-combobox";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Education, Career } from "@/lib/types";
@@ -111,18 +113,20 @@ function FieldRow({
   required,
   hint,
   error,
+  noBorder,
   children,
 }: {
   label: string;
   required?: boolean;
   hint?: string;
   error?: string;
+  noBorder?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-4 border-b"
-      style={{ borderColor: P.rule }}
+      className={`grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-4${noBorder ? "" : " border-b"}`}
+      style={noBorder ? undefined : { borderColor: P.rule }}
     >
       <div className="md:pt-2.5">
         <span
@@ -133,7 +137,7 @@ function FieldRow({
           {required && <span style={{ color: P.purple }}> *</span>}
         </span>
         {hint && (
-          <p className="text-[11px] text-muted-foreground mt-1 normal-case tracking-normal">
+          <p className="text-xs text-muted-foreground mt-1 normal-case tracking-normal">
             {hint}
           </p>
         )}
@@ -217,14 +221,14 @@ export default function EditPage() {
         picUrl = url;
         setPendingFile(null);
       } catch {
-        toast({ title: "Photo upload failed", variant: "destructive" });
+        toast.error("Photo upload failed");
         return;
       }
     }
     const updated = await userApi.updateMe(picUrl ? { ...data, profile_pic_url: picUrl } : data);
     onMeUpdateSuccess(qc, updated);
     await refetch();
-    toast({ title: "Profile updated" });
+    toast.success("Profile updated");
   };
 
   const saveEducation = async () => {
@@ -232,14 +236,14 @@ export default function EditPage() {
     await refetch();
     // refetch updates AuthContext; sync the RQ cache afterward if me is available
     if (me) onMeUpdateSuccess(qc, { ...me, education: me.education });
-    toast({ title: "Education saved" });
+    toast.success("Education saved");
   };
 
   const saveCareer = async () => {
     await userApi.updateCareer(career);
     await refetch();
     if (me) onMeUpdateSuccess(qc, { ...me, career: me.career });
-    toast({ title: "Career saved" });
+    toast.success("Career saved");
   };
 
   const handlePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -284,19 +288,14 @@ export default function EditPage() {
 
         setPicPreview(url);
 
-        toast({
-          title: "Goose profile updated",
-        });
+        toast.success("Goose profile updated");
 
       }, "image/png");
 
     } catch (err) {
       console.error(err);
 
-      toast({
-        title: "Failed to generate goose profile",
-        variant: "destructive",
-      });
+      toast.error("Failed to generate goose profile");
     }
   };
 
@@ -395,7 +394,7 @@ export default function EditPage() {
                 <div className="space-y-6 sticky top-6 self-start">
                   <div
                     ref={profileMode === "goose" ? avatarRef : undefined}
-                    className="relative w-full max-w-[320px] aspect-square overflow-hidden rounded-[48px] bg-muted"
+                    className="relative w-full max-w-[320px] aspect-square overflow-hidden bg-muted"
                   >
                     {profileMode === "goose" ? (
                       <AvatarPreview config={gooseConfig} />
@@ -423,22 +422,27 @@ export default function EditPage() {
                 <div className="w-full max-w-2xl space-y-8">
                   
                   {/* MODE SWITCH */}
-                  <div className="flex flex-wrap gap-3">
-                    <Button
+                  <div className="flex items-center gap-6 border-b pb-4" style={{ borderColor: P.rule }}>
+                    <button
                       type="button"
-                      variant={profileMode === "upload" ? "default" : "outline"}
                       onClick={() => setProfileMode("upload")}
+                      className="text-xs font-bold uppercase tracking-[0.28em] pb-1 transition-colors"
+                      style={profileMode === "upload"
+                        ? { color: P.purple, borderBottom: `2px solid ${P.purple}` }
+                        : { color: P.text3 }}
                     >
                       Upload Photo
-                    </Button>
-                  
-                    <Button
+                    </button>
+                    <button
                       type="button"
-                      variant={profileMode === "goose" ? "default" : "outline"}
                       onClick={() => setProfileMode("goose")}
+                      className="text-xs font-bold uppercase tracking-[0.28em] pb-1 transition-colors"
+                      style={profileMode === "goose"
+                        ? { color: P.purple, borderBottom: `2px solid ${P.purple}` }
+                        : { color: P.text3 }}
                     >
                       Goose Profile
-                    </Button>
+                    </button>
                   </div>
                   
                   {/* UPLOAD MODE */}
@@ -458,7 +462,7 @@ export default function EditPage() {
                       <label
                         className="
                           flex h-40 w-full max-w-md cursor-pointer
-                          items-center justify-center rounded-3xl
+                          items-center justify-center
                           border border-dashed border-foreground/20
                           transition-colors hover:border-foreground/50
                         "
@@ -509,7 +513,7 @@ export default function EditPage() {
                   <div className="pt-8">
                     <Button
                       type="button"
-                      className="h-12 px-8 rounded-2xl"
+                      className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2"
                       onClick={async () => {
                         if (profileMode === "goose") {
                           await handleUseGooseProfile();
@@ -521,9 +525,9 @@ export default function EditPage() {
                             await refetch();
                             setPicPreview(url);
                             setPendingFile(null);
-                            toast({ title: "Profile picture updated" });
+                            toast.success("Profile picture updated");
                           } catch {
-                            toast({ title: "Upload failed", variant: "destructive" });
+                            toast.error("Upload failed");
                           }
                         }
                       }}
@@ -617,7 +621,7 @@ export default function EditPage() {
                     className="px-5 py-3 border-t"
                     style={{ borderColor: P.rule }}
                   >
-                    <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
+                    <p className="text-xs text-muted-foreground leading-relaxed truncate">
                       {me.is_verified
                         ? "Issued automatically on @kvis.ac.th email confirmation. Not editable here."
                         : "We send a one-time code to your @kvis.ac.th address to issue this credential."}
@@ -784,7 +788,7 @@ export default function EditPage() {
             <SectionHead
               numeral="I."
               kicker="Schooling"
-              title="Where you studied"
+              title="Education"
             />
 
             {education.length === 0 && (
@@ -800,8 +804,7 @@ export default function EditPage() {
               {education.map((edu, i) => (
                 <div
                   key={i}
-                  className="py-7 border-b"
-                  style={{ borderColor: P.rule }}
+                  className="py-7"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-baseline gap-3">
@@ -831,17 +834,19 @@ export default function EditPage() {
                   </div>
 
                   <FieldRow label="University">
-                    <Input
-                      placeholder="e.g. Massachusetts Institute of Technology"
+                    <UniversityCombobox
+                      variant="underline"
                       value={edu.uni_name}
-                      onChange={(e) =>
+                      onChange={(v) =>
                         setEducation((prev) =>
-                          prev.map((x, j) =>
-                            j === i ? { ...x, uni_name: e.target.value } : x,
-                          ),
+                          prev.map((x, j) => j === i ? { ...x, uni_name: v } : x)
                         )
                       }
-                      className={inputCls}
+                      onCountryChange={(c) =>
+                        setEducation((prev) =>
+                          prev.map((x, j) => j === i ? { ...x, country: c } : x)
+                        )
+                      }
                     />
                   </FieldRow>
                   <FieldRow label="Degree">
@@ -866,17 +871,14 @@ export default function EditPage() {
                     </Select>
                   </FieldRow>
                   <FieldRow label="Major">
-                    <Input
-                      placeholder="e.g. Computer Science"
+                    <MajorCombobox
+                      variant="underline"
                       value={edu.major}
-                      onChange={(e) =>
+                      onChange={(v) =>
                         setEducation((prev) =>
-                          prev.map((x, j) =>
-                            j === i ? { ...x, major: e.target.value } : x,
-                          ),
+                          prev.map((x, j) => j === i ? { ...x, major: v } : x)
                         )
                       }
-                      className={inputCls}
                     />
                   </FieldRow>
                   <FieldRow label="Country">
@@ -886,12 +888,26 @@ export default function EditPage() {
                       onChange={(v) =>
                         setEducation((prev) =>
                           prev.map((x, j) =>
-                            j === i ? { ...x, country: v } : x,
+                            j === i ? { ...x, country: v, state: CITY_STATE_COUNTRIES.has(v) ? v : "" } : x,
                           ),
                         )
                       }
                     />
                   </FieldRow>
+                  {!CITY_STATE_COUNTRIES.has(edu.country) && (
+                    <FieldRow label="City">
+                      <CitySelect
+                        variant="underline"
+                        country={edu.country}
+                        value={edu.state ?? ""}
+                        onChange={(v) =>
+                          setEducation((prev) =>
+                            prev.map((x, j) => j === i ? { ...x, state: v } : x)
+                          )
+                        }
+                      />
+                    </FieldRow>
+                  )}
                   <FieldRow label="Scholarship" hint="Optional.">
                     <Input
                       placeholder="e.g. DPST"
@@ -906,11 +922,11 @@ export default function EditPage() {
                       className={inputCls}
                     />
                   </FieldRow>
-                  <FieldRow label="Years">
-                    <div className="grid grid-cols-2 gap-4">
+                  <FieldRow label="Years" hint="Optional.">
+                    <div className="flex items-center gap-3">
                       <Input
                         type="number"
-                        placeholder="Start year"
+                        placeholder="From"
                         value={edu.start_year ?? ""}
                         onChange={(e) =>
                           setEducation((prev) =>
@@ -925,11 +941,12 @@ export default function EditPage() {
                             ),
                           )
                         }
-                        className={inputCls}
+                        className={`${inputCls} w-16`}
                       />
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] shrink-0" style={{ color: P.text3 }}>to</span>
                       <Input
                         type="number"
-                        placeholder="End year"
+                        placeholder="To"
                         value={edu.end_year ?? ""}
                         onChange={(e) =>
                           setEducation((prev) =>
@@ -944,7 +961,7 @@ export default function EditPage() {
                             ),
                           )
                         }
-                        className={inputCls}
+                        className={`${inputCls} w-16`}
                       />
                     </div>
                   </FieldRow>
@@ -1000,8 +1017,7 @@ export default function EditPage() {
               {career.map((job, i) => (
                 <div
                   key={i}
-                  className="py-7 border-b"
-                  style={{ borderColor: P.rule }}
+                  className="py-7"
                 >
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-baseline gap-3">
@@ -1096,17 +1112,31 @@ export default function EditPage() {
                       onChange={(v) =>
                         setCareer((prev) =>
                           prev.map((x, j) =>
-                            j === i ? { ...x, country: v } : x,
+                            j === i ? { ...x, country: v, state: CITY_STATE_COUNTRIES.has(v) ? v : "" } : x,
                           ),
                         )
                       }
                     />
                   </FieldRow>
-                  <FieldRow label="Years">
-                    <div className="grid grid-cols-2 gap-4">
+                  {!CITY_STATE_COUNTRIES.has(job.country) && (
+                    <FieldRow label="City">
+                      <CitySelect
+                        variant="underline"
+                        country={job.country}
+                        value={job.state ?? ""}
+                        onChange={(v) =>
+                          setCareer((prev) =>
+                            prev.map((x, j) => j === i ? { ...x, state: v } : x)
+                          )
+                        }
+                      />
+                    </FieldRow>
+                  )}
+                  <FieldRow label="Years" hint="Optional.">
+                    <div className="flex items-center gap-3">
                       <Input
                         type="number"
-                        placeholder="Start year"
+                        placeholder="From"
                         value={job.start_year ?? ""}
                         onChange={(e) =>
                           setCareer((prev) =>
@@ -1114,19 +1144,20 @@ export default function EditPage() {
                               j === i
                                 ? {
                                     ...x,
-                                    start_year:
-                                      parseInt(e.target.value) || undefined,
+                                    start_year: parseInt(e.target.value) || undefined,
+                                    ...(!(parseInt(e.target.value) || undefined) && { is_current: false, end_year: undefined }),
                                   }
                                 : x,
                             ),
                           )
                         }
-                        className={inputCls}
+                        className={`${inputCls} w-16`}
                       />
+                      <span className="text-xs font-bold uppercase tracking-[0.2em] shrink-0" style={{ color: P.text3 }}>to</span>
                       <Input
                         type="number"
-                        placeholder="End year"
-                        value={job.end_year ?? ""}
+                        placeholder="To"
+                        value={job.is_current ? new Date().getFullYear() : (job.end_year ?? "")}
                         disabled={job.is_current}
                         onChange={(e) =>
                           setCareer((prev) =>
@@ -1141,11 +1172,11 @@ export default function EditPage() {
                             ),
                           )
                         }
-                        className={`${inputCls} disabled:opacity-40`}
+                        className={`${inputCls} w-24 disabled:opacity-40`}
                       />
                     </div>
                   </FieldRow>
-                  <FieldRow label="Status">
+                  {job.start_year && <FieldRow label="Status">
                     <label className="inline-flex items-center gap-2.5 text-sm text-foreground cursor-pointer pt-1.5">
                       <input
                         type="checkbox"
@@ -1163,7 +1194,7 @@ export default function EditPage() {
                       />
                       <span className="text-sm">I currently work here</span>
                     </label>
-                  </FieldRow>
+                  </FieldRow>}
                 </div>
               ))}
             </div>

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink, Dot } from "lucide-react";
+import { ExternalLink, Dot, ShieldCheck } from "lucide-react";
 import { userApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import { Button } from "@/components/ui/button";
@@ -287,7 +287,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 asChild
                 className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90"
               >
-                <Link href="/edit">Edit profile</Link>
+                <Link href="/profile/edit">Edit profile</Link>
               </Button>
             )}
           </div>
@@ -333,9 +333,22 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 {user.last_name}
               </h1>
 
+              {/* KVIS-verified badge */}
+              {user.is_verified && (
+                <div className="mt-4 inline-flex items-center gap-1.5">
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: P.green }} />
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-[0.28em]"
+                    style={{ color: P.green }}
+                  >
+                    KVIS-Verified
+                  </span>
+                </div>
+              )}
+
               {/* Dossier line */}
               <div
-                className="mt-5 flex items-baseline gap-x-3 gap-y-2 flex-wrap text-xs font-bold uppercase tracking-[0.24em] tabular-nums"
+                className="mt-3 flex items-baseline gap-x-3 gap-y-2 flex-wrap text-xs font-bold uppercase tracking-[0.24em] tabular-nums"
                 style={{ color: P.text3 }}
               >
                 {user.mbti && (
@@ -344,7 +357,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 {user.mbti && user.kvis_year && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
                 {user.kvis_year && (
                   <span>
-                    K{user.kvis_year} / {genLabel(user.kvis_year)}
+                    KVIS {user.kvis_year}
                   </span>
                 )}
                 {user.kvis_year && user.place && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
@@ -398,14 +411,16 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             >
               Tags
             </span>
-            <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
-              {interests.map((t) => (
-                <span
-                  key={t}
-                  className="text-sm font-semibold uppercase tracking-[0.14em]"
-                  style={{ color: P.text3 }}
-                >
-                  {t}
+            <div className="flex items-center flex-wrap gap-y-2.5">
+              {interests.map((t, idx) => (
+                <span key={t} className="flex items-center">
+                  {idx > 0 && <Dot className="h-3 w-3 shrink-0 mx-1" style={{ color: P.text3 }} />}
+                  <span
+                    className="text-sm font-semibold uppercase tracking-[0.14em]"
+                    style={{ color: P.text3 }}
+                  >
+                    {t}
+                  </span>
                 </span>
               ))}
             </div>
