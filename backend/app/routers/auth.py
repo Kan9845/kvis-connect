@@ -1,3 +1,4 @@
+import logging
 import secrets
 import smtplib
 from email.mime.text import MIMEText
@@ -63,8 +64,7 @@ def _send_reset_email(to_email: str, token: str) -> None:
     msg["From"] = settings.SMTP_FROM
     msg["To"] = to_email
 
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.starttls()
+    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
         if settings.SMTP_USER:
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
         server.sendmail(settings.SMTP_FROM, to_email, msg.as_string())
@@ -81,8 +81,7 @@ def _send_otp_email(to_email: str, otp: str) -> None:
     msg["From"] = settings.SMTP_FROM
     msg["To"] = to_email
 
-    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-        server.starttls()
+    with smtplib.SMTP_SSL(settings.SMTP_HOST, settings.SMTP_PORT) as server:
         if settings.SMTP_USER:
             server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
         server.sendmail(settings.SMTP_FROM, to_email, msg.as_string())
