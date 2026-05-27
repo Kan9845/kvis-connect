@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { FilterPill } from "@/components/ui/filter-pill";
 import type { UserCard, Education } from "@/lib/types";
+import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 
 const ISO_MAP: Record<string, string> = {
   Thailand: "th", "United States": "us", "United States of America": "us", USA: "us", "United Kingdom": "gb", UK: "gb",
@@ -91,45 +92,48 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
 
   return (
     <div>
-      {visible.map((it) => (
-        <div
-          key={it.key}
-          className="grid items-center py-3.5 border-b border-[var(--kvis-rule)]"
-          style={{
-            gridTemplateColumns: "1.75rem minmax(0, 1.2fr) minmax(0, 1.8fr) 2.5rem 3rem",
-            columnGap: "1rem",
-          }}
-        >
-          <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">
-            {String(it.rank).padStart(2, "0")}
-          </span>
-          <div className="flex items-center gap-2 min-w-0">
-            {showFlag && <FlagImg country={it.label} size={18} />}
-            <span
-              className="font-semibold text-foreground truncate"
-              style={{ fontSize: 15, letterSpacing: "-0.005em" }}
-              title={it.label}
-            >
-              {it.label}
-            </span>
-          </div>
-          <div className="h-[6px] rounded-full overflow-hidden bg-[var(--kvis-rule)]">
+      <StaggerList>
+        {visible.map((it) => (
+          <StaggerItem key={it.key}>
             <div
-              className="h-full rounded-full bg-[var(--kvis-purple)]"
+              className="grid items-center py-3.5 border-b border-[var(--kvis-rule)]"
               style={{
-                width: `${Math.max(it.pct, it.count > 0 ? 1.5 : 0)}%`,
-                transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
+                gridTemplateColumns: "1.75rem minmax(0, 1.2fr) minmax(0, 1.8fr) 2.5rem 3rem",
+                columnGap: "1rem",
               }}
-            />
-          </div>
-          <span className="text-sm font-bold tabular-nums text-right text-foreground">
-            {it.count}
-          </span>
-          <span className="text-sm tabular-nums text-right text-[var(--kvis-text3)]">
-            {it.pct < 10 ? it.pct.toFixed(1) : Math.round(it.pct)}%
-          </span>
-        </div>
-      ))}
+            >
+              <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">
+                {String(it.rank).padStart(2, "0")}
+              </span>
+              <div className="flex items-center gap-2 min-w-0">
+                {showFlag && <FlagImg country={it.label} size={18} />}
+                <span
+                  className="font-semibold text-foreground truncate"
+                  style={{ fontSize: 15, letterSpacing: "-0.005em" }}
+                  title={it.label}
+                >
+                  {it.label}
+                </span>
+              </div>
+              <div className="h-[6px] rounded-full overflow-hidden bg-[var(--kvis-rule)]">
+                <div
+                  className="h-full rounded-full bg-[var(--kvis-purple)]"
+                  style={{
+                    width: `${Math.max(it.pct, it.count > 0 ? 1.5 : 0)}%`,
+                    transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
+                  }}
+                />
+              </div>
+              <span className="text-sm font-bold tabular-nums text-right text-foreground">
+                {it.count}
+              </span>
+              <span className="text-sm tabular-nums text-right text-[var(--kvis-text3)]">
+                {it.pct < 10 ? it.pct.toFixed(1) : Math.round(it.pct)}%
+              </span>
+            </div>
+          </StaggerItem>
+        ))}
+      </StaggerList>
       {!showAll && hidden > 0 && (
         <Button
           variant="link"
@@ -287,189 +291,205 @@ export default function StatsClient() {
     .toUpperCase();
 
   return (
-    <div className="min-h-full bg-background">
-      <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
-        {/* Masthead */}
-        <header className="pb-7 border-b border-foreground/60">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
-            KVIS Connect · Stats
-          </p>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
-            By the Numbers
-          </h1>
-          <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
-            Where KVIS alumni went to study after graduation - the faculties
-            they chose, the universities that took them in, and the countries
-            they ended up in.
-          </p>
-          <div className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap mt-6 text-[var(--kvis-text3)]">
-            <span>{dateline}</span>
-            <span aria-hidden>·</span>
-            <span>{alumni.length} alumni</span>
-            <span aria-hidden>·</span>
-            <span>{cohorts.length} cohorts</span>
-          </div>
-        </header>
+    <PageEntrance>
+      <div className="min-h-full bg-background">
+        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
+          {/* Masthead */}
+          <FadeUp>
+            <header className="pb-7 border-b border-foreground/60">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
+                KVIS Connect · Stats
+              </p>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+                By the Numbers
+              </h1>
+              <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
+                Where KVIS alumni went to study after graduation - the faculties
+                they chose, the universities that took them in, and the countries
+                they ended up in.
+              </p>
+              <div className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap mt-6 text-[var(--kvis-text3)]">
+                <span>{dateline}</span>
+                <span aria-hidden>·</span>
+                <span>{alumni.length} alumni</span>
+                <span aria-hidden>·</span>
+                <span>{cohorts.length} cohorts</span>
+              </div>
+            </header>
+          </FadeUp>
 
-        {/* Cohort selector */}
-        {cohorts.length > 0 && (
-          <nav
-            className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b border-[var(--kvis-rule)]"
-            aria-label="Cohort filter"
-          >
-            <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">
-              Cohort
-            </span>
-            <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
-              <FilterPill
-                active={cohort === null}
-                count={alumni.length}
-                onClick={() => setCohort(null)}
+          {/* Cohort selector */}
+          {cohorts.length > 0 && (
+            <FadeUp delay={0.1}>
+              <nav
+                className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b border-[var(--kvis-rule)]"
+                aria-label="Cohort filter"
               >
-                All
-              </FilterPill>
-              {cohorts.map((y) => (
-                <FilterPill
-                  key={y}
-                  active={cohort === y}
-                  count={cohortCounts.get(y) ?? 0}
-                  onClick={() => setCohort(cohort === y ? null : y)}
+                <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">
+                  Cohort
+                </span>
+                <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
+                  <FilterPill
+                    active={cohort === null}
+                    count={alumni.length}
+                    onClick={() => setCohort(null)}
+                  >
+                    All
+                  </FilterPill>
+                  {cohorts.map((y) => (
+                    <FilterPill
+                      key={y}
+                      active={cohort === y}
+                      count={cohortCounts.get(y) ?? 0}
+                      onClick={() => setCohort(cohort === y ? null : y)}
+                    >
+                      K{y}
+                    </FilterPill>
+                  ))}
+                </div>
+              </nav>
+            </FadeUp>
+          )}
+
+          {/* Headline metrics */}
+          <FadeUp delay={0.15}>
+            <section className="grid grid-cols-3 gap-6 md:gap-10 py-9 border-b border-[var(--kvis-rule)]">
+              {[
+                { label: "Alumni in view", value: totalAlumni },
+                { label: "Universities", value: uniqueUnis },
+                { label: "Countries", value: uniqueCountries },
+              ].map((s, i) => (
+                <div
+                  key={s.label}
+                  className={i > 0 ? "pl-6 md:pl-10 border-l border-[var(--kvis-rule)]" : ""}
                 >
-                  K{y}
-                </FilterPill>
+                  <p className="text-xs uppercase tracking-[0.24em] font-bold mb-2 text-[var(--kvis-text3)]">
+                    {s.label}
+                  </p>
+                  <p
+                    className="text-4xl md:text-5xl lg:text-6xl font-black tabular-nums text-foreground"
+                    style={{ letterSpacing: "-0.04em", lineHeight: 0.95 }}
+                  >
+                    {s.value}
+                  </p>
+                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--kvis-text3)]">
+                    {cohortLabel}
+                  </p>
+                </div>
+              ))}
+            </section>
+          </FadeUp>
+
+          {isLoading && (
+            <div className="pt-10 space-y-12">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="space-y-3">
+                  <Skeleton className="h-10 w-1/2" />
+                  <Skeleton className="h-4 w-1/3 mb-5" />
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <Skeleton key={j} className="h-9 w-full" />
+                  ))}
+                </div>
               ))}
             </div>
-          </nav>
-        )}
+          )}
 
-        {/* Headline metrics */}
-        <section className="grid grid-cols-3 gap-6 md:gap-10 py-9 border-b border-[var(--kvis-rule)]">
-          {[
-            { label: "Alumni in view", value: totalAlumni },
-            { label: "Universities", value: uniqueUnis },
-            { label: "Countries", value: uniqueCountries },
-          ].map((s, i) => (
-            <div
-              key={s.label}
-              className={i > 0 ? "pl-6 md:pl-10 border-l border-[var(--kvis-rule)]" : ""}
-            >
-              <p className="text-xs uppercase tracking-[0.24em] font-bold mb-2 text-[var(--kvis-text3)]">
-                {s.label}
-              </p>
-              <p
-                className="text-4xl md:text-5xl lg:text-6xl font-black tabular-nums text-foreground"
-                style={{ letterSpacing: "-0.04em", lineHeight: 0.95 }}
-              >
-                {s.value}
-              </p>
-              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--kvis-text3)]">
-                {cohortLabel}
-              </p>
-            </div>
-          ))}
-        </section>
+          {!isLoading && (
+            <>
+              {/* I. Faculty */}
+              <FadeUp>
+                <section>
+                  <SectionHead
+                    numeral="I."
+                    kicker="Faculty / Field of study"
+                    title="What KVIS alumni study"
+                    lede={
+                      facultyRanked[0]
+                        ? `${facultyRanked[0].label} leads with ${
+                            Math.round(facultyRanked[0].pct)
+                          }% of declared majors${
+                            cohort ? ` in KVIS ${cohort}` : " across all cohorts"
+                          } - ${facultyRanked.length} distinct fields represented in total.`
+                        : undefined
+                    }
+                  />
+                  {facultyRanked.length > 0 ? (
+                    <RankedList items={facultyRanked} />
+                  ) : (
+                    <EmptyRow label="majors" />
+                  )}
+                </section>
+              </FadeUp>
 
-        {isLoading && (
-          <div className="pt-10 space-y-12">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="space-y-3">
-                <Skeleton className="h-10 w-1/2" />
-                <Skeleton className="h-4 w-1/3 mb-5" />
-                {Array.from({ length: 5 }).map((_, j) => (
-                  <Skeleton key={j} className="h-9 w-full" />
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
+              {/* II. University */}
+              <FadeUp>
+                <section>
+                  <SectionHead
+                    numeral="II."
+                    kicker="By institution"
+                    title="Where they go to school"
+                    lede={
+                      uniRanked[0]
+                        ? `${uniRanked[0].label} tops the list with ${
+                            uniRanked[0].count
+                          } ${
+                            uniRanked[0].count === 1 ? "alumnus" : "alumni"
+                          }. The class is spread across ${uniRanked.length} universities ${
+                            cohort ? `in this cohort.` : `worldwide.`
+                          }`
+                        : undefined
+                    }
+                  />
+                  {uniRanked.length > 0 ? (
+                    <RankedList items={uniRanked} />
+                  ) : (
+                    <EmptyRow label="universities" />
+                  )}
+                </section>
+              </FadeUp>
 
-        {!isLoading && (
-          <>
-            {/* I. Faculty */}
-            <section>
-              <SectionHead
-                numeral="I."
-                kicker="Faculty / Field of study"
-                title="What KVIS alumni study"
-                lede={
-                  facultyRanked[0]
-                    ? `${facultyRanked[0].label} leads with ${
-                        Math.round(facultyRanked[0].pct)
-                      }% of declared majors${
-                        cohort ? ` in KVIS ${cohort}` : " across all cohorts"
-                      } - ${facultyRanked.length} distinct fields represented in total.`
-                    : undefined
-                }
-              />
-              {facultyRanked.length > 0 ? (
-                <RankedList items={facultyRanked} />
-              ) : (
-                <EmptyRow label="majors" />
-              )}
-            </section>
+              {/* III. Country */}
+              <FadeUp>
+                <section>
+                  <SectionHead
+                    numeral="III."
+                    kicker="By country"
+                    title="Where in the world"
+                    lede={(() => {
+                      if (totalEdu === 0) return undefined;
+                      const thai =
+                        countryRanked.find((c) => c.key === "Thailand")?.count ?? 0;
+                      const abroad = totalEdu - thai;
+                      const pctAbroad = Math.round((abroad / totalEdu) * 100);
+                      return `${pctAbroad}% of ${
+                        cohort ? `KVIS ${cohort}` : "alumni"
+                      } pursued their degree outside Thailand, spreading across ${
+                        countryRanked.length
+                      } countries around the world.`;
+                    })()}
+                  />
+                  {countryRanked.length > 0 ? (
+                    <RankedList items={countryRanked} showFlag />
+                  ) : (
+                    <EmptyRow label="destinations" />
+                  )}
+                </section>
+              </FadeUp>
 
-            {/* II. University */}
-            <section>
-              <SectionHead
-                numeral="II."
-                kicker="By institution"
-                title="Where they go to school"
-                lede={
-                  uniRanked[0]
-                    ? `${uniRanked[0].label} tops the list with ${
-                        uniRanked[0].count
-                      } ${
-                        uniRanked[0].count === 1 ? "alumnus" : "alumni"
-                      }. The class is spread across ${uniRanked.length} universities ${
-                        cohort ? `in this cohort.` : `worldwide.`
-                      }`
-                    : undefined
-                }
-              />
-              {uniRanked.length > 0 ? (
-                <RankedList items={uniRanked} />
-              ) : (
-                <EmptyRow label="universities" />
-              )}
-            </section>
-
-            {/* III. Country */}
-            <section>
-              <SectionHead
-                numeral="III."
-                kicker="By country"
-                title="Where in the world"
-                lede={(() => {
-                  if (totalEdu === 0) return undefined;
-                  const thai =
-                    countryRanked.find((c) => c.key === "Thailand")?.count ?? 0;
-                  const abroad = totalEdu - thai;
-                  const pctAbroad = Math.round((abroad / totalEdu) * 100);
-                  return `${pctAbroad}% of ${
-                    cohort ? `KVIS ${cohort}` : "alumni"
-                  } pursued their degree outside Thailand, spreading across ${
-                    countryRanked.length
-                  } countries around the world.`;
-                })()}
-              />
-              {countryRanked.length > 0 ? (
-                <RankedList items={countryRanked} showFlag />
-              ) : (
-                <EmptyRow label="destinations" />
-              )}
-            </section>
-
-            <footer className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between flex-wrap gap-2">
-              <span>
-                - Based on {alumni.length} alumni profiles · {cohortLabel} -
-              </span>
-              <span className="tabular-nums">
-                Updated {now.getFullYear()}
-              </span>
-            </footer>
-          </>
-        )}
+              <FadeUp>
+                <footer className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between flex-wrap gap-2">
+                  <span>
+                    - Based on {alumni.length} alumni profiles · {cohortLabel} -
+                  </span>
+                  <span className="tabular-nums">
+                    Updated {now.getFullYear()}
+                  </span>
+                </footer>
+              </FadeUp>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </PageEntrance>
   );
 }

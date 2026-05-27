@@ -42,28 +42,19 @@ export function AboutClient() {
       <div className="mx-auto max-w-5xl px-6 lg:px-10">
 
         {/* Hero */}
-        <section className="pt-14 pb-12">
-          <p
-            className="text-xs font-semibold uppercase tracking-widest mb-7 text-[var(--kvis-green)]"
-            style={{ letterSpacing: "0.12em" }}
-          >
-            About
+        <header className="pt-10 lg:pt-14 pb-7 border-b border-foreground/60">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
+            KVIS Connect · About
           </p>
-          <h1
-            className="text-4xl md:text-5xl font-black mb-7 text-[var(--kvis-ink)]"
-            style={{ lineHeight: 1.05, maxWidth: "20ch" }}
-          >
-            A network built for Kvisians, by Kvisians.
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+            About
           </h1>
-          <p
-            className="text-base font-medium text-[var(--kvis-text2)]"
-            style={{ maxWidth: "54ch", lineHeight: 1.8 }}
-          >
+          <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
             KVIS Connect maps the global footprint of Kamnoetvidya Science Academy
             graduates - who&apos;s where, what they&apos;re building, and how the
             network keeps growing long after graduation.
           </p>
-        </section>
+        </header>
 
         {/* Divider */}
         <div className="h-px bg-[var(--kvis-rule)]" />
@@ -87,7 +78,7 @@ export function AboutClient() {
         <section className="py-16 grid md:grid-cols-[5fr_3fr] gap-16">
           <div>
             <p
-              className="text-xs font-semibold uppercase tracking-widest mb-5 text-[var(--kvis-purple)]"
+              className="text-xs font-semibold uppercase tracking-widest mb-5 text-[var(--kvis-green)]"
               style={{ letterSpacing: "0.1em" }}
             >
               The School

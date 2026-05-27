@@ -10,6 +10,7 @@ export function fullName(user: { first_name: string; last_name: string }) {
 }
 
 export function genLabel(year: number) {
+  if (year <= 9) return `K${year}`;
   const base = 2018;
   return `Gen ${year - base + 1}`;
 }

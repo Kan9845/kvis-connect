@@ -1804,7 +1804,7 @@ app.post("/api/users/me/profile-pic", requireAuth, upload.single("file"), (req, 
   const dataUrl = `data:${mimeType};base64,${base64}`;
   
   MOCK_ME.profile_pic_url = dataUrl;
-  MOCK_ALUMNI[0].profile_pic_url = dataUrl; // ← add this line
+  MOCK_ALUMNI[0].profile_pic_url = dataUrl;
   res.json({ url: dataUrl });
 });
 
@@ -1966,16 +1966,42 @@ app.get("/api/blogs", (req, res) => {
   const { tag, limit = 20, offset = 0 } = req.query;
   let blogs = MOCK_BLOGS.filter((b) => b.is_published);
   if (tag) blogs = blogs.filter((b) => b.tags?.toLowerCase().includes(tag.toLowerCase()));
+  
+  // Hydrate author with latest MOCK_ME data
+  blogs = blogs.map((b) => ({
+    ...b,
+    author: b.author_id === MOCK_ME.id
+      ? { ...b.author, profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year }
+      : b.author,
+  }));
+  
   res.json(blogs.slice(parseInt(offset), parseInt(offset) + parseInt(limit)));
 });
 
 app.get("/api/blogs/:slug", (req, res) => {
   const blog = MOCK_BLOGS.find((b) => b.slug === req.params.slug && b.is_published);
   if (!blog) return res.status(404).json({ detail: "Blog not found" });
-  res.json(blog);
+
+  const hydrated = {
+    ...blog,
+    author: blog.author_id === MOCK_ME.id
+      ? { ...blog.author, profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year }
+      : blog.author,
+  };
+
+  res.json(hydrated);
+});
+
+app.post("/api/upload", requireAuth, upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ detail: "No file provided" });
+  const base64 = req.file.buffer.toString("base64");
+  const mimeType = req.file.mimetype;
+  const dataUrl = `data:${mimeType};base64,${base64}`;
+  res.json({ url: dataUrl });
 });
 
 app.post("/api/blogs", requireAuth, (req, res) => {
+  console.log("Blog POST - profile_pic_url:", MOCK_ME.profile_pic_url ? "HAS VALUE" : "NULL");
   const { title, content, excerpt, cover_image_url, tags, is_published } = req.body;
   const slug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
   const blog = {
