@@ -1915,6 +1915,7 @@ app.get("/api/search", (req, res) => {
   res.json(
     page.map((u) => ({
       id: u.id,
+      slug: u.slug ?? null,
       first_name: u.first_name,
       last_name: u.last_name,
       kvis_year: u.kvis_year,

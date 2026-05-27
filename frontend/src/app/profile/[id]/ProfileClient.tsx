@@ -13,14 +13,6 @@ import { degreeLabel, jobFieldLabel } from "@/lib/constants/options";
 import { formatDate, genLabel } from "@/lib/utils";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 
-const P = {
-  purple: "oklch(44% 0.26 294)",
-  purpleSoft: "oklch(95% 0.035 294)",
-  green: "oklch(40% 0.16 148)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
-};
-
 function parseInterests(t?: string) {
   return (t ?? "").split(",").map((x) => x.trim()).filter(Boolean);
 }
@@ -33,28 +25,14 @@ function hostname(url: string) {
   }
 }
 
-function SectionHead({
-  numeral,
-  kicker,
-  title,
-}: {
-  numeral: string;
-  kicker: string;
-  title: string;
-}) {
+function SectionHead({ numeral, kicker, title }: { numeral: string; kicker: string; title: string }) {
   return (
     <header className="pt-9 pb-4">
       <div className="flex items-baseline gap-3 mb-2">
-        <span
-          className="font-mono font-black text-xl tabular-nums"
-          style={{ color: P.green, letterSpacing: "-0.02em" }}
-        >
+        <span className="font-mono font-black text-xl tabular-nums text-[var(--kvis-green)]" style={{ letterSpacing: "-0.02em" }}>
           {numeral}
         </span>
-        <span
-          className="text-xs uppercase tracking-[0.28em] font-bold"
-          style={{ color: P.text3 }}
-        >
+        <span className="text-xs uppercase tracking-[0.28em] font-bold text-[var(--kvis-text3)]">
           {kicker}
         </span>
       </div>
@@ -65,14 +43,7 @@ function SectionHead({
   );
 }
 
-function EntryRow({
-  index,
-  title,
-  subtitle,
-  meta,
-  pill,
-  years,
-}: {
+function EntryRow({ index, title, subtitle, meta, pill, years }: {
   index: number;
   title: string;
   subtitle?: string;
@@ -82,25 +53,15 @@ function EntryRow({
 }) {
   return (
     <div
-      className="grid items-baseline py-6 border-b"
-      style={{
-        borderColor: P.rule,
-        gridTemplateColumns: "1.75rem minmax(0, 1fr) auto",
-        columnGap: "1.25rem",
-      }}
+      className="grid items-baseline py-6 border-b border-[var(--kvis-rule)]"
+      style={{ gridTemplateColumns: "1.75rem minmax(0, 1fr) auto", columnGap: "1.25rem" }}
     >
-      <span
-        className="text-xs font-mono tabular-nums font-semibold pt-1"
-        style={{ color: P.text3 }}
-      >
+      <span className="text-xs font-mono tabular-nums font-semibold pt-1 text-[var(--kvis-text3)]">
         {String(index + 1).padStart(2, "0")}
       </span>
       <div className="min-w-0">
         <div className="flex items-center gap-3 flex-wrap">
-          <p
-            className="text-xl md:text-2xl font-bold text-foreground leading-tight tracking-[-0.01em]"
-            style={{ wordBreak: "break-word" }}
-          >
+          <p className="text-xl md:text-2xl font-bold text-foreground leading-tight tracking-[-0.01em]" style={{ wordBreak: "break-word" }}>
             {title}
           </p>
           {pill && (
@@ -112,65 +73,31 @@ function EntryRow({
             </Badge>
           )}
         </div>
-        {subtitle && (
-          <p className="text-sm md:text-[15px] text-muted-foreground mt-1.5 leading-snug">
-            {subtitle}
-          </p>
-        )}
-        {meta && (
-          <p
-            className="text-xs uppercase tracking-[0.22em] mt-2 tabular-nums"
-            style={{ color: P.text3 }}
-          >
-            {meta}
-          </p>
-        )}
+        {subtitle && <p className="text-sm md:text-[15px] text-muted-foreground mt-1.5 leading-snug">{subtitle}</p>}
+        {meta && <p className="text-xs uppercase tracking-[0.22em] mt-2 tabular-nums text-[var(--kvis-text3)]">{meta}</p>}
       </div>
-      <span
-        className="text-sm font-mono tabular-nums text-right whitespace-nowrap"
-        style={{ color: P.text3 }}
-      >
+      <span className="text-sm font-mono tabular-nums text-right whitespace-nowrap text-[var(--kvis-text3)]">
         {years ?? "-"}
       </span>
     </div>
   );
 }
 
-function ContactRow({
-  label,
-  display,
-  href,
-}: {
-  label: string;
-  display: string;
-  href: string;
-}) {
+function ContactRow({ label, display, href }: { label: string; display: string; href: string }) {
   const external = /^https?:/.test(href);
   return (
     <a
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className="group grid items-center py-4 border-b"
-      style={{
-        borderColor: P.rule,
-        gridTemplateColumns: "100px minmax(0, 1fr) auto",
-        columnGap: "1.25rem",
-      }}
+      className="group grid items-center py-4 border-b border-[var(--kvis-rule)]"
+      style={{ gridTemplateColumns: "100px minmax(0, 1fr) auto", columnGap: "1.25rem" }}
     >
-      <span
-        className="text-xs uppercase tracking-[0.26em] font-bold"
-        style={{ color: P.text3 }}
-      >
-        {label}
-      </span>
-      <span
-        className="text-sm md:text-base text-foreground truncate group-hover:underline decoration-2 underline-offset-[5px]"
-        style={{ textDecorationColor: P.purple }}
-      >
+      <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">{label}</span>
+      <span className="text-sm md:text-base text-foreground truncate group-hover:underline decoration-2 underline-offset-[5px] decoration-[var(--kvis-purple)]">
         {display}
       </span>
-      <ExternalLink className="h-4 w-4" style={{ color: P.text3 }} />
+      <ExternalLink className="h-4 w-4 text-[var(--kvis-text3)]" />
     </a>
   );
 }
@@ -214,19 +141,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
       <PageEntrance>
         <div className="min-h-full bg-background">
           <div className="mx-auto max-w-5xl px-6 lg:px-10 py-24 text-center">
-            <p
-              className="text-xs uppercase tracking-[0.28em] font-bold mb-4"
-              style={{ color: P.text3 }}
-            >
-              404
-            </p>
-            <p className="text-4xl font-black tracking-tight text-foreground mb-3">
-              Profile not found
-            </p>
+            <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4 text-[var(--kvis-text3)]">404</p>
+            <p className="text-4xl font-black tracking-tight text-foreground mb-3">Profile not found</p>
             <p className="text-sm text-muted-foreground">
-              <Link href="/search" className="underline" style={{ color: P.purple }}>
-                Browse the directory
-              </Link>
+              <Link href="/search" className="underline text-[var(--kvis-purple)]">Browse the directory</Link>
             </p>
           </div>
         </div>
@@ -260,11 +178,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
       <div className="min-h-full bg-background">
         <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
 
-          {/* Masthead */}
           <FadeUp>
             <header className="pb-8 border-b border-foreground/60">
               <div className="flex items-center justify-between mb-5">
-                <p className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: P.purple }}>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-[var(--kvis-purple)]">
                   KVIS Connect / Alumni Dossier
                 </p>
                 {isMe && (
@@ -289,7 +206,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     ) : (
                       <div
                         className="absolute inset-0 flex items-center justify-center text-white font-black tracking-tight"
-                        style={{ background: P.purple, fontSize: "clamp(2.5rem, 8vw, 5rem)" }}
+                        style={{ background: "var(--kvis-purple)", fontSize: "clamp(2.5rem, 8vw, 5rem)" }}
                       >
                         {initials}
                       </div>
@@ -298,26 +215,19 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 </div>
 
                 <div className="min-w-0">
-                  <h1
-                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground"
-                    style={{ wordBreak: "break-word" }}
-                  >
-                    {user.first_name}
-                    <br />
-                    {user.last_name}
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground" style={{ wordBreak: "break-word" }}>
+                    {user.first_name}<br />{user.last_name}
                   </h1>
 
                   {user.is_verified && (
                     <div className="mt-4 inline-flex items-center gap-1.5">
-                      <ShieldCheck className="h-3.5 w-3.5 shrink-0" style={{ color: P.green }} />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.28em]" style={{ color: P.green }}>
-                        KVIS-Verified
-                      </span>
+                      <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[var(--kvis-green)]" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--kvis-green)]">KVIS-Verified</span>
                     </div>
                   )}
 
-                  <div className="mt-3 flex items-baseline gap-x-3 gap-y-2 flex-wrap text-xs font-bold uppercase tracking-[0.24em] tabular-nums" style={{ color: P.text3 }}>
-                    {user.mbti && <span style={{ color: P.purple }}>{user.mbti}</span>}
+                  <div className="mt-3 flex items-baseline gap-x-3 gap-y-2 flex-wrap text-xs font-bold uppercase tracking-[0.24em] tabular-nums text-[var(--kvis-text3)]">
+                    {user.mbti && <span className="text-[var(--kvis-purple)]">{user.mbti}</span>}
                     {user.mbti && user.kvis_year && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
                     {user.kvis_year && <span>KVIS {user.kvis_year}</span>}
                     {user.kvis_year && user.place && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
@@ -326,8 +236,8 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
                   {currentRole && (
                     <div className="mt-6">
-                      <p className="text-xs uppercase tracking-[0.22em]" style={{ color: P.text3 }}>
-                        <span style={{ color: P.green }} className="font-bold">Currently</span>{" "}
+                      <p className="text-xs uppercase tracking-[0.22em] text-[var(--kvis-text3)]">
+                        <span className="font-bold text-[var(--kvis-green)]">Currently</span>{" "}
                         {currentRole.job_title}
                         {currentRole.employer && ` @ ${currentRole.employer}`}
                       </p>
@@ -336,7 +246,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 md:gap-4 mt-7 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap" style={{ color: P.text3 }}>
+              <div className="flex items-center gap-3 md:gap-4 mt-7 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
                 <span>Joined {formatDate(user.created_at).toUpperCase()}</span>
                 <Dot className="h-3 w-3 shrink-0" aria-hidden />
                 <span>{user.education?.length ?? 0} {(user.education?.length ?? 0) === 1 ? "school" : "schools"}</span>
@@ -346,16 +256,15 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             </header>
           </FadeUp>
 
-          {/* Interests */}
           {interests.length > 0 && (
             <FadeUp delay={0.1}>
-              <nav className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b" style={{ borderColor: P.rule }}>
-                <span className="text-xs uppercase tracking-[0.26em] font-bold" style={{ color: P.text3 }}>Tags</span>
+              <nav className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b border-[var(--kvis-rule)]">
+                <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">Tags</span>
                 <div className="flex items-center flex-wrap gap-y-2.5">
                   {interests.map((t, idx) => (
                     <span key={t} className="flex items-center">
-                      {idx > 0 && <Dot className="h-3 w-3 shrink-0 mx-1" style={{ color: P.text3 }} />}
-                      <span className="text-sm font-semibold uppercase tracking-[0.14em]" style={{ color: P.text3 }}>{t}</span>
+                      {idx > 0 && <Dot className="h-3 w-3 shrink-0 mx-1 text-[var(--kvis-text3)]" />}
+                      <span className="text-sm font-semibold uppercase tracking-[0.14em] text-[var(--kvis-text3)]">{t}</span>
                     </span>
                   ))}
                 </div>
@@ -363,7 +272,6 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             </FadeUp>
           )}
 
-          {/* Bio */}
           {user.bio && (
             <FadeUp>
               <section>
@@ -373,7 +281,6 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             </FadeUp>
           )}
 
-          {/* Education */}
           {user.education?.length > 0 && (
             <FadeUp>
               <section>
@@ -395,7 +302,6 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             </FadeUp>
           )}
 
-          {/* Career */}
           {user.career?.length > 0 && (
             <FadeUp>
               <section>
@@ -414,7 +320,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                           title={c.job_title}
                           subtitle={subtitle}
                           meta={place || undefined}
-                          pill={c.is_current ? { label: "Current", color: P.green } : undefined}
+                          pill={c.is_current ? { label: "Current", color: "var(--kvis-green)" } : undefined}
                           years={years}
                         />
                       </StaggerItem>
@@ -425,7 +331,6 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             </FadeUp>
           )}
 
-          {/* Contact */}
           {contacts.length > 0 && (
             <FadeUp>
               <section>

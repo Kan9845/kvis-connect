@@ -15,14 +15,6 @@ import { Search, X } from "lucide-react";
 import type { UserCard } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 
-const P = {
-  purple: "oklch(44% 0.26 294)",
-  purpleSoft: "oklch(95% 0.035 294)",
-  green: "oklch(40% 0.16 148)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
-};
-
 type Tab = "alumni" | "students";
 
 const COHORT_YEARS = [9, 8, 7, 6, 5, 4, 3, 2, 1];
@@ -64,8 +56,8 @@ function captionStudent(u: UserCard): string {
 function Portrait({ u, caption }: { u: UserCard; caption: string }) {
   const name = `${u.first_name} ${u.last_name}`;
   return (
-    <Link href={`/profile/${u.slug}`} className="group block">
-      <div className="relative aspect-square overflow-hidden bg-muted">
+    <Link href={`/profile/${u.slug ?? u.id}`} className="group block">
+      <div className="relative aspect-square overflow-hidden bg-muted rounded-full">
         {u.profile_pic_url ? (
           <Image
             src={u.profile_pic_url}
@@ -75,7 +67,7 @@ function Portrait({ u, caption }: { u: UserCard; caption: string }) {
             className="object-cover grayscale-[18%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-white font-black text-3xl tracking-tight" style={{ background: P.purple }}>
+          <div className="absolute inset-0 flex items-center justify-center text-white font-black text-3xl tracking-tight bg-[var(--kvis-purple)]">
             {initials(u)}
           </div>
         )}
@@ -85,7 +77,7 @@ function Portrait({ u, caption }: { u: UserCard; caption: string }) {
           </span>
         )}
       </div>
-      <p className="pt-2 text-sm font-semibold text-foreground leading-tight group-hover:underline decoration-2 underline-offset-[3px]" style={{ textDecorationColor: P.purple }}>
+      <p className="pt-2 text-sm font-semibold text-foreground leading-tight group-hover:underline decoration-2 underline-offset-[3px] decoration-[var(--kvis-purple)]">
         {u.first_name} {u.last_name}
       </p>
       <p className="text-xs text-muted-foreground line-clamp-2 leading-snug mt-0.5">{caption}</p>
@@ -93,22 +85,14 @@ function Portrait({ u, caption }: { u: UserCard; caption: string }) {
   );
 }
 
-function GridShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
-      {children}
-    </div>
-  );
-}
-
 function SectionHeader({ display, meta, count, unitLabel }: { display: string; meta: string; count: number; unitLabel: string }) {
   return (
-    <header className="flex items-end justify-between gap-6 pb-5 border-b mb-7" style={{ borderColor: P.rule }}>
+    <header className="flex items-end justify-between gap-6 pb-5 border-b border-[var(--kvis-rule)] mb-7">
       <div className="flex items-baseline gap-5">
         <h2 className="text-6xl md:text-7xl font-black tracking-[-0.04em] leading-[0.85] text-foreground tabular-nums">{display}</h2>
-        <p className="text-xs font-bold uppercase tracking-[0.26em]" style={{ color: P.purple }}>{meta}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--kvis-purple)]">{meta}</p>
       </div>
-      <p className="text-xs uppercase tracking-[0.22em] tabular-nums" style={{ color: P.text3 }}>{count} {unitLabel}</p>
+      <p className="text-xs uppercase tracking-[0.22em] tabular-nums text-[var(--kvis-text3)]">{count} {unitLabel}</p>
     </header>
   );
 }
@@ -161,8 +145,8 @@ function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
 
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-3.5 border-t first:border-t-0" style={{ borderColor: P.rule }}>
-      <span className="text-xs uppercase tracking-[0.26em] font-bold" style={{ color: P.text3 }}>{label}</span>
+    <div className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-3.5 border-t border-[var(--kvis-rule)] first:border-t-0">
+      <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">{label}</span>
       <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">{children}</div>
     </div>
   );
@@ -322,14 +306,14 @@ function SearchPageInner() {
 
           <FadeUp>
             <header className="pb-7 border-b border-foreground/60">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: P.purple }}>KVIS Connect · Directory</p>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">KVIS Connect · Directory</p>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                 {isAlumni ? "Yearbook" : "Current Class"}
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
                 {isAlumni ? "Every alum, grouped by cohort. Filter by year, country, or name." : "Every student, grouped by grade. Filter by class, house, or name."}
               </p>
-              <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap" style={{ color: P.text3 }}>
+              <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
                 {isAlumni ? (
                   <>
                     <span>{alumni.length} alumni</span>
@@ -355,9 +339,9 @@ function SearchPageInner() {
 
           <FadeUp delay={0.1}>
             <Tabs value={tab} onValueChange={(v) => switchTab(v as Tab)} className="w-full">
-              <TabsList className="h-auto w-full justify-start gap-7 rounded-none border-b bg-transparent p-0 pt-5 pb-1" style={{ borderColor: P.rule }}>
-                <TabsTrigger value="alumni" className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2">Alumni</TabsTrigger>
-                <TabsTrigger value="students" className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2">Current Students</TabsTrigger>
+              <TabsList className="h-auto w-full justify-start gap-7 rounded-none border-b border-[var(--kvis-rule)] bg-transparent p-0 pt-5 pb-1">
+                <TabsTrigger value="alumni" className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[var(--kvis-purple)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2">Alumni</TabsTrigger>
+                <TabsTrigger value="students" className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[var(--kvis-purple)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2">Current Students</TabsTrigger>
               </TabsList>
             </Tabs>
           </FadeUp>
@@ -403,8 +387,8 @@ function SearchPageInner() {
                   </FilterRow>
                 </>
               )}
-              <div className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-center gap-x-5 py-2 border-t border-b" style={{ borderColor: P.rule }}>
-                <span className="text-xs uppercase tracking-[0.26em] font-bold" style={{ color: P.text3 }}>Find</span>
+              <div className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-center gap-x-5 py-2 border-t border-b border-[var(--kvis-rule)]">
+                <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">Find</span>
                 <div className="flex items-center gap-3">
                   <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                   <input
@@ -414,7 +398,7 @@ function SearchPageInner() {
                     className="flex-1 bg-transparent border-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
                   />
                   {hasFilter && (
-                    <Button type="button" variant="ghost" onClick={resetFilters} className="h-auto shrink-0 gap-1.5 px-2 py-1 text-xs font-bold uppercase tracking-[0.22em] hover:bg-transparent hover:text-foreground" style={{ color: P.text3 }}>
+                    <Button type="button" variant="ghost" onClick={resetFilters} className="h-auto shrink-0 gap-1.5 px-2 py-1 text-xs font-bold uppercase tracking-[0.22em] hover:bg-transparent hover:text-foreground text-[var(--kvis-text3)]">
                       <X className="h-3 w-3" /> Reset
                     </Button>
                   )}
@@ -445,12 +429,12 @@ function SearchPageInner() {
           {!isLoading && activeList.length === 0 && (
             <FadeUp>
               <div className="py-24 text-center">
-                <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4" style={{ color: P.text3 }}>Nothing matches</p>
+                <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4 text-[var(--kvis-text3)]">Nothing matches</p>
                 <p className="text-3xl font-black tracking-tight text-foreground mb-3">
                   {isAlumni ? "No alumni match this filter" : "No current students match"}
                 </p>
                 {hasFilter && (
-                  <Button variant="link" onClick={resetFilters} className="h-auto p-0 text-sm underline hover:no-underline" style={{ color: P.purple }}>
+                  <Button variant="link" onClick={resetFilters} className="h-auto p-0 text-sm underline hover:no-underline text-[var(--kvis-purple)]">
                     Clear filters
                   </Button>
                 )}
