@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, genLabel } from "@/lib/utils";
 import type { BlogRead } from "@/lib/types";
+import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 
 const P = {
   purple: "oklch(44% 0.26 294)",
@@ -35,17 +36,8 @@ function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
       {!dense && (
         <Avatar className="h-7 w-7 shrink-0">
           <AvatarImage src={blog.author.profile_pic_url} alt={name} />
-          <AvatarFallback
-            className="text-white"
-            style={{ background: P.purple, fontSize: 28 * 0.38 }}
-          >
-            {name
-              .split(" ")
-              .map((w) => w[0])
-              .filter(Boolean)
-              .slice(0, 2)
-              .join("")
-              .toUpperCase()}
+          <AvatarFallback className="text-white" style={{ background: P.purple, fontSize: 28 * 0.38 }}>
+            {name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
@@ -106,10 +98,7 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
       className="group grid grid-cols-[1.75rem_1fr_auto] gap-x-5 md:gap-x-8 gap-y-3 py-7 border-b items-start"
       style={{ borderColor: P.rule }}
     >
-      <span
-        className="text-xs font-mono font-semibold tabular-nums pt-1.5"
-        style={{ color: P.text3 }}
-      >
+      <span className="text-xs font-mono font-semibold tabular-nums pt-1.5" style={{ color: P.text3 }}>
         {String(index + 1).padStart(2, "0")}
       </span>
       <div className="min-w-0">
@@ -144,9 +133,7 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
       ) : (
         <div
           className="hidden md:block w-40 h-28 shrink-0"
-          style={{
-            background: `repeating-linear-gradient(135deg, ${P.purpleSoft} 0 8px, transparent 8px 16px)`,
-          }}
+          style={{ background: `repeating-linear-gradient(135deg, ${P.purpleSoft} 0 8px, transparent 8px 16px)` }}
         />
       )}
     </Link>
@@ -179,153 +166,145 @@ export default function BlogClient() {
   const issueLabel = now.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
 
   return (
-    <div className="min-h-full bg-background">
-      <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
-        {/* Masthead */}
-        <header className="pb-7 border-b border-foreground/60">
-          <div className="flex items-start justify-between gap-6 flex-wrap">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: P.purple }}>
-                KVIS Connect · Stories
-              </p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
-                Stories
-              </h1>
-              <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
-                Essays, updates, and reflections from KVIS alumni - at home and abroad.
-              </p>
-            </div>
-            {user && (
-              <Button asChild className="shrink-0 rounded-none bg-foreground text-background hover:bg-foreground/90">
-                <Link href="/blog/new">
-                  <PenLine className="h-4 w-4 mr-2" /> Write a post
-                </Link>
-              </Button>
-            )}
-          </div>
-          <div
-            className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
-            style={{ color: P.text3 }}
-          >
-            <span>{issueLabel}</span>
-            <span aria-hidden>·</span>
-            <span>
-              {blogs.length} {blogs.length === 1 ? "post" : "posts"}
-            </span>
-          </div>
-        </header>
+    <PageEntrance>
+      <div className="min-h-full bg-background">
+        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
 
-        {/* Sections / tag rail */}
-        {allTags.length > 0 && (
-          <nav
-            className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b"
-            style={{ borderColor: P.rule }}
-          >
-            <span
-              className="text-xs uppercase tracking-[0.26em] font-bold"
-              style={{ color: P.text3 }}
-            >
-              Tags
-            </span>
-            <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
-              {[{ name: "All", count: blogs.length, key: "" } as { name: string; count: number; key: string }]
-                .concat(allTags.map(([t, c]) => ({ name: t, count: c, key: t })))
-                .map(({ name, count, key }) => {
-                  const active = activeTag === key;
-                  return (
-                    <FilterPill
-                      key={key || "all"}
-                      active={active}
-                      count={count}
-                      onClick={() => setActiveTag(active ? "" : key)}
-                    >
-                      {name}
-                    </FilterPill>
-                  );
-                })}
-            </div>
-          </nav>
-        )}
-
-        {/* Loading */}
-        {isLoading && (
-          <div className="pt-10 space-y-8">
-            <div className="space-y-4">
-              <Skeleton className="h-12 w-3/4" />
-              <Skeleton className="h-6 w-2/3" />
-              <Skeleton className="aspect-[16/7] w-full" />
-            </div>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-[1.75rem_1fr_10rem] gap-6">
-                <Skeleton className="h-4 w-6" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-2/3" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-1/3" />
+          {/* Masthead */}
+          <FadeUp>
+            <header className="pb-7 border-b border-foreground/60">
+              <div className="flex items-start justify-between gap-6 flex-wrap">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: P.purple }}>
+                    KVIS Connect · Stories
+                  </p>
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+                    Stories
+                  </h1>
+                  <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
+                    Essays, updates, and reflections from KVIS alumni - at home and abroad.
+                  </p>
                 </div>
-                <Skeleton className="w-40 h-28" />
+                {user && (
+                  <Button asChild className="shrink-0 rounded-none bg-foreground text-background hover:bg-foreground/90">
+                    <Link href="/blog/new">
+                      <PenLine className="h-4 w-4 mr-2" /> Write a post
+                    </Link>
+                  </Button>
+                )}
               </div>
-            ))}
-          </div>
-        )}
+              <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap" style={{ color: P.text3 }}>
+                <span>{issueLabel}</span>
+                <span aria-hidden>·</span>
+                <span>{blogs.length} {blogs.length === 1 ? "post" : "posts"}</span>
+              </div>
+            </header>
+          </FadeUp>
 
-        {/* Empty */}
-        {!isLoading && filtered.length === 0 && (
-          <div className="py-24 text-center">
-            <p
-              className="text-xs uppercase tracking-[0.28em] font-bold mb-4"
-              style={{ color: P.text3 }}
-            >
-              Nothing here yet
-            </p>
-            <p className="text-3xl font-black tracking-tight text-foreground mb-2">
-              {activeTag ? `No posts tagged "${activeTag}"` : "No posts yet"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {activeTag ? (
-                <button onClick={() => setActiveTag("")} className="underline" style={{ color: P.purple }}>
-                  See all posts
-                </button>
-              ) : user ? (
-                "Be the first to share something."
-              ) : (
-                "Check back soon."
-              )}
-            </p>
-          </div>
-        )}
+          {/* Tag rail */}
+          {allTags.length > 0 && (
+            <FadeUp delay={0.1}>
+              <nav
+                className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b"
+                style={{ borderColor: P.rule }}
+              >
+                <span className="text-xs uppercase tracking-[0.26em] font-bold" style={{ color: P.text3 }}>Tags</span>
+                <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
+                  {[{ name: "All", count: blogs.length, key: "" } as { name: string; count: number; key: string }]
+                    .concat(allTags.map(([t, c]) => ({ name: t, count: c, key: t })))
+                    .map(({ name, count, key }) => {
+                      const active = activeTag === key;
+                      return (
+                        <FilterPill key={key || "all"} active={active} count={count} onClick={() => setActiveTag(active ? "" : key)}>
+                          {name}
+                        </FilterPill>
+                      );
+                    })}
+                </div>
+              </nav>
+            </FadeUp>
+          )}
 
-        {/* Featured */}
-        {!isLoading && featured && <FeaturedStory blog={featured} />}
-
-        {/* The rest */}
-        {!isLoading && rest.length > 0 && (
-          <section>
-            <h2
-              className="pt-10 pb-4 text-xs uppercase tracking-[0.26em] font-bold"
-              style={{ color: P.text3 }}
-            >
-              More posts
-            </h2>
-            <div>
-              {rest.map((b, i) => (
-                <StoryRow key={b.id} blog={b} index={i} />
+          {/* Loading */}
+          {isLoading && (
+            <div className="pt-10 space-y-8">
+              <div className="space-y-4">
+                <Skeleton className="h-12 w-3/4" />
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="aspect-[16/7] w-full" />
+              </div>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="grid grid-cols-[1.75rem_1fr_10rem] gap-6">
+                  <Skeleton className="h-4 w-6" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-2/3" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-1/3" />
+                  </div>
+                  <Skeleton className="w-40 h-28" />
+                </div>
               ))}
             </div>
-          </section>
-        )}
+          )}
 
-        {!isLoading && filtered.length > 0 && (
-          <footer
-            className="mt-16 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between"
-          >
-            <span>- end -</span>
-            <span className="tabular-nums">
-              KVIS Connect · {now.getFullYear()}
-            </span>
-          </footer>
-        )}
+          {/* Empty */}
+          {!isLoading && filtered.length === 0 && (
+            <FadeUp>
+              <div className="py-24 text-center">
+                <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4" style={{ color: P.text3 }}>
+                  Nothing here yet
+                </p>
+                <p className="text-3xl font-black tracking-tight text-foreground mb-2">
+                  {activeTag ? `No posts tagged "${activeTag}"` : "No posts yet"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {activeTag ? (
+                    <button onClick={() => setActiveTag("")} className="underline" style={{ color: P.purple }}>
+                      See all posts
+                    </button>
+                  ) : user ? "Be the first to share something." : "Check back soon."}
+                </p>
+              </div>
+            </FadeUp>
+          )}
+
+          {/* Featured */}
+          {!isLoading && featured && (
+            <FadeUp delay={0.1}>
+              <FeaturedStory blog={featured} />
+            </FadeUp>
+          )}
+
+          {/* More posts */}
+          {!isLoading && rest.length > 0 && (
+            <FadeUp delay={0.15}>
+              <section>
+                <h2 className="pt-10 pb-4 text-xs uppercase tracking-[0.26em] font-bold" style={{ color: P.text3 }}>
+                  More posts
+                </h2>
+                <StaggerList>
+                  {rest.map((b, i) => (
+                    <StaggerItem key={b.id}>
+                      <StoryRow blog={b} index={i} />
+                    </StaggerItem>
+                  ))}
+                </StaggerList>
+              </section>
+            </FadeUp>
+          )}
+
+          {/* Footer */}
+          {!isLoading && filtered.length > 0 && (
+            <FadeUp>
+              <footer className="mt-16 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between">
+                <span>- end -</span>
+                <span className="tabular-nums">KVIS Connect · {now.getFullYear()}</span>
+              </footer>
+            </FadeUp>
+          )}
+
+        </div>
       </div>
-    </div>
+    </PageEntrance>
   );
 }
