@@ -1,4 +1,6 @@
 ﻿"use client";
+import Cropper from "react-easy-crop";
+import type { Area } from "react-easy-crop";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -162,6 +164,10 @@ const selectTriggerCls =
   "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground focus:ring-0 focus:ring-offset-0";
 
 export default function EditPage() {
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const router = useRouter();
   const { user: me, loading, refetch } = useAuth();
   const qc = useQueryClient();
@@ -249,8 +255,38 @@ export default function EditPage() {
   const handlePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPicPreview(URL.createObjectURL(file));
-    setPendingFile(file);
+    setCropSrc(URL.createObjectURL(file));
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    e.target.value = "";
+  };
+
+  const getCroppedFile = async (): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      if (!cropSrc || !croppedAreaPixels) return reject("No crop data");
+      const image = new window.Image();
+      image.src = cropSrc;
+      image.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = croppedAreaPixels.width;
+        canvas.height = croppedAreaPixels.height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(
+          image,
+          croppedAreaPixels.x,
+          croppedAreaPixels.y,
+          croppedAreaPixels.width,
+          croppedAreaPixels.height,
+          0, 0,
+          croppedAreaPixels.width,
+          croppedAreaPixels.height,
+        );
+        canvas.toBlob((blob) => {
+          if (!blob) return reject("Blob failed");
+          resolve(new File([blob], "profile.jpg", { type: "image/jpeg" }));
+        }, "image/jpeg", 0.92);
+      };
+    });
   };
   
   const handleUseGooseProfile = async () => {
@@ -438,41 +474,89 @@ export default function EditPage() {
                   {/* UPLOAD MODE */}
                   {profileMode === "upload" && (
                     <div className="space-y-6">
-                    
                       <div>
                         <h3 className="text-xl font-black tracking-tight mb-2">
                           Upload a profile photo
                         </h3>
-                                    
                         <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
                           JPG or PNG. Square images work best.
                         </p>
                       </div>
-                                    
-                      <label
-                        className="
-                          flex h-40 w-full max-w-md cursor-pointer
-                          items-center justify-center
-                          border border-dashed border-foreground/20
-                          transition-colors hover:border-foreground/50
-                        "
-                      >
-                        <input
-                          ref={fileRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handlePicChange}
-                        />
                   
-                        <div className="text-center">
-                          <Upload className="mx-auto mb-3 h-6 w-6" />
-                          <p className="text-sm font-medium">
-                            Click to upload
-                          </p>
+                      {/* Cropper */}
+                      {cropSrc ? (
+                        <div className="space-y-4">
+                          <div className="relative w-full max-w-md h-64 bg-muted overflow-hidden rounded-lg">
+                            <Cropper
+                              image={cropSrc}
+                              crop={crop}
+                              zoom={zoom}
+                              aspect={1}
+                              cropShape="round"
+                              showGrid={false}
+                              onCropChange={setCrop}
+                              onZoomChange={setZoom}
+                              onCropComplete={(_, areaPixels) => setCroppedAreaPixels(areaPixels)}
+                            />
+                          </div>
+                      
+                          {/* Zoom slider */}
+                          <div className="flex items-center gap-3 max-w-md">
+                            <span className="text-xs uppercase tracking-[0.22em]" style={{ color: P.text3 }}>Zoom</span>
+                            <input
+                              type="range"
+                              min={1}
+                              max={3}
+                              step={0.01}
+                              value={zoom}
+                              onChange={(e) => setZoom(Number(e.target.value))}
+                              className="flex-1 accent-foreground"
+                            />
+                          </div>
+                      
+                          {/* Apply / Cancel */}
+                          <div className="flex gap-3">
+                            <Button
+                              type="button"
+                              className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2"
+                              onClick={async () => {
+                                try {
+                                  const file = await getCroppedFile();
+                                  setPendingFile(file);
+                                  setPicPreview(URL.createObjectURL(file));
+                                  setCropSrc(null);
+                                } catch {
+                                  toast.error("Crop failed");
+                                }
+                              }}
+                            >
+                              <Check className="h-3.5 w-3.5" /> Apply crop
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="h-auto rounded-none border-foreground/30 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] gap-2"
+                              onClick={() => setCropSrc(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
                         </div>
-                      </label>
-                                    
+                      ) : (
+                        <label className="flex h-40 w-full max-w-md cursor-pointer items-center justify-center border border-dashed border-foreground/20 transition-colors hover:border-foreground/50">
+                          <input
+                            ref={fileRef}
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handlePicChange}
+                          />
+                          <div className="text-center">
+                            <Upload className="mx-auto mb-3 h-6 w-6" />
+                            <p className="text-sm font-medium">Click to upload</p>
+                          </div>
+                        </label>
+                      )}
                     </div>
                   )}
             
