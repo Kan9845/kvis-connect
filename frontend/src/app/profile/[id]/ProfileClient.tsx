@@ -276,7 +276,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
               <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 items-start">
                 <div className="relative">
-                  <div className="aspect-square overflow-hidden bg-muted rounded-full">
+                  <div className="relative aspect-square overflow-hidden bg-muted rounded-full">
                     {user.profile_pic_url ? (
                       <Image
                         src={user.profile_pic_url}

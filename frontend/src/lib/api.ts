@@ -124,6 +124,12 @@ export const blogApi = {
   update: (slug: string, data: Partial<{ title: string; content: string; excerpt: string; cover_image_url: string; tags: string; is_published: boolean }>) =>
     api.patch<BlogDetail>(`/api/blogs/${slug}`, data).then((r) => r.data),
   delete: (slug: string) => api.delete(`/api/blogs/${slug}`),
+  uploadFile: async (file: File): Promise<{ url: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await api.post<{ url: string }>("/api/upload", formData);
+    return res.data;
+  },
 };
 
 export default api;

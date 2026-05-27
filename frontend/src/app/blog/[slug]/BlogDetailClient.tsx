@@ -14,7 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/utils";
+import { formatDate, genLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import { PageEntrance, FadeUp } from "@/components/ui/motion";
 
@@ -103,7 +103,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
               <div>
                 <p className="text-sm font-medium">{blog.author.first_name} {blog.author.last_name}</p>
                 {blog.author.kvis_year && (
-                  <p className="text-xs text-muted-foreground">Gen {blog.author.kvis_year - 2017}</p>
+                  <p className="text-xs text-muted-foreground">{genLabel(blog.author.kvis_year)}</p>
                 )}
               </div>
             </Link>

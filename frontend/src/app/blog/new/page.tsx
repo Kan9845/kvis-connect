@@ -129,7 +129,7 @@ export default function NewBlogPage() {
     if (!file) return;
     setCoverUploading(true);
     try {
-      const { url } = await userApi.uploadProfilePic(file);
+      const { url } = await blogApi.uploadFile(file);
       setValue("cover_image_url", url, { shouldValidate: true });
       toast.success("Cover image uploaded");
     } catch {
