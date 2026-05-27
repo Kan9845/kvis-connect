@@ -14,7 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { formatDate, genLabel } from "@/lib/utils";
+import { cohortColor, cohortTextColor, formatDate, genLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import { PageEntrance, FadeUp } from "@/components/ui/motion";
 
@@ -98,12 +98,18 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
             <Link href={`/profile/${blog.author.slug}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={blog.author.profile_pic_url ?? ""} />
-                <AvatarFallback>{initials}</AvatarFallback>
+                <AvatarFallback
+                  style={{ background: cohortColor(blog.author.kvis_year), color: cohortTextColor(blog.author.kvis_year) }}
+                >
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-sm font-medium">{blog.author.first_name} {blog.author.last_name}</p>
                 {blog.author.kvis_year && (
-                  <p className="text-xs text-muted-foreground">{genLabel(blog.author.kvis_year)}</p>
+                  <p className="text-xs font-bold" style={{ color: cohortColor(blog.author.kvis_year) }}>
+                    {genLabel(blog.author.kvis_year)}
+                  </p>
                 )}
               </div>
             </Link>

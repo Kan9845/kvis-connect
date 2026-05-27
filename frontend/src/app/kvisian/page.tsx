@@ -14,6 +14,7 @@ import { FilterPill } from "@/components/ui/filter-pill";
 import { Search, X } from "lucide-react";
 import type { UserCard } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
+import { cohortColor, cohortColorSoft, cohortTextColor } from "@/lib/utils";
 
 type Tab = "alumni" | "students";
 
@@ -55,6 +56,8 @@ function captionStudent(u: UserCard): string {
 
 function Portrait({ u, caption }: { u: UserCard; caption: string }) {
   const name = `${u.first_name} ${u.last_name}`;
+  const color = cohortColor(u.kvis_year);
+  const colorSoft = cohortColorSoft(u.kvis_year);
   return (
     <Link href={`/profile/${u.slug ?? u.id}`} className="group block">
       <div className="relative aspect-square overflow-hidden bg-muted rounded-full">
@@ -67,17 +70,18 @@ function Portrait({ u, caption }: { u: UserCard; caption: string }) {
             className="object-cover grayscale-[18%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-[1.03]"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-white font-black text-3xl tracking-tight bg-[var(--kvis-purple)]">
+          <div
+            className="absolute inset-0 flex items-center justify-center font-black text-3xl tracking-tight"
+            style={{ background: color, color: cohortTextColor(u.kvis_year) }}
+          >
             {initials(u)}
           </div>
         )}
-        {u.country && (
-          <span className="absolute bottom-1.5 right-1.5 text-[9px] font-bold uppercase tracking-[0.18em] px-1.5 py-0.5 bg-background/90 text-foreground">
-            {u.country.slice(0, 3)}
-          </span>
-        )}
       </div>
-      <p className="pt-2 text-sm font-semibold text-foreground leading-tight group-hover:underline decoration-2 underline-offset-[3px] decoration-[var(--kvis-purple)]">
+      <p
+        className="pt-2 text-sm font-semibold text-foreground leading-tight group-hover:underline decoration-2 underline-offset-[3px]"
+        style={{ textDecorationColor: color }}
+      >
         {u.first_name} {u.last_name}
       </p>
       <p className="text-xs text-muted-foreground line-clamp-2 leading-snug mt-0.5">{caption}</p>
@@ -85,12 +89,15 @@ function Portrait({ u, caption }: { u: UserCard; caption: string }) {
   );
 }
 
-function SectionHeader({ display, meta, count, unitLabel }: { display: string; meta: string; count: number; unitLabel: string }) {
+function SectionHeader({ display, meta, count, unitLabel, kvis_year }: {
+  display: string; meta: string; count: number; unitLabel: string; kvis_year?: number;
+}) {
+  const color = cohortColor(kvis_year);
   return (
     <header className="flex items-end justify-between gap-6 pb-5 border-b border-[var(--kvis-rule)] mb-7">
       <div className="flex items-baseline gap-5">
         <h2 className="text-6xl md:text-7xl font-black tracking-[-0.04em] leading-[0.85] text-foreground tabular-nums">{display}</h2>
-        <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--kvis-purple)]">{meta}</p>
+        <p className="text-xs font-bold uppercase tracking-[0.26em]" style={{ color }}>{meta}</p>
       </div>
       <p className="text-xs uppercase tracking-[0.22em] tabular-nums text-[var(--kvis-text3)]">{count} {unitLabel}</p>
     </header>
@@ -102,7 +109,13 @@ function CohortSection({ k, students }: { k: number; students: UserCard[] }) {
   return (
     <FadeUp>
       <section className="pt-14">
-        <SectionHeader display={`KVIS ${k}`} meta={`Class of ${cohortGradYear(k)}`} count={students.length} unitLabel="alumni" />
+        <SectionHeader
+          display={`KVIS ${k}`}
+          meta={`Class of ${cohortGradYear(k)}`}
+          count={students.length}
+          unitLabel="alumni"
+          kvis_year={k}
+        />
         <StaggerList>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
             {students.map((s) => (
@@ -307,7 +320,7 @@ function SearchPageInner() {
           <FadeUp>
             <header className="pb-7 border-b border-foreground/60">
               <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">KVIS Connect · Directory</p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                 {isAlumni ? "Yearbook" : "Current Class"}
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">

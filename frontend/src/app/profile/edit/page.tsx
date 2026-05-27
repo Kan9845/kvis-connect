@@ -239,7 +239,7 @@ export default function EditPage() {
           <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
             KVIS Connect · Edit Dossier
           </p>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
             Edit profile
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">

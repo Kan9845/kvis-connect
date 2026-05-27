@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FilterPill } from "@/components/ui/filter-pill";
 import type { UserCard, Education } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
+import { cohortColor } from "@/lib/utils";
 
 const ISO_MAP: Record<string, string> = {
   Thailand: "th", "United States": "us", "United States of America": "us", USA: "us", "United Kingdom": "gb", UK: "gb",
@@ -84,7 +85,11 @@ function toRanked(map: Map<string, number>, total: number): Row[] {
     }));
 }
 
-function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: boolean }) {
+function RankedList({ items, showFlag = false, barColor = "var(--kvis-purple)" }: { 
+  items: Row[]; 
+  showFlag?: boolean; 
+  barColor?: string;
+}) {
   const [showAll, setShowAll] = useState(false);
   const CAP = 10;
   const visible = showAll ? items : items.slice(0, CAP);
@@ -117,9 +122,10 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
               </div>
               <div className="h-[6px] rounded-full overflow-hidden bg-[var(--kvis-rule)]">
                 <div
-                  className="h-full rounded-full bg-[var(--kvis-purple)]"
+                  className="h-full rounded-full"
                   style={{
                     width: `${Math.max(it.pct, it.count > 0 ? 1.5 : 0)}%`,
+                    background: barColor,
                     transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
                   }}
                 />
@@ -284,6 +290,7 @@ export default function StatsClient() {
   const uniqueUnis = uniRanked.length;
   const uniqueCountries = countryRanked.length;
   const cohortLabel = cohort === null ? "All cohorts" : `KVIS ${cohort}`;
+  const activeBarColor = cohortColor(cohort ?? undefined);
 
   const now = new Date();
   const dateline = now
@@ -300,7 +307,7 @@ export default function StatsClient() {
               <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
                 KVIS Connect · Stats
               </p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                 By the Numbers
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
@@ -342,6 +349,7 @@ export default function StatsClient() {
                       active={cohort === y}
                       count={cohortCounts.get(y) ?? 0}
                       onClick={() => setCohort(cohort === y ? null : y)}
+                      activeColor={cohortColor(y)}
                     >
                       K{y}
                     </FilterPill>
@@ -414,7 +422,7 @@ export default function StatsClient() {
                     }
                   />
                   {facultyRanked.length > 0 ? (
-                    <RankedList items={facultyRanked} />
+                    <RankedList items={facultyRanked} barColor={activeBarColor} />
                   ) : (
                     <EmptyRow label="majors" />
                   )}
@@ -441,7 +449,7 @@ export default function StatsClient() {
                     }
                   />
                   {uniRanked.length > 0 ? (
-                    <RankedList items={uniRanked} />
+                    <RankedList items={uniRanked} barColor={activeBarColor} />
                   ) : (
                     <EmptyRow label="universities" />
                   )}
@@ -469,7 +477,7 @@ export default function StatsClient() {
                     })()}
                   />
                   {countryRanked.length > 0 ? (
-                    <RankedList items={countryRanked} showFlag />
+                    <RankedList items={countryRanked} showFlag barColor={activeBarColor} />
                   ) : (
                     <EmptyRow label="destinations" />
                   )}

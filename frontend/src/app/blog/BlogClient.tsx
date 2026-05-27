@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FilterPill } from "@/components/ui/filter-pill";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate, genLabel } from "@/lib/utils";
+import { cohortColor, cohortTextColor, formatDate, genLabel } from "@/lib/utils";
 import type { BlogRead } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 
@@ -21,22 +21,17 @@ function parseTags(t?: string) {
 
 function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
   const name = `${blog.author.first_name} ${blog.author.last_name}`;
+  const color = cohortColor(blog.author.kvis_year);
+  const textColor = cohortTextColor(blog.author.kvis_year);
   return (
     <div className={`flex items-center gap-2 ${dense ? "text-xs" : "text-sm"} flex-wrap`}>
       {!dense && (
         <Avatar className="h-7 w-7 shrink-0">
           <AvatarImage src={blog.author.profile_pic_url} alt={name} />
           <AvatarFallback
-            className="text-white"
-            style={{ background: "var(--kvis-purple)", fontSize: 28 * 0.38 }}
+            style={{ background: color, color: textColor, fontSize: 28 * 0.38 }}
           >
-            {name
-              .split(" ")
-              .map((w) => w[0])
-              .filter(Boolean)
-              .slice(0, 2)
-              .join("")
-              .toUpperCase()}
+            {name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()}
           </AvatarFallback>
         </Avatar>
       )}
@@ -44,7 +39,7 @@ function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
       {blog.author.kvis_year && (
         <>
           <span className="text-[var(--kvis-text3)]">·</span>
-          <span className="text-muted-foreground tabular-nums">{genLabel(blog.author.kvis_year)}</span>
+          <span className="tabular-nums font-bold" style={{ color }}>{genLabel(blog.author.kvis_year)}</span>
         </>
       )}
       <span className="text-[var(--kvis-text3)]">·</span>
@@ -173,7 +168,7 @@ export default function BlogClient() {
                   <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
                     KVIS Connect · Stories
                   </p>
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+                  <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                     Stories
                   </h1>
                   <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">

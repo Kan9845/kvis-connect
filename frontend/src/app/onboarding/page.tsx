@@ -169,7 +169,7 @@ export default function OnboardingPage() {
                   <span className="font-mono font-black text-2xl tabular-nums" style={{ color: P.green, letterSpacing: "-0.02em" }}>03</span>
                   <span className="text-[11px] uppercase tracking-[0.32em] font-bold" style={{ color: P.text3 }}>Setup · One time</span>
                 </div>
-                <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground max-w-[12ch]">
+                <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground max-w-[12ch]">
                   Tell us about yourself.
                 </h1>
                 <p className="mt-6 text-base lg:text-[17px] text-muted-foreground max-w-[42ch] leading-relaxed">

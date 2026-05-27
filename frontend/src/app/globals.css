@@ -79,6 +79,9 @@ html, body {
 }
 
 @layer base {
+  .font-display {
+    font-family: var(--font-bricolage), var(--font-be-vietnam-pro), sans-serif;
+  }
   * {
     @apply border-border;
   }

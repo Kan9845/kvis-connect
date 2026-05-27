@@ -215,7 +215,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 </div>
 
                 <div className="min-w-0">
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground" style={{ wordBreak: "break-word" }}>
+                  <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground">
                     {user.first_name}<br />{user.last_name}
                   </h1>
 
@@ -227,10 +227,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                   )}
 
                   <div className="mt-3 flex items-baseline gap-x-3 gap-y-2 flex-wrap text-xs font-bold uppercase tracking-[0.24em] tabular-nums text-[var(--kvis-text3)]">
-                    {user.mbti && <span className="text-[var(--kvis-purple)]">{user.mbti}</span>}
-                    {user.mbti && user.kvis_year && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
-                    {user.kvis_year && <span>KVIS {user.kvis_year}</span>}
-                    {user.kvis_year && user.place && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
+                    {user.kvis_year && <span className="text-[var(--kvis-purple)]">KVIS {user.kvis_year}</span>}
+                    {user.kvis_year && user.mbti && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
+                    {user.mbti && <span>{user.mbti}</span>}
+                    {user.place && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
                     {user.place && <span>{user.place}</span>}
                   </div>
 
