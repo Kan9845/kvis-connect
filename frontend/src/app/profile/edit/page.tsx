@@ -252,49 +252,37 @@ export default function EditPage() {
     setPicPreview(URL.createObjectURL(file));
     setPendingFile(file);
   };
-
+  
   const handleUseGooseProfile = async () => {
     if (!avatarRef.current) return;
 
     try {
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const canvas = await html2canvas(avatarRef.current, {
         backgroundColor: null,
         scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
       });
 
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
-        const file = new File(
-          [blob],
-          "goose-profile.png",
-          {
-            type: "image/png",
-          }
-        );
-
-        // use SAME S3 upload flow
-        const { url } =
-          await userApi.uploadProfilePic(file);
-
-        // save to profile
-        const updated = await userApi.updateMe({
-          profile_pic_url: url,
-        });
+        const file = new File([blob], "goose-profile.png", { type: "image/png" });
+        const { url } = await userApi.uploadProfilePic(file);
+        const updated = await userApi.updateMe({ profile_pic_url: url });
 
         onMeUpdateSuccess(qc, updated);
-
         await refetch();
-
         setPicPreview(url);
-
         toast.success("Goose profile updated");
 
       }, "image/png");
 
     } catch (err) {
       console.error(err);
-
       toast.error("Failed to generate goose profile");
     }
   };
@@ -394,10 +382,12 @@ export default function EditPage() {
                 <div className="space-y-6 self-start">
                   <div
                     ref={profileMode === "goose" ? avatarRef : undefined}
-                    className="relative w-full max-w-[320px] aspect-square overflow-hidden bg-muted"
+                    className="relative w-full max-w-[320px] aspect-square overflow-hidden bg-muted rounded-full"
                   >
                     {profileMode === "goose" ? (
-                      <AvatarPreview config={gooseConfig} />
+                      <div className="absolute inset-0 scale-[1.26] origin-center pointer-events-none">
+                        <AvatarPreview config={gooseConfig} />
+                      </div>
                     ) : previewUrl ? (
                       <img
                         src={previewUrl}

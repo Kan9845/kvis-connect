@@ -1804,7 +1804,7 @@ app.post("/api/users/me/profile-pic", requireAuth, upload.single("file"), (req, 
   const dataUrl = `data:${mimeType};base64,${base64}`;
   
   MOCK_ME.profile_pic_url = dataUrl;
-  MOCK_ALUMNI[0].profile_pic_url = dataUrl; // ← add this line
+  MOCK_ALUMNI[0].profile_pic_url = dataUrl;
   res.json({ url: dataUrl });
 });
 

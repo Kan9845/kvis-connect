@@ -360,10 +360,12 @@ function MobileNavPanel({
         <div className="px-4 pb-4 pt-1 flex flex-col gap-0.5">
           {/* Identity row */}
           <div className="flex items-center gap-3 px-3 py-3">
-            <Avatar className="h-9 w-9 shrink-0 shadow-sm">
+            <Avatar className="h-9 w-9 shrink-0 shadow-sm overflow-hidden">
               <AvatarImage
                 src={user.profile_pic_url ?? ""}
                 alt={user.first_name}
+                className="w-full h-full object-cover"
+                style={{ borderRadius: "inherit" }}
               />
               <AvatarFallback>
                 {`${user.first_name[0]}${user.last_name[0]}`.toUpperCase()}
@@ -465,10 +467,12 @@ export function Navbar() {
           <button
             className={`rounded-full outline-none ring-offset-2 ${ringClass}`}
           >
-            <Avatar className="h-9 w-9 cursor-pointer shadow-md">
+            <Avatar className="h-9 w-9 cursor-pointer shadow-md overflow-hidden">
               <AvatarImage
                 src={user.profile_pic_url ?? ""}
                 alt={user.first_name}
+                className="w-full h-full object-cover"
+                style={{ borderRadius: "inherit" }}
               />
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>

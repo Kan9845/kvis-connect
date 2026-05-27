@@ -275,29 +275,26 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
               </div>
 
               <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 items-start">
-                <div className="relative aspect-square overflow-hidden bg-muted">
-                  {user.profile_pic_url ? (
-                    <Image
-                      src={user.profile_pic_url}
-                      alt={`${user.first_name} ${user.last_name}`}
-                      fill
-                      sizes="(min-width: 768px) 200px, (min-width: 640px) 160px, 120px"
-                      className="object-cover"
-                      priority
-                    />
-                  ) : (
-                    <div
-                      className="absolute inset-0 flex items-center justify-center text-white font-black tracking-tight"
-                      style={{ background: P.purple, fontSize: "clamp(2.5rem, 8vw, 5rem)" }}
-                    >
-                      {initials}
-                    </div>
-                  )}
-                  {user.country && (
-                    <Badge variant="secondary" className="absolute bottom-1.5 right-1.5 rounded-none border-transparent bg-background/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-foreground hover:bg-background/90">
-                      {user.country.slice(0, 3)}
-                    </Badge>
-                  )}
+                <div className="relative">
+                  <div className="aspect-square overflow-hidden bg-muted rounded-full">
+                    {user.profile_pic_url ? (
+                      <Image
+                        src={user.profile_pic_url}
+                        alt={`${user.first_name} ${user.last_name}`}
+                        fill
+                        sizes="(min-width: 768px) 200px, (min-width: 640px) 160px, 120px"
+                        className="object-cover"
+                        priority
+                      />
+                    ) : (
+                      <div
+                        className="absolute inset-0 flex items-center justify-center text-white font-black tracking-tight"
+                        style={{ background: P.purple, fontSize: "clamp(2.5rem, 8vw, 5rem)" }}
+                      >
+                        {initials}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="min-w-0">
