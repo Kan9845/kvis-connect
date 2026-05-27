@@ -269,7 +269,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 </p>
                 {isMe && (
                   <Button asChild className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90">
-                    <Link href="/edit">Edit profile</Link>
+                    <Link href="/profile/edit">Edit profile</Link>
                   </Button>
                 )}
               </div>
