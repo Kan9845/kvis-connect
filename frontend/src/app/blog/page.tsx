@@ -4,10 +4,6 @@ import { keys } from "@/lib/cache/keys";
 import { blogApi } from "@/lib/api";
 import BlogClient from "./BlogClient";
 
-export const metadata = {
-  title: "Stories · KVIS Connect",
-  description: "Essays, updates, and reflections from KVIS alumni.",
-};
 
 export default async function BlogPage() {
   const qc = getQueryClient();

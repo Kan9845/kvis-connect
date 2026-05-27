@@ -15,6 +15,8 @@ import {
   Newspaper,
   BarChart2,
   Users,
+  GraduationCap,
+  Info,
   User,
   LogOut,
   Settings,
@@ -168,9 +170,9 @@ function ThemeToggle({ dark }: { dark: boolean }) {
   );
 }
 
-const PURPLE = "oklch(44% 0.26 294)";
 
 const NAV_LINKS = [
+  { href: "/about", icon: Info, label: "About" },
   { href: "/blog", icon: Newspaper, label: "Blog" },
   { href: "/stats", icon: BarChart2, label: "Stats" },
   { href: "/kvisian", icon: Users, label: "Kvisian" },
@@ -183,6 +185,7 @@ function NavLink({
   pathname,
   dark,
   isActive,
+  iconClass = "h-4 w-4",
 }: {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -190,6 +193,7 @@ function NavLink({
   pathname: string;
   dark: boolean;
   isActive?: boolean;
+  iconClass?: string;
 }) {
   const active =
     isActive ?? (pathname === href || pathname.startsWith(href + "/"));
@@ -208,14 +212,14 @@ function NavLink({
       ? "font-semibold"
       : "text-muted-foreground hover:text-foreground font-medium";
     if (active) {
-      style.color = PURPLE;
-      style.boxShadow = `inset 0 -2px 0 0 ${PURPLE}`;
+      style.color = "var(--kvis-purple-light)";
+      style.boxShadow = "inset 0 -2px 0 0 var(--kvis-purple-light)";
     }
   }
 
   return (
     <Link href={href} className={`${base} ${cls}`} style={style}>
-      <Icon className="h-4 w-4" /> {label}
+      <Icon className={iconClass} /> {label}
     </Link>
   );
 }
@@ -319,7 +323,7 @@ function MobileNavPanel({
               href={href}
               className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors"
               style={{
-                color: active ? (dark ? "white" : PURPLE) : rowColor,
+                color: active ? (dark ? "white" : "var(--kvis-purple)") : rowColor,
                 background: active
                   ? dark
                     ? "rgba(255,255,255,0.1)"
@@ -428,8 +432,7 @@ function MobileNavPanel({
             <Link href="/auth/login">Sign in</Link>
           </Button>
           <Button
-            className="w-full text-sm font-semibold text-white"
-            style={{ background: PURPLE }}
+            className="w-full text-sm font-semibold text-white bg-[var(--kvis-purple)] dark:bg-[var(--kvis-purple-light)]"
             asChild
           >
             <Link href="/auth/register">Join KVIS Connect</Link>
@@ -537,7 +540,7 @@ export function Navbar() {
           {/* Desktop nav */}
           <div className="hidden nav:flex items-center gap-3 pointer-events-auto">
             <div
-              className="flex items-center rounded-full overflow-visible w-[338px]"
+              className="flex items-center rounded-full overflow-visible w-56"
               style={{
                 background: dark ? "transparent" : "oklch(95% 0.005 294)",
                 border: dark
@@ -548,7 +551,7 @@ export function Navbar() {
               <AlumniSearch dark={dark} />
             </div>
             <div
-              className="flex items-center rounded-full overflow-hidden shrink-0"
+              className="flex items-center rounded-full overflow-hidden shrink-0 w-auto"
               style={{
                 background: dark ? "transparent" : "oklch(95% 0.005 294)",
                 border: dark
@@ -556,6 +559,16 @@ export function Navbar() {
                   : "1px solid oklch(88% 0.008 294)",
               }}
             >
+              <NavLink
+                href="/about"
+                icon={Info}
+                label="About"
+                pathname={pathname}
+                dark={dark}
+              />
+              <div
+                className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`}
+              />
               <NavLink
                 href="/blog"
                 icon={Newspaper}
@@ -604,7 +617,7 @@ export function Navbar() {
                 <Button
                   size="sm"
                   className={`hidden nav:inline-flex ${dark ? "bg-transparent text-white border border-white/60 hover:bg-white/10" : "text-white"}`}
-                  style={dark ? {} : { background: PURPLE }}
+                  style={dark ? {} : { background: "var(--kvis-purple)" }}
                   asChild
                 >
                   <Link href="/auth/register">Join</Link>
@@ -664,10 +677,18 @@ export function Navbar() {
 
         {/* Desktop nav */}
         <div className="hidden nav:flex items-center gap-3">
-          <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-visible w-[338px]">
+          <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-visible w-56">
             <AlumniSearch solid />
           </div>
           <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-hidden shrink-0">
+            <NavLink
+              href="/about"
+              icon={Info}
+              label="About"
+              pathname={pathname}
+              dark={false}
+            />
+            <div className="w-px h-4 bg-border" />
             <NavLink
               href="/blog"
               icon={Newspaper}
@@ -711,8 +732,7 @@ export function Navbar() {
               </Button>
               <Button
                 size="sm"
-                className="hidden nav:inline-flex text-white"
-                style={{ background: PURPLE }}
+                className="hidden nav:inline-flex text-white bg-[var(--kvis-purple)]"
                 asChild
               >
                 <Link href="/auth/register">Join</Link>

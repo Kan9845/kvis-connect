@@ -35,6 +35,15 @@ html, body {
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+    --kvis-purple: oklch(44% 0.26 294);
+    --kvis-purple-light: oklch(60% 0.18 294);
+    --kvis-purple-soft: oklch(96% 0.025 294);
+    --kvis-green: oklch(40% 0.16 148);
+    --kvis-ink: oklch(12% 0.012 294);
+    --kvis-text2: oklch(42% 0.008 294);
+    --kvis-text3: oklch(60% 0.006 294);
+    --kvis-rule: oklch(90% 0.007 294);
+    --kvis-bg: oklch(98.5% 0.004 294);
   }
 
   .dark {
@@ -57,6 +66,15 @@ html, body {
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+    --kvis-purple: oklch(44% 0.26 294);
+    --kvis-purple-light: oklch(68% 0.2 294);
+    --kvis-purple-soft: oklch(20% 0.03 294);
+    --kvis-green: oklch(40% 0.16 148);
+    --kvis-ink: oklch(95% 0.005 294);
+    --kvis-text2: oklch(72% 0.008 294);
+    --kvis-text3: oklch(52% 0.006 294);
+    --kvis-rule: oklch(22% 0.01 294);
+    --kvis-bg: oklch(11% 0.012 294);
   }
 }
 
@@ -86,6 +104,7 @@ html, body {
 .prose blockquote { @apply border-l-4 border-primary/40 pl-4 italic text-muted-foreground my-4; }
 .prose a { @apply text-primary hover:underline; }
 .prose strong { @apply font-semibold; }
+
 
 @keyframes goose-bob {
   0%   { transform: translateY(0); }

@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     CACHE_TTL_LONG: int = 300
 
     RESEND_API_KEY: str = ""
-    EMAIL_FROM: str = "noreply@kvis.ac.th"
+    SMTP_FROM: str = "noreply@kvis.ac.th"
 
     class Config:
         env_file = ".env"

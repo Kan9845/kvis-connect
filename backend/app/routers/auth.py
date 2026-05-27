@@ -56,7 +56,7 @@ def _send_reset_email(to_email: str, token: str) -> None:
     resend.api_key = settings.RESEND_API_KEY
     reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
     resend.Emails.send({
-        "from": settings.EMAIL_FROM,
+        "from": settings.SMTP_FROM,
         "to": [to_email],
         "subject": "KVIS Connect – Password Reset",
         "text": (
@@ -71,7 +71,7 @@ def _send_reset_email(to_email: str, token: str) -> None:
 def _send_otp_email(to_email: str, otp: str) -> None:
     resend.api_key = settings.RESEND_API_KEY
     resend.Emails.send({
-        "from": settings.EMAIL_FROM,
+        "from": settings.SMTP_FROM,
         "to": [to_email],
         "subject": "KVIS Connect – Email Verification Code",
         "text": (

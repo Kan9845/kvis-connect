@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -14,16 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, genLabel } from "@/lib/utils";
 import type { BlogRead } from "@/lib/types";
 
-const P = {
-  purple: "oklch(44% 0.26 294)",
-  purpleSoft: "oklch(95% 0.035 294)",
-  green: "oklch(40% 0.16 148)",
-  ink: "oklch(20% 0.015 294)",
-  text2: "oklch(45% 0.008 294)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
-};
-
 function parseTags(t?: string) {
   return (t ?? "").split(",").map((x) => x.trim()).filter(Boolean);
 }
@@ -37,7 +27,7 @@ function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
           <AvatarImage src={blog.author.profile_pic_url} alt={name} />
           <AvatarFallback
             className="text-white"
-            style={{ background: P.purple, fontSize: 28 * 0.38 }}
+            style={{ background: "var(--kvis-purple)", fontSize: 28 * 0.38 }}
           >
             {name
               .split(" ")
@@ -52,11 +42,11 @@ function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
       <span className="font-semibold text-foreground">{name}</span>
       {blog.author.kvis_year && (
         <>
-          <span style={{ color: P.text3 }}>·</span>
+          <span className="text-[var(--kvis-text3)]">·</span>
           <span className="text-muted-foreground tabular-nums">{genLabel(blog.author.kvis_year)}</span>
         </>
       )}
-      <span style={{ color: P.text3 }}>·</span>
+      <span className="text-[var(--kvis-text3)]">·</span>
       <span className="text-muted-foreground tabular-nums">
         {blog.published_at ? formatDate(blog.published_at) : "Draft"}
       </span>
@@ -67,13 +57,15 @@ function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
 function FeaturedStory({ blog }: { blog: BlogRead }) {
   const tags = parseTags(blog.tags);
   return (
-    <Link href={`/blog/${blog.slug}`} className="group block py-10 border-b" style={{ borderColor: P.rule }}>
-      <div className="text-xs font-bold uppercase tracking-[0.24em] mb-5" style={{ color: P.green }}>
-        Featured{tags[0] ? <span style={{ color: P.text3 }}>{`  ·  ${tags[0]}`}</span> : null}
+    <Link
+      href={`/blog/${blog.slug}`}
+      className="group block py-10 border-b border-[var(--kvis-rule)]"
+    >
+      <div className="text-xs font-bold uppercase tracking-[0.24em] mb-5 text-[var(--kvis-green)]">
+        Featured{tags[0] ? <span className="text-[var(--kvis-text3)]">{`  ·  ${tags[0]}`}</span> : null}
       </div>
       <h2
-        className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.02] tracking-[-0.02em] text-foreground mb-5 max-w-[20ch] group-hover:underline decoration-[3px] underline-offset-[6px]"
-        style={{ textDecorationColor: P.purple }}
+        className="text-4xl md:text-5xl lg:text-6xl font-black leading-[1.02] tracking-[-0.02em] text-foreground mb-5 max-w-[20ch] group-hover:underline decoration-[3px] underline-offset-[6px] decoration-[var(--kvis-purple)]"
       >
         {blog.title}
       </h2>
@@ -103,24 +95,19 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
   return (
     <Link
       href={`/blog/${blog.slug}`}
-      className="group grid grid-cols-[1.75rem_1fr_auto] gap-x-5 md:gap-x-8 gap-y-3 py-7 border-b items-start"
-      style={{ borderColor: P.rule }}
+      className="group grid grid-cols-[1.75rem_1fr_auto] gap-x-5 md:gap-x-8 gap-y-3 py-7 border-b border-[var(--kvis-rule)] items-start"
     >
-      <span
-        className="text-xs font-mono font-semibold tabular-nums pt-1.5"
-        style={{ color: P.text3 }}
-      >
+      <span className="text-xs font-mono font-semibold tabular-nums pt-1.5 text-[var(--kvis-text3)]">
         {String(index + 1).padStart(2, "0")}
       </span>
       <div className="min-w-0">
         {tags[0] && (
-          <div className="text-xs font-bold uppercase tracking-[0.22em] mb-2" style={{ color: P.purple }}>
+          <div className="text-xs font-bold uppercase tracking-[0.22em] mb-2 text-[var(--kvis-purple)]">
             {tags[0]}
           </div>
         )}
         <h3
-          className="text-xl md:text-2xl font-bold leading-[1.15] tracking-[-0.01em] text-foreground mb-2 group-hover:underline decoration-2 underline-offset-[5px]"
-          style={{ textDecorationColor: P.purple }}
+          className="text-xl md:text-2xl font-bold leading-[1.15] tracking-[-0.01em] text-foreground mb-2 group-hover:underline decoration-2 underline-offset-[5px] decoration-[var(--kvis-purple)]"
         >
           {blog.title}
         </h3>
@@ -142,12 +129,7 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
           />
         </div>
       ) : (
-        <div
-          className="hidden md:block w-40 h-28 shrink-0"
-          style={{
-            background: `repeating-linear-gradient(135deg, ${P.purpleSoft} 0 8px, transparent 8px 16px)`,
-          }}
-        />
+        <div className="hidden md:block w-40 h-28 shrink-0 bg-[repeating-linear-gradient(135deg,var(--kvis-purple-soft)_0_8px,transparent_8px_16px)]" />
       )}
     </Link>
   );
@@ -185,7 +167,7 @@ export default function BlogClient() {
         <header className="pb-7 border-b border-foreground/60">
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: P.purple }}>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
                 KVIS Connect · Stories
               </p>
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
@@ -203,10 +185,7 @@ export default function BlogClient() {
               </Button>
             )}
           </div>
-          <div
-            className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap"
-            style={{ color: P.text3 }}
-          >
+          <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
             <span>{issueLabel}</span>
             <span aria-hidden>·</span>
             <span>
@@ -217,14 +196,8 @@ export default function BlogClient() {
 
         {/* Sections / tag rail */}
         {allTags.length > 0 && (
-          <nav
-            className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b"
-            style={{ borderColor: P.rule }}
-          >
-            <span
-              className="text-xs uppercase tracking-[0.26em] font-bold"
-              style={{ color: P.text3 }}
-            >
+          <nav className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b border-[var(--kvis-rule)]">
+            <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">
               Tags
             </span>
             <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
@@ -272,10 +245,7 @@ export default function BlogClient() {
         {/* Empty */}
         {!isLoading && filtered.length === 0 && (
           <div className="py-24 text-center">
-            <p
-              className="text-xs uppercase tracking-[0.28em] font-bold mb-4"
-              style={{ color: P.text3 }}
-            >
+            <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4 text-[var(--kvis-text3)]">
               Nothing here yet
             </p>
             <p className="text-3xl font-black tracking-tight text-foreground mb-2">
@@ -283,7 +253,7 @@ export default function BlogClient() {
             </p>
             <p className="text-sm text-muted-foreground">
               {activeTag ? (
-                <button onClick={() => setActiveTag("")} className="underline" style={{ color: P.purple }}>
+                <button onClick={() => setActiveTag("")} className="underline text-[var(--kvis-purple)]">
                   See all posts
                 </button>
               ) : user ? (
@@ -301,10 +271,7 @@ export default function BlogClient() {
         {/* The rest */}
         {!isLoading && rest.length > 0 && (
           <section>
-            <h2
-              className="pt-10 pb-4 text-xs uppercase tracking-[0.26em] font-bold"
-              style={{ color: P.text3 }}
-            >
+            <h2 className="pt-10 pb-4 text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">
               More posts
             </h2>
             <div>
@@ -316,9 +283,7 @@ export default function BlogClient() {
         )}
 
         {!isLoading && filtered.length > 0 && (
-          <footer
-            className="mt-16 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between"
-          >
+          <footer className="mt-16 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between">
             <span>- end -</span>
             <span className="tabular-nums">
               KVIS Connect · {now.getFullYear()}

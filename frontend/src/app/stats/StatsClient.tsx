@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useMemo, useState } from "react";
 import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -8,16 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { FilterPill } from "@/components/ui/filter-pill";
 import type { UserCard, Education } from "@/lib/types";
-
-const P = {
-  purple: "oklch(44% 0.26 294)",
-  purpleSoft: "oklch(95% 0.035 294)",
-  green: "oklch(40% 0.16 148)",
-  ink: "oklch(20% 0.015 294)",
-  text2: "oklch(45% 0.008 294)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
-};
 
 const ISO_MAP: Record<string, string> = {
   Thailand: "th", "United States": "us", "United States of America": "us", USA: "us", "United Kingdom": "gb", UK: "gb",
@@ -70,7 +60,6 @@ function classifyFaculty(major: string): string {
   return "Other Fields";
 }
 
-// Prefer bachelor-level; fall back to earliest entry.
 function primaryEducation(u: UserCard): Education | null {
   if (!u.education?.length) return null;
   const undergrad = u.education.find((e) =>
@@ -94,10 +83,6 @@ function toRanked(map: Map<string, number>, total: number): Row[] {
     }));
 }
 
-function barColor(_rank: number): string {
-  return P.purple;
-}
-
 function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: boolean }) {
   const [showAll, setShowAll] = useState(false);
   const CAP = 10;
@@ -109,18 +94,13 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
       {visible.map((it) => (
         <div
           key={it.key}
-          className="grid items-center py-3.5 border-b"
+          className="grid items-center py-3.5 border-b border-[var(--kvis-rule)]"
           style={{
-            borderColor: P.rule,
-            gridTemplateColumns:
-              "1.75rem minmax(0, 1.2fr) minmax(0, 1.8fr) 2.5rem 3rem",
+            gridTemplateColumns: "1.75rem minmax(0, 1.2fr) minmax(0, 1.8fr) 2.5rem 3rem",
             columnGap: "1rem",
           }}
         >
-          <span
-            className="text-xs font-mono tabular-nums font-semibold"
-            style={{ color: P.text3 }}
-          >
+          <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">
             {String(it.rank).padStart(2, "0")}
           </span>
           <div className="flex items-center gap-2 min-w-0">
@@ -133,15 +113,11 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
               {it.label}
             </span>
           </div>
-          <div
-            className="h-[6px] rounded-full overflow-hidden"
-            style={{ background: P.rule }}
-          >
+          <div className="h-[6px] rounded-full overflow-hidden bg-[var(--kvis-rule)]">
             <div
-              className="h-full rounded-full"
+              className="h-full rounded-full bg-[var(--kvis-purple)]"
               style={{
                 width: `${Math.max(it.pct, it.count > 0 ? 1.5 : 0)}%`,
-                background: barColor(it.rank),
                 transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
               }}
             />
@@ -149,10 +125,7 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
           <span className="text-sm font-bold tabular-nums text-right text-foreground">
             {it.count}
           </span>
-          <span
-            className="text-sm tabular-nums text-right"
-            style={{ color: P.text3 }}
-          >
+          <span className="text-sm tabular-nums text-right text-[var(--kvis-text3)]">
             {it.pct < 10 ? it.pct.toFixed(1) : Math.round(it.pct)}%
           </span>
         </div>
@@ -161,12 +134,8 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
         <Button
           variant="link"
           onClick={() => setShowAll(true)}
-          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline"
-          style={{
-            color: P.purple,
-            textDecorationColor: P.purple,
-            textUnderlineOffset: 4,
-          }}
+          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline text-[var(--kvis-purple)]"
+          style={{ textDecorationColor: "var(--kvis-purple)", textUnderlineOffset: 4 }}
         >
           See all {items.length} entries <ArrowRight className="h-3 w-3 ml-1" />
         </Button>
@@ -175,8 +144,8 @@ function RankedList({ items, showFlag = false }: { items: Row[]; showFlag?: bool
         <Button
           variant="link"
           onClick={() => setShowAll(false)}
-          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline"
-          style={{ color: P.text3, textUnderlineOffset: 4 }}
+          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline text-[var(--kvis-text3)]"
+          style={{ textUnderlineOffset: 4 }}
         >
           <ArrowLeft className="h-3 w-3 mr-1" /> Collapse
         </Button>
@@ -200,21 +169,16 @@ function SectionHead({
     <header className="pt-14 pb-6">
       <div className="flex items-baseline gap-4 mb-3">
         <span
-          className="font-mono font-black text-2xl tabular-nums"
-          style={{ color: P.green, letterSpacing: "-0.02em" }}
+          className="font-mono font-black text-2xl tabular-nums text-[var(--kvis-green)]"
+          style={{ letterSpacing: "-0.02em" }}
         >
           {numeral}
         </span>
-        <span
-          className="text-xs uppercase tracking-[0.28em] font-bold"
-          style={{ color: P.text3, whiteSpace: "nowrap" }}
-        >
+        <span className="text-xs uppercase tracking-[0.28em] font-bold text-[var(--kvis-text3)] whitespace-nowrap">
           {kicker}
         </span>
       </div>
-      <h2
-        className="text-2xl md:text-3xl lg:text-4xl font-black tracking-[-0.025em] leading-[1.02] text-foreground"
-      >
+      <h2 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-[-0.025em] leading-[1.02] text-foreground">
         {title}
       </h2>
       {lede && (
@@ -228,7 +192,7 @@ function SectionHead({
 
 function EmptyRow({ label }: { label: string }) {
   return (
-    <div className="py-12 border-t" style={{ borderColor: P.rule }}>
+    <div className="py-12 border-t border-[var(--kvis-rule)]">
       <p className="text-sm text-muted-foreground italic">
         No {label} recorded for this selection.
       </p>
@@ -327,10 +291,7 @@ export default function StatsClient() {
       <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
         {/* Masthead */}
         <header className="pb-7 border-b border-foreground/60">
-          <p
-            className="text-xs font-bold uppercase tracking-[0.3em] mb-3"
-            style={{ color: P.purple }}
-          >
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
             KVIS Connect · Stats
           </p>
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
@@ -341,10 +302,7 @@ export default function StatsClient() {
             they chose, the universities that took them in, and the countries
             they ended up in.
           </p>
-          <div
-            className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap mt-6"
-            style={{ color: P.text3 }}
-          >
+          <div className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap mt-6 text-[var(--kvis-text3)]">
             <span>{dateline}</span>
             <span aria-hidden>·</span>
             <span>{alumni.length} alumni</span>
@@ -356,14 +314,10 @@ export default function StatsClient() {
         {/* Cohort selector */}
         {cohorts.length > 0 && (
           <nav
-            className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b"
-            style={{ borderColor: P.rule }}
+            className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b border-[var(--kvis-rule)]"
             aria-label="Cohort filter"
           >
-            <span
-              className="text-xs uppercase tracking-[0.26em] font-bold"
-              style={{ color: P.text3 }}
-            >
+            <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">
               Cohort
             </span>
             <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">
@@ -389,10 +343,7 @@ export default function StatsClient() {
         )}
 
         {/* Headline metrics */}
-        <section
-          className="grid grid-cols-3 gap-6 md:gap-10 py-9 border-b"
-          style={{ borderColor: P.rule }}
-        >
+        <section className="grid grid-cols-3 gap-6 md:gap-10 py-9 border-b border-[var(--kvis-rule)]">
           {[
             { label: "Alumni in view", value: totalAlumni },
             { label: "Universities", value: uniqueUnis },
@@ -400,13 +351,9 @@ export default function StatsClient() {
           ].map((s, i) => (
             <div
               key={s.label}
-              className={i > 0 ? "pl-6 md:pl-10 border-l" : ""}
-              style={i > 0 ? { borderColor: P.rule } : undefined}
+              className={i > 0 ? "pl-6 md:pl-10 border-l border-[var(--kvis-rule)]" : ""}
             >
-              <p
-                className="text-xs uppercase tracking-[0.24em] font-bold mb-2"
-                style={{ color: P.text3 }}
-              >
+              <p className="text-xs uppercase tracking-[0.24em] font-bold mb-2 text-[var(--kvis-text3)]">
                 {s.label}
               </p>
               <p
@@ -415,10 +362,7 @@ export default function StatsClient() {
               >
                 {s.value}
               </p>
-              <p
-                className="mt-2 text-xs uppercase tracking-[0.18em]"
-                style={{ color: P.text3 }}
-              >
+              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-[var(--kvis-text3)]">
                 {cohortLabel}
               </p>
             </div>
@@ -515,9 +459,7 @@ export default function StatsClient() {
               )}
             </section>
 
-            <footer
-              className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between flex-wrap gap-2"
-            >
+            <footer className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between flex-wrap gap-2">
               <span>
                 - Based on {alumni.length} alumni profiles · {cohortLabel} -
               </span>
@@ -528,7 +470,6 @@ export default function StatsClient() {
           </>
         )}
       </div>
-      {/* TODO(draft): <ScrollGoose scale={4} appearAt={320} hideBelow={160} /> */}
     </div>
   );
 }
