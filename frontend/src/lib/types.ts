@@ -130,6 +130,7 @@ export interface BlogComment {
   id: string;
   content: string;
   created_at: string;
+  parent_id: string | null;
   author: {
     id: string;
     slug: string;
@@ -138,4 +139,20 @@ export interface BlogComment {
     profile_pic_url?: string;
     kvis_year?: number;
   };
+  replies?: BlogComment[];
+}
+
+export interface BlogRead {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt?: string;
+  cover_image_url?: string;
+  tags?: string;
+  is_published: boolean;
+  published_at?: string;
+  created_at: string;
+  author: BlogAuthor;
+  likes?: number;
+  comments_enabled?: boolean;
 }
