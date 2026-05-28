@@ -297,11 +297,11 @@ export default function StatsClient() {
 
           <FadeUp>
             <header className="pb-7 border-b border-foreground/60">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)]">
                 KVIS Connect · Stats
               </p>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
-                By the Numbers
+                <span className="font-light text-foreground">By the </span><span style={{ color: "var(--kvis-purple)" }}>Numbers.</span>
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
                 Where KVIS alumni went to study after graduation - the faculties they chose, the universities that took them in, and the countries they ended up in.

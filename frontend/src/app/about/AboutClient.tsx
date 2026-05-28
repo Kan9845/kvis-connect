@@ -14,10 +14,10 @@ const SCHOOL_FACTS = [
 ];
 
 const STAT_STRIP = [
-  { value: "2014", label: "Year founded" },
-  { value: "72", label: "Students per cohort" },
-  { value: "100%", label: "Scholarship coverage" },
-  { value: "600+", label: "Alumni worldwide" },
+  { value: "2014", label: "Year founded",         color: "var(--kvis-green-light)" },
+  { value: "72",   label: "Students per cohort",  color: "var(--kvis-purple-light)" },
+  { value: "100%", label: "Scholarship coverage", color: "var(--kvis-green-light)" },
+  { value: "600+", label: "Alumni worldwide",     color: "var(--kvis-purple-light)" },
 ];
 
 const CONTRIBUTORS: {
@@ -45,18 +45,25 @@ export function AboutClient() {
 
           {/* Hero */}
           <FadeUp>
-            <header className="pt-10 lg:pt-14 pb-7 border-b border-foreground/60">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
-                KVIS Connect · About
-              </p>
-              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
-                About
-              </h1>
-              <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
-                KVIS Connect maps the global footprint of Kamnoetvidya Science Academy
-                graduates - who&apos;s where, what they&apos;re building, and how the
-                network keeps growing long after graduation.
-              </p>
+            <header className="pt-10 lg:pt-14 pb-7 border-b border-foreground/60 flex items-start justify-between gap-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)]">
+                  KVIS Connect · About
+                </p>
+                <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
+                  <span className="font-light text-foreground">About </span><span style={{ color: "var(--kvis-purple)" }}>Us.</span>
+                </h1>
+                <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
+                  KVIS Connect maps the global footprint of Kamnoetvidya Science Academy
+                  graduates - who&apos;s where, what they&apos;re building, and how the
+                  network keeps growing long after graduation.
+                </p>
+              </div>
+              <div
+                className="hidden md:block shrink-0 mt-2"
+                style={{ width: 120, height: 120, color: "var(--kvis-purple)" }}
+                dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 2.5 L 14.7 5 L 17.3 5 Z" fill="currentColor"/><path d="M 7.5 13.5 C 7.5 8 11.3 4.5 16 4.5 C 20.7 4.5 24.5 8 24.5 13.5 C 24.5 15 24.2 16 23.8 17 C 26 18 27.8 21 27.8 24 C 27.8 27.5 24.5 29.5 21 29.5 L 11 29.5 C 7.5 29.5 4.2 27.5 4.2 24 C 4.2 21 6 18 8.2 17 C 7.8 16 7.5 15 7.5 13.5 Z" fill="#fefcf8" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="13" cy="12.5" r="1.35" fill="#1a1410"/><circle cx="19" cy="12.5" r="1.35" fill="#1a1410"/><path d="M 13.4 16 L 18.6 16 L 16 18.8 Z" fill="#e89540"/><ellipse cx="12" cy="30.5" rx="2.4" ry="0.95" fill="#e89540"/><ellipse cx="20" cy="30.5" rx="2.4" ry="0.95" fill="#e89540"/></svg>` }}
+              />
             </header>
           </FadeUp>
 
@@ -65,9 +72,9 @@ export function AboutClient() {
           {/* Stat strip */}
           <FadeUp delay={0.1}>
             <section className="py-12 grid grid-cols-2 md:grid-cols-4 gap-10">
-              {STAT_STRIP.map(({ value, label }) => (
+              {STAT_STRIP.map(({ value, label, color }) => (
                 <div key={label}>
-                  <p className="text-3xl font-black tabular-nums leading-none mb-2 text-[var(--kvis-purple)]">
+                  <p className="font-display text-3xl font-black tabular-nums leading-none mb-2" style={{ color }}>
                     {value}
                   </p>
                   <p className="text-xs font-medium text-[var(--kvis-text3)]">{label}</p>
@@ -83,7 +90,7 @@ export function AboutClient() {
             <section className="py-16 grid md:grid-cols-[5fr_3fr] gap-16">
               <div>
                 <p
-                  className="text-xs font-semibold uppercase tracking-widest mb-5 text-[var(--kvis-green)]"
+                  className="text-xs font-semibold uppercase tracking-widest mb-5 text-[var(--kvis-green-light)]"
                   style={{ letterSpacing: "0.1em" }}
                 >
                   The School
@@ -200,7 +207,7 @@ export function AboutClient() {
           <FadeUp>
             <section className="py-16">
               <p
-                className="text-xs font-semibold uppercase tracking-widest mb-2 text-[var(--kvis-green)]"
+                className="text-xs font-semibold uppercase tracking-widest mb-2 text-[var(--kvis-green-light)]"
                 style={{ letterSpacing: "0.1em" }}
               >
                 Built by

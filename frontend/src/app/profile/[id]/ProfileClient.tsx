@@ -29,7 +29,7 @@ function SectionHead({ numeral, kicker, title }: { numeral: string; kicker: stri
   return (
     <header className="pt-9 pb-4">
       <div className="flex items-baseline gap-3 mb-2">
-        <span className="font-mono font-black text-xl tabular-nums text-[var(--kvis-green)]" style={{ letterSpacing: "-0.02em" }}>
+        <span className="font-mono font-black text-xl tabular-nums text-[var(--kvis-green-light)]" style={{ letterSpacing: "-0.02em" }}>
           {numeral}
         </span>
         <span className="text-xs uppercase tracking-[0.28em] font-bold text-[var(--kvis-text3)]">
@@ -231,8 +231,8 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
                   {user.is_verified && (
                     <div className="mt-4 inline-flex items-center gap-1.5">
-                      <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[var(--kvis-green)]" />
-                      <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--kvis-green)]">KVIS-Verified</span>
+                      <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[var(--kvis-green-light)]" />
+                      <span className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--kvis-green-light)]">KVIS-Verified</span>
                     </div>
                   )}
 
@@ -247,7 +247,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                   {currentRole && (
                     <div className="mt-6">
                       <p className="text-xs uppercase tracking-[0.22em] text-[var(--kvis-text3)]">
-                        <span className="font-bold text-[var(--kvis-green)]">Currently</span>{" "}
+                        <span className="font-bold text-[var(--kvis-green-light)]">Currently</span>{" "}
                         {currentRole.job_title}
                         {currentRole.employer && ` @ ${currentRole.employer}`}
                       </p>
@@ -330,7 +330,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                           title={c.job_title}
                           subtitle={subtitle}
                           meta={place || undefined}
-                          pill={c.is_current ? { label: "Current", color: "var(--kvis-green)" } : undefined}
+                          pill={c.is_current ? { label: "Current", color: "var(--kvis-green-light)" } : undefined}
                           years={years}
                         />
                       </StaggerItem>

@@ -55,7 +55,7 @@ function SectionHead({ numeral, kicker, title }: { numeral: string; kicker: stri
   return (
     <header className="pt-9 pb-4">
       <div className="flex items-baseline gap-3 mb-2">
-        <span className="font-mono font-black text-xl tabular-nums text-[var(--kvis-green)]" style={{ letterSpacing: "-0.02em" }}>
+        <span className="font-mono font-black text-xl tabular-nums text-[var(--kvis-green-light)]" style={{ letterSpacing: "-0.02em" }}>
           {numeral}
         </span>
         <span className="text-xs uppercase tracking-[0.28em] font-bold text-[var(--kvis-text3)]">
@@ -445,9 +445,9 @@ export default function EditPage() {
             <section>
               <SectionHead numeral="II." kicker="Credential" title="KVIS-verified badge" />
               <div className="py-5">
-                <div className="border" style={{ borderColor: me.is_verified ? "var(--kvis-green)" : "var(--kvis-rule)" }}>
-                  <div className="flex items-center justify-between gap-3 px-5 py-2.5 border-b" style={{ borderColor: me.is_verified ? "var(--kvis-green)" : "var(--kvis-rule)" }}>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: me.is_verified ? "var(--kvis-green)" : "var(--kvis-text3)" }}>
+                <div className="border" style={{ borderColor: me.is_verified ? "var(--kvis-green-light)" : "var(--kvis-rule)" }}>
+                  <div className="flex items-center justify-between gap-3 px-5 py-2.5 border-b" style={{ borderColor: me.is_verified ? "var(--kvis-green-light)" : "var(--kvis-rule)" }}>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: me.is_verified ? "var(--kvis-green-light)" : "var(--kvis-text3)" }}>
                       {me.is_verified ? "Issued · Automatic" : "No credential on file"}
                     </span>
                     <span className="text-[10px] font-mono tabular-nums tracking-[0.2em] text-[var(--kvis-text3)]">KVIS · V01</span>
@@ -456,7 +456,7 @@ export default function EditPage() {
                     <div className="min-w-0">
                       <div className="flex items-center gap-2.5 mb-2">
                         {me.is_verified
-                          ? <ShieldCheck className="h-5 w-5 shrink-0 text-[var(--kvis-green)]" />
+                          ? <ShieldCheck className="h-5 w-5 shrink-0 text-[var(--kvis-green-light)]" />
                           : <ShieldAlert className="h-5 w-5 shrink-0 text-muted-foreground" />}
                         <span className="text-2xl md:text-[1.75rem] font-black tracking-[-0.025em] leading-none text-foreground">KVIS-verified</span>
                       </div>
@@ -615,7 +615,7 @@ export default function EditPage() {
                       <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">{String(i + 1).padStart(2, "0")}</span>
                       <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">Position</span>
                       {job.is_current && (
-                        <Badge className="rounded-none border-transparent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.22em] leading-none text-white bg-[var(--kvis-green)] hover:bg-[var(--kvis-green)]">
+                        <Badge className="rounded-none border-transparent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.22em] leading-none text-white bg-[var(--kvis-green-light)] hover:bg-[var(--kvis-green-light)]">
                           Current
                         </Badge>
                       )}
