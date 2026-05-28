@@ -32,11 +32,9 @@ export interface UserCard {
   country?: string;
   profile_pic_url?: string;
   mbti?: string;
-  // Set only while a user is still enrolled at KVIS. M.4=10, M.5=11, M.6=12.
+  interests?: string;  // add this
   current_grade?: number;
-  // Numerical classroom, 1-4.
   current_class?: number;
-  // Elemental house: earth, water, air, fire (~18 students each).
   current_elemental?: "earth" | "water" | "air" | "fire";
   education: Education[];
   career: Career[];

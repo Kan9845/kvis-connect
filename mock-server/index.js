@@ -1923,6 +1923,7 @@ app.get("/api/search", (req, res) => {
       country: u.country,
       profile_pic_url: u.profile_pic_url,
       mbti: u.mbti,
+      interests: u.interests ?? null,  // add this
       education: u.education,
       career: u.career,
       current_grade: u.current_grade ?? null,
