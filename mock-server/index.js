@@ -2044,6 +2044,15 @@ app.delete("/api/blogs/:slug", requireAuth, (req, res) => {
   res.status(204).send();
 });
 
+app.post("/api/auth/refresh", (req, res) => {
+  res.json({ access_token: "mock-token-refreshed" });
+});
+
+// or if your api.ts calls /api/refresh:
+app.post("/api/refresh", (req, res) => {
+  res.json({ access_token: "mock-token-refreshed" });
+});
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 const PORT = process.env.PORT || 8000;

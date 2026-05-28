@@ -111,17 +111,23 @@ export default function OnboardingPage() {
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    if (role === "student") {
-      if (!grade || !elemental || !classNum) { setError("Please fill in all fields."); return; }
-    } else {
-      if (!kvisYear || stillStudying === null) { setError("Please fill in all required fields."); return; }
-      if (stillStudying && (!uniName || !degree || !major || !eduCountry || !eduCity)) { setError("Please fill in all education fields."); return; }
-      if (!stillStudying && (!jobTitle || !jobField || !employer || !jobCountry || !jobCity)) { setError("Please fill in all job fields."); return; }
-    }
-    setSubmitting(true);
-    try {
+  e.preventDefault();
+  setError("");
+  console.log("Submit started, role:", role);
+  
+  if (role === "student") {
+    console.log("Student fields:", { grade, elemental, classNum });
+    if (!grade || !elemental || !classNum) { setError("Please fill in all fields."); return; }
+  } else {
+    console.log("Alumni fields:", { kvisYear, stillStudying, uniName, degree, major, eduCountry, eduCity, jobTitle, jobField, employer, jobCountry, jobCity });
+    if (!kvisYear || stillStudying === null) { setError("Please fill in all required fields."); return; }
+    if (stillStudying && (!uniName || !degree || !major || !eduCountry || !eduCity)) { setError("Please fill in all education fields."); return; }
+    if (!stillStudying && (!jobTitle || !jobField || !employer || !jobCountry || !jobCity)) { setError("Please fill in all job fields."); return; }
+  }
+  
+  console.log("Validation passed, submitting...");
+  setSubmitting(true);
+  try {
       if (role === "student") {
         await userApi.updateMe({
           current_grade: grade ?? undefined,
@@ -148,8 +154,9 @@ export default function OnboardingPage() {
       refetch();
       queryClient.invalidateQueries({ queryKey: keys.globe.pins() });
       router.replace("/");
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      console.error("Onboarding error:", err?.response?.data ?? err?.message ?? err);
+      setError(err?.response?.data?.detail ?? "Something went wrong. Please try again.");
       setSubmitting(false);
     }
   }

@@ -14,7 +14,7 @@ import { FilterPill } from "@/components/ui/filter-pill";
 import { Search, X } from "lucide-react";
 import type { UserCard } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
-import { cohortColor, cohortColorSoft, cohortTextColor, cohortColorHex, cohortColorSoftHex } from "@/lib/utils";
+import { cohortColor, cohortColorSoft, cohortTextColor, cohortColorHex, cohortColorSoftHex, effectiveKvisYear } from "@/lib/utils";
 
 type Tab = "alumni" | "students";
 
@@ -56,11 +56,14 @@ function captionStudent(u: UserCard): string {
 
 function Portrait({ u, caption }: { u: UserCard; caption: string }) {
   const name = `${u.first_name} ${u.last_name}`;
-  const color = cohortColor(u.kvis_year);
-  const colorSoft = cohortColorSoft(u.kvis_year);
+  const ky = effectiveKvisYear(u);
+  const color = cohortColor(ky);
   return (
     <Link href={`/profile/${u.slug ?? u.id}`} className="group block">
-      <div className="relative aspect-square overflow-hidden bg-muted rounded-full">
+      <div
+        className="relative aspect-square overflow-hidden bg-muted rounded-full"
+        style={{ outline: `3px solid ${color}`, outlineOffset: "2px" }}
+      >
         {u.profile_pic_url ? (
           <Image
             src={u.profile_pic_url}
@@ -73,8 +76,8 @@ function Portrait({ u, caption }: { u: UserCard; caption: string }) {
           <div
             className="absolute inset-0 flex items-center justify-center font-black text-3xl tracking-tight"
             style={{
-              background: `linear-gradient(135deg, ${cohortColorHex(u.kvis_year)} 0%, ${cohortColorSoftHex(u.kvis_year)} 100%)`,
-              color: cohortTextColor(u.kvis_year),
+              background: `linear-gradient(135deg, ${cohortColorHex(ky)} 0%, ${cohortColorSoftHex(ky)} 100%)`,
+              color: cohortTextColor(ky),
             }}
           >
             {initials(u)}
@@ -135,6 +138,7 @@ function CohortSection({ k, students }: { k: number; students: UserCard[] }) {
 
 function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
   if (students.length === 0) return null;
+  const pseudoYear = effectiveKvisYear({ current_grade: g });
   const sorted = [...students].sort((a, b) => {
     const ca = a.current_class ?? 99;
     const cb = b.current_class ?? 99;
@@ -144,7 +148,13 @@ function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
   return (
     <FadeUp>
       <section className="pt-14">
-        <SectionHeader display={gradeLabel(g)} meta={`Grade ${g}`} count={students.length} unitLabel="in class" />
+        <SectionHeader
+          display={gradeLabel(g)}
+          meta={`Grade ${g}`}
+          count={students.length}
+          unitLabel="in class"
+          kvis_year={pseudoYear ?? undefined}
+        />
         <StaggerList>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
             {sorted.map((s) => (

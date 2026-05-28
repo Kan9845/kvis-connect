@@ -10,9 +10,7 @@ export function fullName(user: { first_name: string; last_name: string }) {
 }
 
 export function genLabel(year: number) {
-  if (year <= 9) return `K${year}`;
-  const base = 2018;
-  return `Gen ${year - base + 1}`;
+  return `K${year}`;
 }
 
 export function kvisYearLabel(year: number) {
@@ -98,4 +96,12 @@ export function cohortColorSoftHex(kvis_year: number | null | undefined): string
   const g = getCohortEraGroupSize(LATEST_COHORT);
   const idx = Math.floor((kvis_year - 1) / g) % 10;
   return COHORT_HEX_SOFT[idx];
+}
+
+export function effectiveKvisYear(user: { kvis_year?: number | null; current_grade?: number | null }): number | null {
+  if (user.kvis_year) return user.kvis_year;
+  if (user.current_grade === 12) return LATEST_COHORT + 1;
+  if (user.current_grade === 11) return LATEST_COHORT + 2;
+  if (user.current_grade === 10) return LATEST_COHORT + 3;
+  return null;
 }
