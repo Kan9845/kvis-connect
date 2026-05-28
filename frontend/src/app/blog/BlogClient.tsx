@@ -35,6 +35,8 @@ function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
               fontSize: 28 * 0.38,
             }}
           >
+            {name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()}
+          </AvatarFallback>
         </Avatar>
       )}
       <span className="font-semibold text-foreground">{name}</span>

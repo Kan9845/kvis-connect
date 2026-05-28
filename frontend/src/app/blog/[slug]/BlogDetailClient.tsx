@@ -104,6 +104,8 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
                     color: cohortTextColor(blog.author.kvis_year),
                   }}
                 >
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-sm font-medium">{blog.author.first_name} {blog.author.last_name}</p>
