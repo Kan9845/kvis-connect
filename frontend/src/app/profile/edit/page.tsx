@@ -44,6 +44,7 @@ const generalSchema = z.object({
   interests: z.string().optional(),
   facebook_url: z.string().optional(),
   linkedin_url: z.string().optional(),
+  instagram_url: z.string().optional(),
   line_id: z.string().optional(),
   website_url: z.string().optional(),
 });
@@ -272,7 +273,7 @@ export default function EditPage() {
       <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
 
         <header className="pb-7 border-b border-foreground/60">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-purple)]">
+          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)]">
             KVIS Connect · Edit Dossier
           </p>
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
@@ -520,8 +521,9 @@ export default function EditPage() {
 
               <section>
                 <SectionHead numeral="V." kicker="Channels" title="How to reach you" />
-                <FieldRow label="Facebook"><Input placeholder="https://facebook.com/…" {...register("facebook_url")} className={inputCls} /></FieldRow>
                 <FieldRow label="LinkedIn"><Input placeholder="https://linkedin.com/in/…" {...register("linkedin_url")} className={inputCls} /></FieldRow>
+                <FieldRow label="Facebook"><Input placeholder="https://facebook.com/…" {...register("facebook_url")} className={inputCls} /></FieldRow>
+                <FieldRow label="Instagram"><Input placeholder="https://instagram.com/…" {...register("instagram_url")} className={inputCls} /></FieldRow>
                 <FieldRow label="Website"><Input placeholder="https://…" {...register("website_url")} className={inputCls} /></FieldRow>
                 <FieldRow label="LINE ID"><Input placeholder="your.line.id" {...register("line_id")} className={inputCls} /></FieldRow>
               </section>

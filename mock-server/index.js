@@ -1222,6 +1222,7 @@ let MOCK_BLOGS = [
       profile_pic_url: null,
       kvis_year: 14,
     },
+    likes: 0,
   },
   {
     id: 2,
@@ -1244,6 +1245,7 @@ let MOCK_BLOGS = [
       profile_pic_url: null,
       kvis_year: 12,
     },
+    likes: 0,
   },
   {
     id: 3,
@@ -1266,8 +1268,33 @@ let MOCK_BLOGS = [
       profile_pic_url: null,
       kvis_year: 12,
     },
+    likes: 0,
   },
 ];
+
+const LIKED_BLOGS = new Set(); // track liked slugs per session
+
+app.post("/api/blogs/:slug/like", requireAuth, (req, res) => {
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  const key = `${req.cookies.access_token}-${req.params.slug}`;
+  if (LIKED_BLOGS.has(key)) {
+    LIKED_BLOGS.delete(key);
+    blog.likes = Math.max(0, (blog.likes ?? 0) - 1);
+    res.json({ likes: blog.likes, liked: false });
+  } else {
+    LIKED_BLOGS.add(key);
+    blog.likes = (blog.likes ?? 0) + 1;
+    res.json({ likes: blog.likes, liked: true });
+  }
+});
+
+app.get("/api/blogs/:slug/like", requireAuth, (req, res) => {
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  const key = `${req.cookies.access_token}-${req.params.slug}`;
+  res.json({ likes: blog.likes ?? 0, liked: LIKED_BLOGS.has(key) });
+});
 
 // ─── Cohort normalization + procedural backfill ──────────────────────────────
 // KVIS only has 9 cohorts (K1–K9). The 50 hand-written profiles above use

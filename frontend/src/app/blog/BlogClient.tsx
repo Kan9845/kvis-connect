@@ -2,8 +2,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useQuery } from "@tanstack/react-query";
-import { PenLine, Search, X } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { PenLine, Search, X, ChevronDown, Heart, ArrowUpDown } from "lucide-react";
 import { blogApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +35,42 @@ function AuthorAvatar({ blog, size = 26 }: { blog: BlogRead; size?: number }) {
   );
 }
 
+function DropFilter({ label, active, options, value, onChange }: {
+  label: string; active: boolean;
+  options: { value: string; label: string }[];
+  value: string; onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = options.find(o => o.value === value)?.label ?? label;
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
+        style={{
+          background: active ? "var(--kvis-purple)" : "transparent",
+          color: active ? "white" : "var(--kvis-text3)",
+          border: active ? "none" : "0.5px solid var(--kvis-rule)",
+        }}>
+        {active ? selectedLabel : label}
+        {active ? <ChevronDown className="h-3 w-3" /> : <ArrowUpDown className="h-3 w-3" />}
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-[var(--kvis-rule)] shadow-lg min-w-[140px]"
+          onMouseLeave={() => setOpen(false)}>
+          {options.map(o => (
+            <button key={o.value} type="button"
+              onClick={() => { onChange(o.value); setOpen(false); }}
+              className="w-full text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] hover:bg-[var(--kvis-purple-soft)] transition-colors"
+              style={{ color: value === o.value ? "var(--kvis-purple)" : "var(--kvis-text3)" }}>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StripeBackground({ blog, height = 120, showAvatar = false, avatarSize = 40 }: {
   blog: BlogRead; height?: number; showAvatar?: boolean; avatarSize?: number;
 }) {
@@ -47,9 +83,7 @@ function StripeBackground({ blog, height = 120, showAvatar = false, avatarSize =
 
   return (
     <div style={{
-      height,
-      position: "relative",
-      overflow: "hidden",
+      height, position: "relative", overflow: "hidden",
       backgroundImage: `repeating-linear-gradient(135deg, ${color} 0, ${color} 1px, transparent 0, transparent 50%)`,
       backgroundSize: "8px 8px",
     }}>
@@ -111,6 +145,11 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
               <span className="text-[11px] text-[var(--kvis-text3)]">
                 · {blog.published_at ? formatDate(blog.published_at) : "Draft"}
               </span>
+              {(blog.likes ?? 0) > 0 && (
+                <span className="ml-auto flex items-center gap-1 text-[10px] text-[var(--kvis-text3)]">
+                  <Heart className="h-3 w-3" /> {blog.likes}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -159,6 +198,11 @@ function StoryCard({ blog }: { blog: BlogRead }) {
             <span className="text-[10px] text-[var(--kvis-text3)] shrink-0">
               {blog.published_at ? formatDate(blog.published_at) : "Draft"}
             </span>
+            {(blog.likes ?? 0) > 0 && (
+              <span className="ml-auto flex items-center gap-1 text-[10px] text-[var(--kvis-text3)]">
+                <Heart className="h-3 w-3" /> {blog.likes}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -170,6 +214,8 @@ export default function BlogClient() {
   const { user } = useAuth();
   const [activeTag, setActiveTag] = useState<string>("");
   const [searchQ, setSearchQ] = useState("");
+  const [sortBy, setSortBy] = useState("popular");
+  const [sortOpen, setSortOpen] = useState(false);
 
   const { data: blogs = [], isLoading } = useQuery({
     queryKey: keys.blog.list({ limit: 100 }),
@@ -183,18 +229,22 @@ export default function BlogClient() {
   }, [blogs]);
 
   const filtered = useMemo(() => {
-    let result = activeTag ? blogs.filter((b) => parseTags(b.tags).includes(activeTag)) : blogs;
+    let result = activeTag ? blogs.filter(b => parseTags(b.tags).includes(activeTag)) : blogs;
     if (searchQ.trim()) {
       const q = searchQ.trim().toLowerCase();
-      result = result.filter((b) =>
+      result = result.filter(b =>
         b.title.toLowerCase().includes(q) ||
         parseTags(b.tags).some(t => t.toLowerCase().includes(q)) ||
         `${b.author.first_name} ${b.author.last_name}`.toLowerCase().includes(q) ||
         b.excerpt?.toLowerCase().includes(q)
       );
     }
-    return result;
-  }, [activeTag, searchQ, blogs]);
+    return [...result].sort((a, b) => {
+      if (sortBy === "popular") return (b.likes ?? 0) - (a.likes ?? 0);
+      if (sortBy === "oldest") return new Date(a.published_at ?? a.created_at ?? 0).getTime() - new Date(b.published_at ?? b.created_at ?? 0).getTime();
+      return new Date(b.published_at ?? b.created_at ?? 0).getTime() - new Date(a.published_at ?? a.created_at ?? 0).getTime();
+    });
+  }, [activeTag, searchQ, sortBy, blogs]);
 
   const [featured, ...rest] = filtered;
   const now = new Date();
@@ -216,7 +266,7 @@ export default function BlogClient() {
                     <span style={{ color: "var(--kvis-purple)" }}>Stories.</span>
                   </h1>
                   <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
-                    Essays, updates, and reflections from KVIS alumni — at home and abroad.
+                    Essays, discussions, updates, debates, and reflections from KVIS alumni — at home and abroad.
                   </p>
                 </div>
                 {user && (
@@ -228,11 +278,13 @@ export default function BlogClient() {
                 )}
               </div>
 
-              {allTags.length > 0 && (
-                <div className="flex items-center flex-wrap gap-2 mt-5">
+              {/* Tag pills + sort */}
+              <div className="flex items-center justify-between gap-4 mt-5">
+                {/* Popular tags — top 5 only */}
+                <div className="flex items-center flex-wrap gap-2">
                   <button
                     onClick={() => setActiveTag("")}
-                    className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
+                    className="px-3 py-2 rounded-full text-xs font-semibold transition-colors"
                     style={{
                       background: !activeTag ? "var(--kvis-purple)" : "transparent",
                       color: !activeTag ? "white" : "var(--kvis-text3)",
@@ -241,23 +293,62 @@ export default function BlogClient() {
                   >
                     All
                   </button>
-                  {allTags.map(([t]) => (
+                  {allTags.slice(0, 5).map(([t]) => (
                     <button
                       key={t}
                       onClick={() => setActiveTag(activeTag === t ? "" : t)}
-                      className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
+                      className="px-3 py-2 rounded-full text-xs font-semibold transition-colors flex items-center gap-1"
                       style={{
                         background: activeTag === t ? "var(--kvis-purple)" : "transparent",
                         color: activeTag === t ? "white" : "var(--kvis-text3)",
                         border: activeTag === t ? "none" : "0.5px solid var(--kvis-rule)",
                       }}
                     >
+                      <span
+                        className="font-normal text-sm leading-none"
+                        style={{ color: activeTag === t ? "rgba(255,255,255,0.7)" : "var(--kvis-purple)" }}
+                      >
+                        #
+                      </span>
                       {t}
                     </button>
                   ))}
                 </div>
-              )}
+                
+                {/* Sort — always purple, right side */}
+                <div className="relative shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSortOpen(v => !v)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold"
+                    style={{ background: "var(--kvis-purple)", color: "white" }}
+                  >
+                    <ArrowUpDown className="h-3 w-3" />
+                    {sortBy === "newest" ? "Newest" : sortBy === "oldest" ? "Oldest" : "Most liked"}
+                  </button>
+                  {sortOpen && (
+                    <div
+                      className="absolute top-full right-0 mt-1 z-50 bg-background border border-[var(--kvis-rule)] shadow-lg min-w-[140px]"
+                      onMouseLeave={() => setSortOpen(false)}
+                    >
+                      {[
+                        { value: "newest", label: "Newest" },
+                        { value: "oldest", label: "Oldest" },
+                        { value: "popular", label: "Most liked" },
+                      ].map(o => (
+                        <button key={o.value} type="button"
+                          onClick={() => { setSortBy(o.value); setSortOpen(false); }}
+                          className="w-full text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] hover:bg-[var(--kvis-purple-soft)] transition-colors"
+                          style={{ color: sortBy === o.value ? "var(--kvis-purple)" : "var(--kvis-text3)" }}>
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
 
+              {/* Search */}
               <div className="flex items-center gap-3 px-3 py-2 mt-4 border border-[var(--kvis-rule)] rounded-sm">
                 <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                 <input

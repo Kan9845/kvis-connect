@@ -95,6 +95,7 @@ export interface BlogRead {
   published_at?: string;
   created_at: string;
   author: BlogAuthor;
+  likes?: number;
 }
 
 export interface BlogDetail extends BlogRead {
@@ -123,4 +124,18 @@ export interface SearchParams {
   job_field?: string;
   sort?: "name" | "kvis_year" | "created_at";
   order?: "asc" | "desc";
+}
+
+export interface BlogComment {
+  id: string;
+  content: string;
+  created_at: string;
+  author: {
+    id: string;
+    slug: string;
+    first_name: string;
+    last_name: string;
+    profile_pic_url?: string;
+    kvis_year?: number;
+  };
 }

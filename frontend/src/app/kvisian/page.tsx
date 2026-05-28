@@ -9,7 +9,7 @@ import { keys } from "@/lib/cache/keys";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Search, X, ChevronDown } from "lucide-react";
+import { Search, X, ChevronDown, ArrowUpDown } from "lucide-react";
 import type { UserCard } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, effectiveKvisYear, genLabel } from "@/lib/utils";
@@ -150,10 +150,11 @@ function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
   );
 }
 
-function DropFilter({ label, active, options, value, onChange }: {
+function DropFilter({ label, active, options, value, onChange, sortIcon = false }: {
   label: string; active: boolean;
   options: { value: string; label: string; count?: number }[];
   value: string; onChange: (v: string) => void;
+  sortIcon?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const selectedLabel = options.find(o => o.value === value)?.label ?? label;
@@ -167,7 +168,7 @@ function DropFilter({ label, active, options, value, onChange }: {
           background: active ? "var(--kvis-purple-soft)" : "transparent",
         }}>
         {active ? selectedLabel : label}
-        <ChevronDown className="h-3 w-3" />
+        {sortIcon && !active ? <ArrowUpDown className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
       </button>
       {open && (
         <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-[var(--kvis-rule)] shadow-lg min-w-[160px] max-h-64 overflow-y-auto"
@@ -444,7 +445,12 @@ function SearchPageInner() {
 
                 <div className="w-px h-4 bg-[var(--kvis-rule)]" />
 
-                <DropFilter label="Sort" active={sortBy !== "cohort-asc"} value={sortBy} onChange={setSortBy}
+                <DropFilter
+                  label="Sort"
+                  active={sortBy !== "cohort-asc"}
+                  value={sortBy}
+                  onChange={setSortBy}
+                  sortIcon
                   options={[
                     { value: "cohort-asc",  label: "Cohort ↑" },
                     { value: "cohort-desc", label: "Cohort ↓" },

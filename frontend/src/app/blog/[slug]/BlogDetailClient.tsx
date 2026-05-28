@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, ArrowLeft, Trash2 } from "lucide-react";
+import { Calendar, ArrowLeft, Trash2, Heart } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, formatDate, genLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import { PageEntrance, FadeUp } from "@/components/ui/motion";
+import { useState, useEffect } from "react";
 
 export default function BlogDetailClient({ params }: { params: { slug: string } }) {
   const { slug } = params;
@@ -24,10 +25,42 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
   const router = useRouter();
   const qc = useQueryClient();
 
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [likeLoading, setLikeLoading] = useState(false);
+
   const { data: blog, isLoading, error } = useQuery({
     queryKey: keys.blog.detail(slug),
     queryFn: () => blogApi.get(slug),
   });
+
+  // Fetch like state
+  useEffect(() => {
+    if (!blog || !user) return;
+    setLikeCount(blog.likes ?? 0);
+    blogApi.getLike(slug)
+      .then(({ likes, liked }) => { setLikeCount(likes); setLiked(liked); })
+      .catch(() => {});
+  }, [blog, slug, user]);
+
+  const handleLike = async () => {
+    if (!user) { toast.error("Sign in to like posts"); return; }
+    setLikeLoading(true);
+    try {
+      const { likes, liked: newLiked } = await blogApi.toggleLike(slug);
+      setLikeCount(likes);
+      setLiked(newLiked);
+      // Update blog list cache too
+      qc.setQueriesData({ queryKey: keys.blog.list({ limit: 100 }) }, (old: any) => {
+        if (!Array.isArray(old)) return old;
+        return old.map((b: any) => b.slug === slug ? { ...b, likes } : b);
+      });
+    } catch {
+      toast.error("Failed to update like");
+    } finally {
+      setLikeLoading(false);
+    }
+  };
 
   const deleteMutation = useMutation({
     mutationFn: () => blogApi.delete(slug),
@@ -65,6 +98,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
   const isAuthor = user?.id === blog.author.id;
   const initials = `${blog.author.first_name[0] ?? ""}${blog.author.last_name[0] ?? ""}`.toUpperCase();
   const tags = (blog.tags ?? "").split(",").map((t) => t.trim()).filter(Boolean);
+  const ringColor = cohortColor(blog.author.kvis_year);
 
   return (
     <PageEntrance>
@@ -96,7 +130,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
         <FadeUp delay={0.15}>
           <div className="flex items-center justify-between mb-8 pb-6 border-b">
             <Link href={`/profile/${blog.author.slug}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10" style={{ outline: `2px solid ${ringColor}`, outlineOffset: "2px" }}>
                 <AvatarImage src={blog.author.profile_pic_url ?? ""} />
                 <AvatarFallback
                   style={{
@@ -110,7 +144,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
               <div>
                 <p className="text-sm font-medium">{blog.author.first_name} {blog.author.last_name}</p>
                 {blog.author.kvis_year && (
-                  <p className="text-xs font-bold" style={{ color: cohortColor(blog.author.kvis_year) }}>
+                  <p className="text-xs font-bold" style={{ color: ringColor }}>
                     {genLabel(blog.author.kvis_year)}
                   </p>
                 )}
@@ -139,6 +173,38 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
           <article className="prose">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{blog.content}</ReactMarkdown>
           </article>
+        </FadeUp>
+
+        {/* Like button */}
+        <FadeUp delay={0.25}>
+          <div className="mt-12 pt-8 border-t border-[var(--kvis-rule)] flex items-center justify-center">
+            <button
+              type="button"
+              onClick={handleLike}
+              disabled={likeLoading}
+              className="group flex flex-col items-center gap-2 transition-all disabled:opacity-50"
+            >
+              <div
+                className="flex items-center justify-center w-14 h-14 rounded-full border-2 transition-all duration-200 group-hover:scale-110"
+                style={{
+                  borderColor: liked ? "var(--kvis-purple)" : "var(--kvis-rule)",
+                  background: liked ? "var(--kvis-purple-soft)" : "transparent",
+                }}
+              >
+                <Heart
+                  className="h-6 w-6 transition-all duration-200"
+                  style={{ color: liked ? "var(--kvis-purple)" : "var(--kvis-text3)" }}
+                  fill={liked ? "var(--kvis-purple)" : "none"}
+                />
+              </div>
+              <span
+                className="text-xs font-bold uppercase tracking-[0.18em] transition-colors"
+                style={{ color: liked ? "var(--kvis-purple)" : "var(--kvis-text3)" }}
+              >
+                {likeCount > 0 ? `${likeCount} ${likeCount === 1 ? "like" : "likes"}` : "Like this post"}
+              </span>
+            </button>
+          </div>
         </FadeUp>
 
       </div>

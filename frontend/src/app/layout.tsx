@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NavbarVariantProvider } from "@/contexts/NavbarVariantContext";
 import { Providers, RQProviders } from "./providers";
-import { Navbar } from "@/components/layout/Navbar";
+import { Navbar } from "@/components/layout/NavbarWrapper";
 import { Toaster } from "@/components/layout/Toaster";
 
 const inter = Inter({ subsets: ["latin"] });

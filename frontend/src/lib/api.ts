@@ -130,6 +130,10 @@ export const blogApi = {
     const res = await api.post<{ url: string }>("/api/upload", formData);
     return res.data;
   },
+  getLike: (slug: string) =>
+    api.get<{ likes: number; liked: boolean }>(`/api/blogs/${slug}/like`).then(r => r.data),
+  toggleLike: (slug: string) =>
+    api.post<{ likes: number; liked: boolean }>(`/api/blogs/${slug}/like`).then(r => r.data),
 };
 
 export default api;

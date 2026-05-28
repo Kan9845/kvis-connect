@@ -38,7 +38,7 @@ export function AboutClient() {
   return (
     <PageEntrance>
       <div
-        className="bg-[var(--kvis-bg)] min-h-full"
+        className="bg-[var(--background)] min-h-full"
         style={{ fontFamily: "var(--font-be-vietnam-pro), sans-serif" }}
       >
         <div className="mx-auto max-w-5xl px-6 lg:px-10">
@@ -236,7 +236,7 @@ export function AboutClient() {
                         <div className="flex flex-col gap-0.5">
                           <p className="text-xs font-semibold text-[var(--kvis-ink)]">{c.name}</p>
                           <p className="text-xs font-medium text-[var(--kvis-purple)]">{c.role}</p>
-                          <p className="text-xs font-semibold text-[var(--kvis-green)]">{c.batch}</p>
+                          <p className="text-xs font-semibold text-[var(--kvis-green-light)]">{c.batch}</p>
                           {c.instagram && (
                             <a
                               href={`https://instagram.com/${c.instagram}`}
