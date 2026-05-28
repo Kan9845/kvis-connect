@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FilterPill } from "@/components/ui/filter-pill";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cohortColor, cohortTextColor, formatDate, genLabel } from "@/lib/utils";
+import { cohortColor, cohortColorHex, cohortColorSoftHex, cohortTextColor, formatDate, genLabel } from "@/lib/utils";
 import type { BlogRead } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 
@@ -29,10 +29,12 @@ function Byline({ blog, dense = false }: { blog: BlogRead; dense?: boolean }) {
         <Avatar className="h-7 w-7 shrink-0">
           <AvatarImage src={blog.author.profile_pic_url} alt={name} />
           <AvatarFallback
-            style={{ background: color, color: textColor, fontSize: 28 * 0.38 }}
+            style={{
+              background: `linear-gradient(135deg, ${cohortColorHex(blog.author.kvis_year)} 0%, ${cohortColorSoftHex(blog.author.kvis_year)} 100%)`,
+              color: cohortTextColor(blog.author.kvis_year),
+              fontSize: 28 * 0.38,
+            }}
           >
-            {name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase()}
-          </AvatarFallback>
         </Avatar>
       )}
       <span className="font-semibold text-foreground">{name}</span>

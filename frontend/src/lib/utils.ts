@@ -66,3 +66,36 @@ export function cohortTextColor(kvis_year: number | null | undefined): string {
   const idx = Math.floor((kvis_year - 1) / g) % 20;
   return COHORT_BASE[idx].text;
 }
+
+const COHORT_HEX: string[] = [
+  "#e05a3a", // red-orange (10°)
+  "#d4922a", // amber (45°)
+  "#7aaa2a", // yellow-lime (80°)
+  "#2a9e5a", // green (130°)
+  "#2a9e8a", // teal (170°)
+  "#2a8eaa", // cyan (190°)
+  "#2a6eaa", // sky (210°)
+  "#3a4ecc", // blue (250°)
+  "#6a3acc", // indigo (280°)
+  "#aa3a8a", // pink-purple (310°)
+];
+
+const COHORT_HEX_SOFT: string[] = [
+  "#fae8e4", "#faf0e4", "#f0f5e0", "#e0f5ec",
+  "#e0f5f2", "#e0f2f5", "#e0ecf5", "#e8e8fa",
+  "#f0e8fa", "#f5e0f2",
+];
+
+export function cohortColorHex(kvis_year: number | null | undefined): string {
+  if (!kvis_year) return "#6d28d9";
+  const g = getCohortEraGroupSize(LATEST_COHORT);
+  const idx = Math.floor((kvis_year - 1) / g) % 10;
+  return COHORT_HEX[idx];
+}
+
+export function cohortColorSoftHex(kvis_year: number | null | undefined): string {
+  if (!kvis_year) return "#ede9fe";
+  const g = getCohortEraGroupSize(LATEST_COHORT);
+  const idx = Math.floor((kvis_year - 1) / g) % 10;
+  return COHORT_HEX_SOFT[idx];
+}

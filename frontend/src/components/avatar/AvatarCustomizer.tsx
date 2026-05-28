@@ -11,7 +11,7 @@ interface Props {
   onChange: (config: AvatarConfig) => void;
 }
 
-const categories = Object.keys(avatarOptions) as (keyof typeof avatarOptions)[];
+const categories = (Object.keys(avatarOptions) as (keyof typeof avatarOptions)[]).filter(c => c !== "background");
 const requiredCategories = ["background", "eyes"];
 
 export function AvatarCustomizer({ value, onChange }: Props) {

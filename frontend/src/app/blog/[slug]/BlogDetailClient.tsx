@@ -14,7 +14,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { cohortColor, cohortTextColor, formatDate, genLabel } from "@/lib/utils";
+import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, formatDate, genLabel } from "@/lib/utils";
 import { toast } from "sonner";
 import { PageEntrance, FadeUp } from "@/components/ui/motion";
 
@@ -99,10 +99,11 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
               <Avatar className="h-10 w-10">
                 <AvatarImage src={blog.author.profile_pic_url ?? ""} />
                 <AvatarFallback
-                  style={{ background: cohortColor(blog.author.kvis_year), color: cohortTextColor(blog.author.kvis_year) }}
+                  style={{
+                    background: `linear-gradient(135deg, ${cohortColorHex(blog.author.kvis_year)} 0%, ${cohortColorSoftHex(blog.author.kvis_year)} 100%)`,
+                    color: cohortTextColor(blog.author.kvis_year),
+                  }}
                 >
-                  {initials}
-                </AvatarFallback>
               </Avatar>
               <div>
                 <p className="text-sm font-medium">{blog.author.first_name} {blog.author.last_name}</p>

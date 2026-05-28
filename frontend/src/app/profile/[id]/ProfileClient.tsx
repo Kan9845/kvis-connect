@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { degreeLabel, jobFieldLabel } from "@/lib/constants/options";
-import { formatDate, genLabel } from "@/lib/utils";
+import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, formatDate, genLabel } from "@/lib/utils";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 
 function parseInterests(t?: string) {
@@ -193,7 +193,13 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
               <div className="grid grid-cols-[120px_1fr] sm:grid-cols-[160px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 items-start">
                 <div className="relative">
-                  <div className="relative aspect-square overflow-hidden bg-muted rounded-full">
+                  <div
+                    className="relative aspect-square overflow-hidden bg-muted rounded-full"
+                    style={{
+                      outline: `3px solid ${cohortColor(user.kvis_year)}`,
+                      outlineOffset: "2px",
+                    }}
+                  >
                     {user.profile_pic_url ? (
                       <Image
                         src={user.profile_pic_url}
@@ -205,8 +211,12 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                       />
                     ) : (
                       <div
-                        className="absolute inset-0 flex items-center justify-center text-white font-black tracking-tight"
-                        style={{ background: "var(--kvis-purple)", fontSize: "clamp(2.5rem, 8vw, 5rem)" }}
+                        className="absolute inset-0 flex items-center justify-center font-black tracking-tight"
+                        style={{
+                          background: `linear-gradient(135deg, ${cohortColorHex(user.kvis_year)} 0%, ${cohortColorSoftHex(user.kvis_year)} 100%)`,
+                          color: cohortTextColor(user.kvis_year),
+                          fontSize: "clamp(2.5rem, 8vw, 5rem)",
+                        }}
                       >
                         {initials}
                       </div>

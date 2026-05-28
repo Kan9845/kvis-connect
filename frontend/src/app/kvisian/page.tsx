@@ -14,7 +14,7 @@ import { FilterPill } from "@/components/ui/filter-pill";
 import { Search, X } from "lucide-react";
 import type { UserCard } from "@/lib/types";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
-import { cohortColor, cohortColorSoft, cohortTextColor } from "@/lib/utils";
+import { cohortColor, cohortColorSoft, cohortTextColor, cohortColorHex, cohortColorSoftHex } from "@/lib/utils";
 
 type Tab = "alumni" | "students";
 
@@ -72,7 +72,10 @@ function Portrait({ u, caption }: { u: UserCard; caption: string }) {
         ) : (
           <div
             className="absolute inset-0 flex items-center justify-center font-black text-3xl tracking-tight"
-            style={{ background: color, color: cohortTextColor(u.kvis_year) }}
+            style={{
+              background: `linear-gradient(135deg, ${cohortColorHex(u.kvis_year)} 0%, ${cohortColorSoftHex(u.kvis_year)} 100%)`,
+              color: cohortTextColor(u.kvis_year),
+            }}
           >
             {initials(u)}
           </div>

@@ -31,8 +31,7 @@ import { AvatarCustomizer } from "@/components/avatar/AvatarCustomizer";
 import { AvatarPreview } from "@/components/avatar/AvatarPreview";
 import { defaultAvatar } from "@/components/avatar/avatarData";
 import { AvatarConfig } from "@/lib/avatarTypes";
-import { avatarConfigToFile } from "@/lib/avatarExport";
-import html2canvas from "html2canvas";
+import { cohortColor, cohortColorSoft, cohortTextColor, cohortColorHex, cohortColorSoftHex } from "@/lib/utils";
 
 const generalSchema = z.object({
   first_name: z.string().min(1, "Required"),
@@ -191,12 +190,48 @@ export default function EditPage() {
   };
 
   const handleUseGooseProfile = async () => {
-    if (!avatarRef.current) return;
+    if (!me) return;
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      const canvas = await html2canvas(avatarRef.current, {
-        backgroundColor: null, scale: 2, useCORS: true, allowTaint: true, logging: false,
-      });
+      const size = 600;
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d")!;
+
+      // Clip to circle
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+      ctx.clip();
+
+      // Draw gradient background
+      const grad = ctx.createLinearGradient(0, 0, size, size);
+      grad.addColorStop(0, cohortColorHex(me.kvis_year));
+      grad.addColorStop(1, cohortColorSoftHex(me.kvis_year));
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, size, size);
+
+      const drawLayer = (src: string, scale = 1.26) =>
+        new Promise<void>((resolve, reject) => {
+          const img = new window.Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            const offset = (size * (scale - 1)) / 2;
+            ctx.drawImage(img, -offset, -offset, size * scale, size * scale);
+            resolve();
+          };
+          img.onerror = (e) => { console.warn("Failed to load", src, e); resolve(); };
+          img.src = src;
+        });
+
+      const layerOrder = ["eyes", "brows", "hair", "head", "glasses", "cheek", "neck", "hand"] as const;
+
+      await drawLayer("/goose/goose_base.png");
+      for (const layer of layerOrder) {
+        const asset = gooseConfig[layer];
+        if (asset) await drawLayer(`/goose/${asset}.png`);
+      }
+      await drawLayer("/goose/layout.png");
+
       canvas.toBlob(async (blob) => {
         if (!blob) return;
         const file = new File([blob], "goose-profile.png", { type: "image/png" });
@@ -207,8 +242,9 @@ export default function EditPage() {
         setPicPreview(url);
         toast.success("Goose profile updated");
       }, "image/png");
-    } catch (err) {
-      console.error(err);
+
+    } catch (err: any) {
+      console.error("Goose export error:", err?.message);
       toast.error("Failed to generate goose profile");
     }
   };
@@ -269,26 +305,42 @@ export default function EditPage() {
             <section>
               <SectionHead numeral="I." kicker="Portrait" title="Profile picture" />
               <div className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-12 py-6 border-b border-[var(--kvis-rule)] items-start">
-
                 <div className="space-y-6 self-start">
                   <div
-                    ref={profileMode === "goose" ? avatarRef : undefined}
-                    className="relative w-full max-w-[320px] aspect-square overflow-hidden bg-muted rounded-full"
+                    className="relative w-full max-w-[320px] rounded-full"
+                    style={{
+                      outline: `5px solid ${cohortColor(me.kvis_year)}`,
+                      outlineOffset: "2px",
+                    }}
                   >
-                    {profileMode === "goose" ? (
-                      <div className="absolute inset-0 scale-[1.26] origin-center pointer-events-none">
-                        <AvatarPreview config={gooseConfig} />
-                      </div>
-                    ) : previewUrl ? (
-                      <img src={previewUrl} alt={`${me.first_name} ${me.last_name}`} className="absolute inset-0 h-full w-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-white font-black bg-[var(--kvis-purple)]" style={{ fontSize: "clamp(2rem, 8vw, 4rem)" }}>
-                        {initials}
-                      </div>
-                    )}
+                    <div
+                      key={profileMode}
+                      ref={profileMode === "goose" ? avatarRef : undefined}
+                      className="relative aspect-square overflow-hidden rounded-full"
+                      style={{ background: `linear-gradient(135deg, ${cohortColorHex(me.kvis_year)} 0%, ${cohortColorSoftHex(me.kvis_year)} 100%)` }}
+                    >
+                      {profileMode === "goose" ? (
+                        <div className="absolute inset-0 scale-[1.26] origin-center pointer-events-none">
+                          <AvatarPreview config={gooseConfig} backgroundColor={`linear-gradient(135deg, ${cohortColorHex(me.kvis_year)} 0%, ${cohortColorSoftHex(me.kvis_year)} 100%)`} />
+                        </div>
+                      ) : previewUrl ? (
+                        <img src={previewUrl} alt={`${me.first_name} ${me.last_name}`} className="absolute inset-0 h-full w-full object-cover" />
+                      ) : (
+                        <div
+                          className="absolute inset-0 flex items-center justify-center font-black"
+                          style={{
+                            background: `linear-gradient(135deg, ${cohortColorHex(me.kvis_year)} 0%, ${cohortColorSoftHex(me.kvis_year)} 100%)`,
+                            color: cohortTextColor(me.kvis_year),
+                            fontSize: "clamp(2rem, 8vw, 4rem)",
+                          }}
+                        >
+                          {initials}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-
+                    
                 <div className="w-full max-w-2xl space-y-8">
                   <div className="flex items-center gap-6 border-b border-[var(--kvis-rule)] pb-4">
                     {(["upload", "goose"] as const).map((mode) => (
@@ -305,7 +357,7 @@ export default function EditPage() {
                       </button>
                     ))}
                   </div>
-
+                  
                   {profileMode === "upload" && (
                     <div className="space-y-6">
                       <div>
