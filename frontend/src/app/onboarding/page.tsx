@@ -1,332 +1,349 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { userApi } from "@/lib/api";
-import { useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
-import { keys } from "@/lib/cache/keys";
-import { Loader2, ArrowRight } from "lucide-react";
-import { P, FieldLabel, editorialInputClass } from "@/app/auth/AuthShell";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UniversityCombobox } from "@/components/ui/university-combobox";
-import { CountrySelect, CitySelect, CITY_STATE_COUNTRIES } from "@/components/ui/location-selects";
-import { MajorCombobox } from "@/components/ui/major-combobox";
-import { JOB_FIELDS } from "@/lib/constants/universities";
-import { PageEntrance, FadeUp } from "@/components/ui/motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, ArrowRight, GraduationCap, Users, BookOpen } from "lucide-react";
 
-type Role = "student" | "alumni";
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const P = {
+  purple:     "var(--kvis-purple)",
+  purpleSoft: "var(--kvis-purple-soft)",
+  green:      "var(--kvis-green-light)",
+  text3:      "var(--kvis-text3)",
+  rule:       "var(--kvis-rule)",
+};
 
-const GRADES = [{ value: 10, label: "M.4" }, { value: 11, label: "M.5" }, { value: 12, label: "M.6" }];
-const ELEMENTALS = ["earth", "water", "air", "fire"] as const;
-const DEGREES = [
-  { value: "Bachelor", label: "Bachelor's" },
-  { value: "Master", label: "Master's" },
-  { value: "PhD", label: "PhD" },
-  { value: "Other", label: "Other" },
+const inputCls = "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:border-foreground transition-colors";
+
+type Role = "alumni" | "student" | "faculty";
+type Step = "role" | "details";
+
+const KVIS_COHORTS = Array.from({ length: 25 }, (_, i) => i + 1).reverse(); // K25 → K1
+const GRADES = [
+  { value: 12, label: "M.6", sub: "Final year" },
+  { value: 11, label: "M.5", sub: "Second year" },
+  { value: 10, label: "M.4", sub: "First year" },
+];
+const ELEMENTALS = [
+  { value: "earth", label: "Earth 🌍" },
+  { value: "water", label: "Water 💧" },
+  { value: "air",   label: "Air 💨" },
+  { value: "fire",  label: "Fire 🔥" },
 ];
 
-const INPUT_BORDER = "oklch(35% 0.005 294)";
-const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
-
-function focusable(set: (v: string) => void) {
-  return {
-    onFocus: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.currentTarget.style.borderColor = INPUT_BORDER_FOCUS; },
-    onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => { e.currentTarget.style.borderColor = INPUT_BORDER; },
-  };
+// ── Role card ─────────────────────────────────────────────────────────────────
+function RoleCard({ role, label, sub, icon, selected, onClick }: {
+  role: Role; label: string; sub: string;
+  icon: React.ReactNode; selected: boolean; onClick: () => void;
+}) {
+  return (
+    <button type="button" onClick={onClick}
+      className="relative w-full text-left border transition-all duration-200 p-6 group"
+      style={{
+        borderColor: selected ? P.purple : P.rule,
+        background: selected ? P.purpleSoft : "transparent",
+      }}>
+      <div className="flex items-start gap-4">
+        <div className="mt-0.5 shrink-0 w-9 h-9 flex items-center justify-center rounded-full border"
+          style={{
+            borderColor: selected ? P.purple : P.rule,
+            color: selected ? P.purple : P.text3,
+            background: selected ? "var(--kvis-purple-soft)" : "transparent",
+          }}>
+          {selected ? <Check className="h-4 w-4" /> : icon}
+        </div>
+        <div>
+          <p className="text-base font-black tracking-tight text-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{sub}</p>
+        </div>
+      </div>
+    </button>
+  );
 }
 
-function ToggleGroup<T extends string>({
-  options, value, onChange, cols = 2,
-}: {
-  options: { value: T; label: string }[];
-  value: T | null | "";
+// ── Pill toggle ───────────────────────────────────────────────────────────────
+function PillToggle<T extends string | number>({ options, value, onChange, cols = 3 }: {
+  options: { value: T; label: string; sub?: string }[];
+  value: T | null;
   onChange: (v: T) => void;
   cols?: number;
 }) {
   return (
-    <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          onClick={() => onChange(o.value)}
-          className="h-12 border text-xs font-bold uppercase tracking-[0.18em] transition-colors"
-          style={{
-            borderColor: value === o.value ? P.purple : INPUT_BORDER,
-            color: value === o.value ? P.purple : P.text3,
-            background: value === o.value ? "oklch(95% 0.035 294)" : "transparent",
-          }}
-        >
-          {o.label}
-        </button>
-      ))}
+    <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+      {options.map(o => {
+        const active = o.value === value;
+        return (
+          <button key={String(o.value)} type="button" onClick={() => onChange(o.value)}
+            className="px-3 py-2.5 text-xs font-bold uppercase tracking-[0.16em] border transition-all text-center"
+            style={{
+              borderColor: active ? P.purple : P.rule,
+              color: active ? P.purple : P.text3,
+              background: active ? P.purpleSoft : "transparent",
+            }}>
+            {o.label}
+            {o.sub && <span className="block text-[10px] font-normal normal-case tracking-normal opacity-60 mt-0.5">{o.sub}</span>}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function OnboardingPage() {
-  const { user, loading, refetch } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const { user: me, loading, refetch } = useAuth();
 
+  const [step, setStep] = useState<Step>("role");
   const [role, setRole] = useState<Role | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
 
+  // Alumni details
+  const [kvisYear, setKvisYear] = useState<number | null>(null);
+
+  // Student details
   const [grade, setGrade] = useState<number | null>(null);
-  const [elemental, setElemental] = useState<"earth" | "water" | "air" | "fire" | "">("");
+  const [elemental, setElemental] = useState<string | null>(null);
   const [classNum, setClassNum] = useState<number | null>(null);
 
-  const [kvisYear, setKvisYear] = useState("");
-  const [stillStudying, setStillStudying] = useState<boolean | null>(null);
-  const [uniName, setUniName] = useState("");
-  const [degree, setDegree] = useState("");
-  const [major, setMajor] = useState("");
-  const [eduCountry, setEduCountry] = useState("");
-  const [eduCity, setEduCity] = useState("");
-  const [jobTitle, setJobTitle] = useState("");
-  const [jobField, setJobField] = useState("");
-  const [employer, setEmployer] = useState("");
-  const [jobCountry, setJobCountry] = useState("");
-  const [jobCity, setJobCity] = useState("");
+  // Faculty details
+  const [teachStartYear, setTeachStartYear] = useState<string>("");
+  const [isCurrentTeacher, setIsCurrentTeacher] = useState<boolean>(true);
+  const [teachEndYear, setTeachEndYear] = useState<string>("");
 
   useEffect(() => {
-    if (!loading && !user) router.replace("/auth/login");
-  }, [user, loading, router]);
+    if (!loading && !me) router.push("/auth/login");
+    if (!loading && me && me.profile_setup_done) router.push("/kvisian");
+  }, [loading, me, router]);
 
-  useEffect(() => {
-    if (CITY_STATE_COUNTRIES.has(eduCountry)) setEduCity(eduCountry);
-  }, [eduCountry]);
-
-  useEffect(() => {
-    if (CITY_STATE_COUNTRIES.has(jobCountry)) setJobCity(jobCountry);
-  }, [jobCountry]);
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin" style={{ color: P.text3 }} />
-      </div>
-    );
+  async function handleContinue() {
+    setError(null);
+    if (!role) { setError("Please select your role."); return; }
+    setStep("details");
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  setError("");
-  console.log("Submit started, role:", role);
-  
-  if (role === "student") {
-    console.log("Student fields:", { grade, elemental, classNum });
-    if (!grade || !elemental || !classNum) { setError("Please fill in all fields."); return; }
-  } else {
-    console.log("Alumni fields:", { kvisYear, stillStudying, uniName, degree, major, eduCountry, eduCity, jobTitle, jobField, employer, jobCountry, jobCity });
-    if (!kvisYear || stillStudying === null) { setError("Please fill in all required fields."); return; }
-    if (stillStudying && (!uniName || !degree || !major || !eduCountry || !eduCity)) { setError("Please fill in all education fields."); return; }
-    if (!stillStudying && (!jobTitle || !jobField || !employer || !jobCountry || !jobCity)) { setError("Please fill in all job fields."); return; }
-  }
-  
-  console.log("Validation passed, submitting...");
-  setSubmitting(true);
-  try {
-      if (role === "student") {
+  async function handleSubmit() {
+    setError(null);
+
+    if (role === "alumni") {
+      if (!kvisYear) { setError("Please select your KVIS cohort."); return; }
+    } else if (role === "student") {
+      if (!grade) { setError("Please select your grade."); return; }
+    } else if (role === "faculty") {
+      if (!teachStartYear) { setError("Please enter your first year teaching at KVIS."); return; }
+    }
+
+    setSubmitting(true);
+    try {
+      if (role === "alumni") {
+        await userApi.updateMe({ kvis_year: kvisYear! });
+      } else if (role === "student") {
         await userApi.updateMe({
           current_grade: grade ?? undefined,
-          current_elemental: elemental as "earth" | "water" | "air" | "fire" | undefined,
+          current_elemental: elemental as any ?? undefined,
           current_class: classNum ?? undefined,
-          profile_setup_done: true,
         });
-      } else {
-        const country = stillStudying ? eduCountry : jobCountry;
-        const city = stillStudying ? eduCity : jobCity;
-        const detailCall = stillStudying
-          ? userApi.updateEducation([{ uni_name: uniName, degree, major, country: eduCountry, state: eduCity }])
-          : userApi.updateCareer([{ job_title: jobTitle, employer, job_field: jobField, country: jobCountry, state: jobCity, is_current: true }]);
-        await Promise.all([
-          userApi.updateMe({
-            kvis_year: parseInt(kvisYear),
-            country,
-            place: city && city !== country ? `${city}, ${country}` : country,
-            profile_setup_done: true,
-          }),
-          detailCall,
-        ]);
+      } else if (role === "faculty") {
+        await userApi.updateMe({
+          teach_start_year: parseInt(teachStartYear),
+          teach_end_year: !isCurrentTeacher && teachEndYear ? parseInt(teachEndYear) : undefined,
+          is_current_teacher: isCurrentTeacher,
+        });
       }
-      refetch();
-      queryClient.invalidateQueries({ queryKey: keys.globe.pins() });
-      router.replace("/");
+      await refetch();
+      router.push("/profile/edit?setup=1");
     } catch (err: any) {
-      console.error("Onboarding error:", err?.response?.data ?? err?.message ?? err);
       setError(err?.response?.data?.detail ?? "Something went wrong. Please try again.");
       setSubmitting(false);
     }
   }
 
-  const issueLabel = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  if (loading || !me) return null;
+
+  const issueDate = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
 
   return (
-    <PageEntrance>
-      <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-6xl px-6 lg:px-12 py-10 lg:py-16">
-          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-20">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto max-w-6xl px-6 lg:px-12 py-12 lg:py-20">
+        <div className="grid lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24 items-start">
 
-            {/* Left column */}
-            <FadeUp>
-              <section className="lg:pr-10 lg:border-r lg:sticky lg:top-16 lg:self-start" style={{ borderColor: P.rule }}>
-                <div className="flex items-baseline gap-4 mb-5">
-                  <span className="font-mono font-black text-2xl tabular-nums" style={{ color: P.green, letterSpacing: "-0.02em" }}>03</span>
-                  <span className="text-[11px] uppercase tracking-[0.32em] font-bold" style={{ color: P.text3 }}>Setup · One time</span>
-                </div>
-                <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground max-w-[12ch]">
-                  Tell us about yourself.
-                </h1>
-                <p className="mt-6 text-base lg:text-[17px] text-muted-foreground max-w-[42ch] leading-relaxed">
-                  This helps us show the right data on the stats and alumni pages. It only takes a minute and you can update everything later.
-                </p>
-                <div className="mt-12 pt-6 border-t flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.3em]" style={{ borderColor: P.rule, color: P.text3 }}>
-                  <span>KVIS Connect</span>
-                  <span className="tabular-nums">{issueLabel}</span>
-                </div>
-              </section>
-            </FadeUp>
+          {/* Left — static hero */}
+          <div className="lg:sticky lg:top-20">
+            <div className="flex items-baseline gap-4 mb-6">
+              <span className="font-mono font-black text-3xl tabular-nums" style={{ color: P.green, letterSpacing: "-0.02em" }}>01</span>
+              <span className="text-[11px] uppercase tracking-[0.32em] font-bold" style={{ color: P.text3 }}>
+                {step === "role" ? "Who are you?" : "A bit more detail"}
+              </span>
+            </div>
 
-            {/* Right column */}
-            <FadeUp delay={0.15}>
-              <section>
-                <div className="max-w-md">
-                  <form onSubmit={handleSubmit} className="space-y-8">
-                    <div>
-                      <FieldLabel>I am a…</FieldLabel>
-                      <ToggleGroup
-                        options={[{ value: "student" as Role, label: "Current Student" }, { value: "alumni" as Role, label: "Alumni" }]}
-                        value={role}
-                        onChange={setRole}
-                        cols={2}
-                      />
-                    </div>
+            <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground max-w-[14ch]">
+              {step === "role" ? (
+                <>Welcome to<br /><span style={{ color: P.purple }}>KVIS Connect.</span></>
+              ) : (
+                <>Almost<br /><span style={{ color: P.purple }}>there.</span></>
+              )}
+            </h1>
 
-                    {role === "student" && (
-                      <div className="space-y-6">
-                        <div>
-                          <FieldLabel>Current grade</FieldLabel>
-                          <ToggleGroup options={GRADES.map((g) => ({ value: String(g.value), label: g.label }))} value={grade ? String(grade) : null} onChange={(v) => setGrade(Number(v))} cols={3} />
-                        </div>
-                        <div>
-                          <FieldLabel>Elemental class</FieldLabel>
-                          <ToggleGroup options={ELEMENTALS.map((el) => ({ value: el, label: el }))} value={elemental} onChange={(v) => setElemental(v as typeof elemental)} cols={4} />
-                        </div>
-                        <div>
-                          <FieldLabel>Class number</FieldLabel>
-                          <ToggleGroup options={[1, 2, 3, 4].map((c) => ({ value: String(c), label: String(c) }))} value={classNum ? String(classNum) : null} onChange={(v) => setClassNum(Number(v))} cols={4} />
-                        </div>
-                      </div>
-                    )}
+            <p className="mt-6 text-base text-muted-foreground max-w-[40ch] leading-relaxed">
+              {step === "role"
+                ? "Tell us who you are so we can show you the right things and the right people."
+                : role === "alumni"
+                  ? "Which KVIS cohort did you graduate with?"
+                  : role === "student"
+                    ? "Which grade are you currently in?"
+                    : "When did you start teaching at KVIS?"
+              }
+            </p>
 
-                    {role === "alumni" && (
-                      <div className="space-y-6">
-                        <div>
-                          <FieldLabel>KVIS batch</FieldLabel>
-                          <input type="number" placeholder="1" value={kvisYear} onChange={(e) => setKvisYear(e.target.value)} required className={editorialInputClass} style={{ borderColor: INPUT_BORDER }} {...focusable(setKvisYear)} />
-                        </div>
-                        <div>
-                          <FieldLabel>Still studying?</FieldLabel>
-                          <ToggleGroup
-                            options={[{ value: "yes", label: "Yes" }, { value: "no", label: "No" }]}
-                            value={stillStudying === null ? null : stillStudying ? "yes" : "no"}
-                            onChange={(v) => setStillStudying(v === "yes")}
-                            cols={2}
-                          />
-                        </div>
-
-                        {stillStudying === true && (
-                          <div className="space-y-6">
-                            <div>
-                              <FieldLabel>University / Institution</FieldLabel>
-                              <UniversityCombobox value={uniName} onChange={setUniName} onCountryChange={setEduCountry} placeholder="VISTEC" inputBorderColor={INPUT_BORDER} />
-                            </div>
-                            <div>
-                              <FieldLabel>Degree</FieldLabel>
-                              <Select value={degree} onValueChange={setDegree}>
-                                <SelectTrigger className="rounded-none h-12 text-[15px] focus:ring-0 focus:ring-offset-0 bg-transparent px-4 data-[placeholder]:text-foreground/25" style={{ borderColor: INPUT_BORDER }}>
-                                  <SelectValue placeholder="Select…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {DEGREES.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <FieldLabel>Country</FieldLabel>
-                              <CountrySelect value={eduCountry} onChange={(v) => { setEduCountry(v); setEduCity(CITY_STATE_COUNTRIES.has(v) ? v : ""); }} borderColor={INPUT_BORDER} />
-                            </div>
-                            {!CITY_STATE_COUNTRIES.has(eduCountry) && (
-                              <div>
-                                <FieldLabel>City / Province</FieldLabel>
-                                <CitySelect country={eduCountry} value={eduCity} onChange={setEduCity} borderColor={INPUT_BORDER} />
-                              </div>
-                            )}
-                            <div>
-                              <FieldLabel>Major / Field of study</FieldLabel>
-                              <MajorCombobox value={major} onChange={setMajor} borderColor={INPUT_BORDER} />
-                            </div>
-                          </div>
-                        )}
-
-                        {stillStudying === false && (
-                          <div className="space-y-6">
-                            <div>
-                              <FieldLabel>Job title</FieldLabel>
-                              <input type="text" placeholder="Software Engineer" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} className={editorialInputClass} style={{ borderColor: INPUT_BORDER }} {...focusable(setJobTitle)} />
-                            </div>
-                            <div>
-                              <FieldLabel>Field</FieldLabel>
-                              <Select value={jobField} onValueChange={setJobField}>
-                                <SelectTrigger className="rounded-none h-12 text-[15px] focus:ring-0 focus:ring-offset-0 bg-transparent px-4 data-[placeholder]:text-foreground/25" style={{ borderColor: INPUT_BORDER }}>
-                                  <SelectValue placeholder="Select…" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {JOB_FIELDS.map((f) => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <FieldLabel>Employer / Company</FieldLabel>
-                              <input type="text" placeholder="Google" value={employer} onChange={(e) => setEmployer(e.target.value)} className={editorialInputClass} style={{ borderColor: INPUT_BORDER }} {...focusable(setEmployer)} />
-                            </div>
-                            <div>
-                              <FieldLabel>Country</FieldLabel>
-                              <CountrySelect value={jobCountry} onChange={(v) => { setJobCountry(v); setJobCity(CITY_STATE_COUNTRIES.has(v) ? v : ""); }} borderColor={INPUT_BORDER} />
-                            </div>
-                            {!CITY_STATE_COUNTRIES.has(jobCountry) && (
-                              <div>
-                                <FieldLabel>City / Province</FieldLabel>
-                                <CitySelect country={jobCountry} value={jobCity} onChange={setJobCity} borderColor={INPUT_BORDER} />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {error && (
-                      <p className="text-xs font-medium uppercase tracking-[0.18em] py-2 px-3" style={{ color: "oklch(70% 0.18 25)", background: "oklch(20% 0.04 25)", border: "1px solid oklch(40% 0.12 25)" }}>
-                        {error}
-                      </p>
-                    )}
-
-                    {role && (
-                      <button type="submit" disabled={submitting} className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-none bg-foreground text-background hover:bg-foreground/90 transition-colors text-xs uppercase tracking-[0.28em] font-bold disabled:opacity-50">
-                        Continue
-                        {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArrowRight className="h-3.5 w-3.5" />}
-                      </button>
-                    )}
-                  </form>
-                </div>
-              </section>
-            </FadeUp>
-
+            <div className="mt-12 pt-6 border-t flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.3em]"
+              style={{ borderColor: P.rule, color: P.text3 }}>
+              <span>KVIS Connect</span>
+              <span className="tabular-nums">{issueDate}</span>
+            </div>
           </div>
+
+          {/* Right — form */}
+          <div>
+            <AnimatePresence mode="wait">
+
+              {/* Step 1 — Role selection */}
+              {step === "role" && (
+                <motion.div key="role"
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-3">
+
+                  <RoleCard role="alumni" label="Alumni / Graduate"
+                    sub="I have graduated from KVIS and am now studying or working."
+                    icon={<GraduationCap className="h-4 w-4" />}
+                    selected={role === "alumni"} onClick={() => setRole("alumni")} />
+
+                  <RoleCard role="student" label="Current KVIS Student"
+                    sub="I am currently enrolled at KVIS (M.4, M.5, or M.6)."
+                    icon={<BookOpen className="h-4 w-4" />}
+                    selected={role === "student"} onClick={() => setRole("student")} />
+
+                  <RoleCard role="faculty" label="Faculty / Staff"
+                    sub="I am or was a teacher or staff member at KVIS."
+                    icon={<Users className="h-4 w-4" />}
+                    selected={role === "faculty"} onClick={() => setRole("faculty")} />
+
+                  {error && <p className="text-xs font-semibold text-red-500 pt-1">{error}</p>}
+
+                  <div className="pt-4">
+                    <button type="button" onClick={handleContinue} disabled={!role}
+                      className="flex items-center gap-2 h-auto px-8 py-3.5 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 disabled:opacity-30 transition-opacity">
+                      Continue <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Step 2 — Role-specific details */}
+              {step === "details" && (
+                <motion.div key="details"
+                  initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.25 }}
+                  className="space-y-8">
+
+                  {/* Alumni — cohort picker */}
+                  {role === "alumni" && (
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>KVIS Cohort</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {KVIS_COHORTS.map(k => (
+                          <button key={k} type="button" onClick={() => setKvisYear(k)}
+                            className="py-2.5 text-sm font-black tabular-nums border transition-all"
+                            style={{
+                              borderColor: kvisYear === k ? P.purple : P.rule,
+                              color: kvisYear === k ? P.purple : P.text3,
+                              background: kvisYear === k ? P.purpleSoft : "transparent",
+                            }}>
+                            K{k}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-3">
+                        Don't see yours? You can update this on your profile later.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Student — grade + element + class */}
+                  {role === "student" && (
+                    <div className="space-y-6">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Current grade</p>
+                        <PillToggle options={GRADES} value={grade} onChange={setGrade} cols={3} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Elemental class <span className="normal-case font-normal opacity-50">(optional)</span></p>
+                        <PillToggle options={ELEMENTALS} value={elemental} onChange={setElemental} cols={4} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Class number <span className="normal-case font-normal opacity-50">(optional)</span></p>
+                        <PillToggle
+                          options={[1, 2, 3, 4].map(c => ({ value: c, label: String(c) }))}
+                          value={classNum} onChange={setClassNum} cols={4}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Faculty — teaching period */}
+                  {role === "faculty" && (
+                    <div className="space-y-6">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>First year teaching at KVIS</p>
+                        <input type="number" min={1990} max={new Date().getFullYear()}
+                          value={teachStartYear} onChange={e => setTeachStartYear(e.target.value)}
+                          placeholder={`e.g. ${new Date().getFullYear() - 5}`}
+                          className={inputCls} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Still teaching at KVIS?</p>
+                        <PillToggle
+                          options={[{ value: "yes", label: "Yes, currently" }, { value: "no", label: "No, I left" }]}
+                          value={isCurrentTeacher ? "yes" : "no"}
+                          onChange={v => setIsCurrentTeacher(v === "yes")}
+                          cols={2}
+                        />
+                      </div>
+                      {!isCurrentTeacher && (
+                        <div>
+                          <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Last year teaching</p>
+                          <input type="number" min={1990} max={new Date().getFullYear()}
+                            value={teachEndYear} onChange={e => setTeachEndYear(e.target.value)}
+                            placeholder={`e.g. ${new Date().getFullYear()}`}
+                            className={inputCls} />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {error && <p className="text-xs font-semibold text-red-500">{error}</p>}
+
+                  <div className="flex items-center gap-4 pt-2">
+                    <button type="button" onClick={() => { setStep("role"); setError(null); }}
+                      className="text-xs font-bold uppercase tracking-[0.26em] text-muted-foreground hover:text-foreground transition-colors">
+                      ← Back
+                    </button>
+                    <button type="button" onClick={handleSubmit} disabled={submitting}
+                      className="flex items-center gap-2 px-8 py-3.5 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 transition-opacity">
+                      {submitting ? "Saving…" : "Set up my profile →"}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+            </AnimatePresence>
+          </div>
+
         </div>
       </div>
-    </PageEntrance>
+    </div>
   );
 }

@@ -10,84 +10,151 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Search, X, ChevronDown, ArrowUpDown } from "lucide-react";
-import type { UserCard } from "@/lib/types";
-import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
-import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, effectiveKvisYear, genLabel } from "@/lib/utils";
+import type { DirectoryCard } from "@/lib/types";
+import { PageEntrance, FadeUp } from "@/components/ui/motion";
+import {
+  cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex,
+  effectiveKvisYear, genLabel,
+  isFaculty, facultyPeriodLabel,
+  FACULTY_COLOR, FACULTY_COLOR_HEX, FACULTY_COLOR_SOFT_HEX, FACULTY_TEXT_COLOR,
+} from "@/lib/utils";
+import { motion } from "framer-motion";
 
-type PersonType = "all" | "alumni" | "students";
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.04 } },
+};
+const staggerChild = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+const ANIMATE_FIRST_N = 10;
+
+type PersonType = "all" | "alumni" | "students" | "faculty";
 type Element = "earth" | "water" | "air" | "fire";
 
-const COHORT_YEARS = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+const COHORT_YEARS_ASC = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const COHORT_YEARS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1];
 const GRADES = [12, 11, 10];
 const CLASSES = [1, 2, 3, 4];
 const ELEMENTS: Element[] = ["earth", "water", "air", "fire"];
 const ELEMENT_LABEL: Record<Element, string> = { earth: "Earth", water: "Water", air: "Air", fire: "Fire" };
 
-function gradeLabel(g: number) { return `M.${g - 6}`; }
+const LATEST_COHORT = 9; // keep in sync with utils.ts
+function gradeToKvisYear(g: number) {
+  if (g === 12) return LATEST_COHORT + 1;
+  if (g === 11) return LATEST_COHORT + 2;
+  if (g === 10) return LATEST_COHORT + 3;
+  return LATEST_COHORT + 1;
+}
+function gradeBadgeLabel(g: number) { return `K${gradeToKvisYear(g)}`; }
+function gradeGradYear(g: number) { return 2017 + gradeToKvisYear(g); }
+function gradeMetaLabel(g: number) { return `Class of ${gradeGradYear(g)}`; }
 function cohortGradYear(k: number) { return 2017 + k; }
-function initials(u: UserCard) { return `${u.first_name?.[0] ?? ""}${u.last_name?.[0] ?? ""}`.toUpperCase(); }
+function initials(u: DirectoryCard) { return `${u.first_name?.[0] ?? ""}${u.last_name?.[0] ?? ""}`.toUpperCase(); }
 
-function captionAlumni(u: UserCard): string {
-  const currentEdu = u.education?.find((e) => !e.end_year) ?? u.education?.[0];
-  const job = u.career?.find((c) => c.is_current) ?? u.career?.[0];
-  if (job?.job_title) return [job.job_title, (job.employer || job.job_field) && `@ ${job.employer || job.job_field}`].filter(Boolean).join(" ");
-  if (currentEdu) return [currentEdu.major || currentEdu.degree, currentEdu.uni_name].filter(Boolean).join(" · ");
+function captionAlumni(u: any): string {
+  if (u.job_title) return [u.job_title, u.employer && `@ ${u.employer}`].filter(Boolean).join(" ");
+  if (u.edu_major) return [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean).join(" · ");
   return "Profile pending";
 }
 
-function captionStudent(u: UserCard): string {
-  const parts: string[] = [];
-  if (u.current_grade) parts.push(gradeLabel(u.current_grade));
-  if (u.current_class) parts.push(`Class ${u.current_class}`);
-  if (u.current_elemental) parts.push(ELEMENT_LABEL[u.current_elemental]);
-  return parts.join(" · ") || "Enrolled student";
+function captionStudent(u: DirectoryCard): string {
+  if (u.interests) {
+    return u.interests.split(",").map(s => s.trim()).filter(Boolean).slice(0, 2).join(" · ");
+  }
+  return "KVIS Student";
 }
 
-function Portrait({ u, isAlumni }: { u: UserCard; isAlumni: boolean }) {
+function captionFaculty(u: DirectoryCard): string {
+  return facultyPeriodLabel(u);
+}
+
+// ── Portrait card ────────────────────────────────────────────────────────────
+function Portrait({ u }: { u: DirectoryCard }) {
   const name = `${u.first_name} ${u.last_name}`;
-  const ky = effectiveKvisYear(u);
-  const color = cohortColor(ky);
-  const colorHex = cohortColorHex(ky);
-  const colorSoftHex = cohortColorSoftHex(ky);
-  const caption = isAlumni ? captionAlumni(u) : captionStudent(u);
-  const badge = isAlumni
-    ? (u.kvis_year ? genLabel(u.kvis_year) : null)
-    : (u.current_grade ? gradeLabel(u.current_grade) : null);
+  const faculty = isFaculty(u);
+
+  const color        = faculty ? FACULTY_COLOR        : cohortColor(effectiveKvisYear(u));
+  const colorHex     = faculty ? FACULTY_COLOR_HEX    : cohortColorHex(effectiveKvisYear(u));
+  const colorSoftHex = faculty ? FACULTY_COLOR_SOFT_HEX : cohortColorSoftHex(effectiveKvisYear(u));
+  const textColor    = faculty ? FACULTY_TEXT_COLOR   : cohortTextColor(effectiveKvisYear(u));
+
+  const caption = faculty
+    ? captionFaculty(u)
+    : u.current_grade
+      ? captionStudent(u)
+      : captionAlumni(u);
+
+  const badge = faculty
+    ? "Faculty"
+    : u.current_grade
+      ? gradeBadgeLabel(u.current_grade)
+      : u.kvis_year
+        ? genLabel(u.kvis_year)
+        : null;
 
   return (
     <Link href={`/profile/${u.slug ?? u.id}`} className="group block h-full">
-      <div className="relative flex flex-col h-full overflow-hidden rounded-2xl border border-[var(--kvis-rule)] transition-all duration-300 group-hover:border-transparent group-hover:shadow-lg"
-        style={{ background: "var(--kvis-bg)" }}>
-        <div className="h-1.5 w-full flex-shrink-0" style={{ background: `linear-gradient(90deg, ${colorHex}, ${colorSoftHex})` }} />
+      <div
+        className="relative flex flex-col h-full overflow-hidden rounded-2xl border border-[var(--kvis-rule)] transition-all duration-300 group-hover:border-transparent group-hover:shadow-lg"
+        style={{ background: "var(--kvis-bg)" }}
+      >
+        {/* Top color bar — solid gold for faculty, gradient for others */}
+        {faculty ? (
+          <div className="h-1.5 w-full flex-shrink-0" style={{ background: `linear-gradient(90deg, ${FACULTY_COLOR_HEX}, ${FACULTY_COLOR_SOFT_HEX})` }} />
+        ) : (
+          <div className="h-1.5 w-full flex-shrink-0" style={{ background: `linear-gradient(90deg, ${colorHex}, ${colorSoftHex})` }} />
+        )}
+
         <div className="flex flex-col items-center gap-3 p-4 flex-1">
-          <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 mt-1"
-            style={{ outline: `2.5px solid ${color}`, outlineOffset: "2px" }}>
+          {/* Avatar */}
+          <div
+            className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 mt-1"
+            style={{ outline: `2.5px solid ${color}`, outlineOffset: "2px" }}
+          >
             {u.profile_pic_url ? (
               <Image src={u.profile_pic_url} alt={name} fill sizes="64px"
                 className="object-cover grayscale-[18%] group-hover:grayscale-0 transition-all duration-500" />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center font-black text-lg tracking-tight"
-                style={{ background: `linear-gradient(135deg, ${colorHex} 0%, ${colorSoftHex} 100%)`, color: cohortTextColor(ky) }}>
+              <div
+                className="absolute inset-0 flex items-center justify-center font-black text-lg tracking-tight"
+                style={{
+                  background: `linear-gradient(135deg, ${colorHex} 0%, ${colorSoftHex} 100%)`,
+                  color: textColor,
+                }}
+              >
                 {initials(u)}
               </div>
             )}
           </div>
+
+          {/* Name + badge */}
           <div className="text-center min-w-0 w-full">
-            <p className="text-sm font-bold text-foreground leading-tight truncate group-hover:underline decoration-2 underline-offset-[3px]"
-              style={{ textDecorationColor: color }}>
+            <p
+              className="text-sm font-bold text-foreground leading-tight truncate group-hover:underline decoration-2 underline-offset-[3px]"
+              style={{ textDecorationColor: color }}
+            >
               {u.first_name} {u.last_name}
             </p>
             {badge && (
-              <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
-                style={{ background: `${colorHex}22`, color }}>
+              <span
+                className="inline-block mt-1 text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
+                style={{ background: `${colorHex}22`, color }}
+              >
                 {badge}
               </span>
             )}
           </div>
+
+          {/* Caption */}
           <p className="text-[11px] text-muted-foreground line-clamp-2 leading-snug text-center w-full flex-1">{caption}</p>
+
+          {/* Country footer */}
           {u.country && (
-            <div className="w-full pt-2 mt-auto border-t text-[10px] font-semibold uppercase tracking-[0.14em] text-center"
-              style={{ borderColor: "var(--kvis-rule)", color: "var(--kvis-text3)" }}>
+            <div
+              className="w-full pt-2 mt-auto border-t text-[10px] font-semibold uppercase tracking-[0.14em] text-center"
+              style={{ borderColor: "var(--kvis-rule)", color: "var(--kvis-text3)" }}
+            >
               {u.country}
             </div>
           )}
@@ -97,10 +164,14 @@ function Portrait({ u, isAlumni }: { u: UserCard; isAlumni: boolean }) {
   );
 }
 
-function SectionHeader({ display, meta, count, unitLabel, kvis_year }: {
-  display: string; meta: string; count: number; unitLabel: string; kvis_year?: number;
+// ── Section headers ──────────────────────────────────────────────────────────
+function SectionHeader({
+  display, meta, count, unitLabel, kvis_year, isFacultyHeader,
+}: {
+  display: string; meta: string; count: number; unitLabel: string;
+  kvis_year?: number; isFacultyHeader?: boolean;
 }) {
-  const color = cohortColor(kvis_year);
+  const color = isFacultyHeader ? FACULTY_COLOR : cohortColor(kvis_year);
   return (
     <header className="flex items-end justify-between gap-6 pb-5 border-b border-[var(--kvis-rule)] mb-7">
       <div className="flex items-baseline gap-5">
@@ -112,23 +183,26 @@ function SectionHeader({ display, meta, count, unitLabel, kvis_year }: {
   );
 }
 
-function CohortSection({ k, students }: { k: number; students: UserCard[] }) {
+function CohortSection({ k, students }: { k: number; students: DirectoryCard[] }) {
   if (!students.length) return null;
   return (
     <FadeUp>
       <section className="pt-14">
         <SectionHeader display={`KVIS ${k}`} meta={`Class of ${cohortGradYear(k)}`} count={students.length} unitLabel="alumni" kvis_year={k} />
-        <StaggerList>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
-            {students.map((s) => <StaggerItem key={s.id} className="h-full"><Portrait u={s} isAlumni /></StaggerItem>)}
-          </div>
-        </StaggerList>
+        <motion.div variants={staggerContainer} initial="initial" animate="animate"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+          {students.map((s, i) => i < ANIMATE_FIRST_N ? (
+            <motion.div key={s.id} variants={staggerChild} className="h-full"><Portrait u={s} /></motion.div>
+          ) : (
+            <div key={s.id} className="h-full"><Portrait u={s} /></div>
+          ))}
+        </motion.div>
       </section>
     </FadeUp>
   );
 }
 
-function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
+function GradeSection({ g, students }: { g: number; students: DirectoryCard[] }) {
   if (!students.length) return null;
   const pseudoYear = effectiveKvisYear({ current_grade: g });
   const sorted = [...students].sort((a, b) => {
@@ -139,17 +213,44 @@ function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
   return (
     <FadeUp>
       <section className="pt-14">
-        <SectionHeader display={gradeLabel(g)} meta={`Grade ${g}`} count={students.length} unitLabel="in class" kvis_year={pseudoYear ?? undefined} />
-        <StaggerList>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
-            {sorted.map((s) => <StaggerItem key={s.id} className="h-full"><Portrait u={s} isAlumni={false} /></StaggerItem>)}
-          </div>
-        </StaggerList>
+        <SectionHeader display={`KVIS ${gradeToKvisYear(g)}`} meta={gradeMetaLabel(g)} count={sorted.length} unitLabel="students" kvis_year={pseudoYear ?? undefined} />
+        <motion.div variants={staggerContainer} initial="initial" animate="animate"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+          {sorted.map((s, i) => i < ANIMATE_FIRST_N ? (
+            <motion.div key={s.id} variants={staggerChild} className="h-full"><Portrait u={s} /></motion.div>
+          ) : (
+            <div key={s.id} className="h-full"><Portrait u={s} /></div>
+          ))}
+        </motion.div>
       </section>
     </FadeUp>
   );
 }
 
+function FacultySection({ people }: { people: DirectoryCard[] }) {
+  if (!people.length) return null;
+  const sorted = [...people].sort((a, b) =>
+    (a.teach_start_year ?? 9999) - (b.teach_start_year ?? 9999) ||
+    (a.first_name || "").localeCompare(b.first_name || "")
+  );
+  return (
+    <FadeUp>
+      <section className="pt-14">
+        <SectionHeader display="Faculty" meta="KVIS Teachers & Staff" count={sorted.length} unitLabel="members" isFacultyHeader />
+        <motion.div variants={staggerContainer} initial="initial" animate="animate"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+          {sorted.map((s, i) => i < ANIMATE_FIRST_N ? (
+            <motion.div key={s.id} variants={staggerChild} className="h-full"><Portrait u={s} /></motion.div>
+          ) : (
+            <div key={s.id} className="h-full"><Portrait u={s} /></div>
+          ))}
+        </motion.div>
+      </section>
+    </FadeUp>
+  );
+}
+
+// ── Dropdown filter ──────────────────────────────────────────────────────────
 function DropFilter({ label, active, options, value, onChange, sortIcon = false }: {
   label: string; active: boolean;
   options: { value: string; label: string; count?: number }[];
@@ -167,123 +268,109 @@ function DropFilter({ label, active, options, value, onChange, sortIcon = false 
           color: active ? "var(--kvis-purple)" : "var(--kvis-text3)",
           background: active ? "var(--kvis-purple-soft)" : "transparent",
         }}>
+        {sortIcon && <ArrowUpDown className="h-3 w-3" />}
         {active ? selectedLabel : label}
-        {sortIcon && !active ? <ArrowUpDown className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        <ChevronDown className="h-3 w-3" />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-[var(--kvis-rule)] shadow-lg min-w-[160px] max-h-64 overflow-y-auto"
-          onMouseLeave={() => setOpen(false)}>
-          {options.map(o => (
-            <button key={o.value} type="button" onClick={() => { onChange(o.value); setOpen(false); }}
-              className="w-full text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] hover:bg-[var(--kvis-purple-soft)] transition-colors flex items-center justify-between gap-4"
-              style={{ color: value === o.value ? "var(--kvis-purple)" : "var(--kvis-text3)" }}>
-              {o.label}
-              {o.count !== undefined && <span className="font-mono text-[10px] opacity-60">{o.count}</span>}
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute top-full left-0 mt-1 z-20 min-w-[150px] border border-[var(--kvis-rule)] bg-background shadow-lg rounded-sm overflow-hidden">
+            {options.map(o => (
+              <button key={o.value} type="button"
+                onClick={() => { onChange(o.value); setOpen(false); }}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors hover:bg-foreground/5 text-left"
+                style={{ color: o.value === value ? "var(--kvis-purple)" : "var(--kvis-text3)" }}>
+                {o.label}
+                {o.count !== undefined && <span className="text-[10px] tabular-nums ml-3 opacity-50">{o.count}</span>}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
 }
 
-export default function SearchPage() {
-  return <Suspense fallback={null}><SearchPageInner /></Suspense>;
-}
-
-function SearchPageInner() {
-  const { user, loading: authLoading } = useAuth();
+// ── Main page (inner) ────────────────────────────────────────────────────────
+function KvisianInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && !user) router.replace("/auth/login?next=/kvisian");
-    if (!authLoading && user && !user.profile_setup_done) router.replace("/onboarding");
+    if (authLoading) return;
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    if (user.profile_setup_done === false) {
+      router.push("/onboarding");
+    }
   }, [authLoading, user, router]);
 
   const [personType, setPersonType] = useState<PersonType>("all");
   const [activeCohort, setActiveCohort] = useState("");
   const [activeCountry, setActiveCountry] = useState("");
-  const [activeField, setActiveField] = useState("");
-  const [activeUni, setActiveUni] = useState("");
   const [activeGrade, setActiveGrade] = useState("");
   const [activeClass, setActiveClass] = useState("");
   const [activeElement, setActiveElement] = useState("");
+  const [activeField, setActiveField] = useState("");
+  const [activeUni, setActiveUni] = useState("");
   const [q, setQ] = useState("");
-  const [sortBy, setSortBy] = useState("cohort-asc");
+  const [sortBy, setSortBy] = useState<"cohort-asc" | "cohort-desc" | "name-asc" | "name-desc">("cohort-asc");
 
-  const { data: rawPeople = [], isLoading } = useQuery({
-    queryKey: keys.yearbook.all(),
-    queryFn: () => api.get<UserCard[]>("/api/search", { params: { sort: "kvis_year", order: "asc", limit: 1000 } }).then((r) => r.data),
-    enabled: !!user,
+  const { data: rawPeople = [], isLoading, error } = useQuery<DirectoryCard[]>({
+    queryKey: ["directory"],
+    queryFn: () => api.get<DirectoryCard[]>("/api/search/directory").then(r => {
+      console.log("directory data:", r.data?.length, r.data?.[0]);
+      return r.data;
+    }),
     staleTime: 5 * 60 * 1000,
+    enabled: !authLoading && !!user,
   });
 
-  const alumni = useMemo(() => rawPeople.filter(p => !p.current_grade), [rawPeople]);
-  const students = useMemo(() => rawPeople.filter(p => !!p.current_grade), [rawPeople]);
+  console.log("rawPeople:", rawPeople.length, "isLoading:", isLoading, "error:", error, "authLoading:", authLoading, "user:", !!user);
 
-  const sourceList = useMemo(() => {
-    if (personType === "alumni") return alumni;
-    if (personType === "students") return students;
-    return rawPeople;
-  }, [personType, alumni, students, rawPeople]);
+  // Partition
+  const facultyAll  = useMemo(() => rawPeople.filter(u => isFaculty(u)), [rawPeople]);
+  const alumniAll   = useMemo(() => rawPeople.filter(u => !isFaculty(u) && !u.current_grade), [rawPeople]);
+  const studentsAll = useMemo(() => rawPeople.filter(u => !isFaculty(u) && !!u.current_grade), [rawPeople]);
 
   const countries = useMemo(() => {
     const m = new Map<string, number>();
-    alumni.forEach(a => { if (a.country) m.set(a.country, (m.get(a.country) ?? 0) + 1); });
-    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 20);
-  }, [alumni]);
+    rawPeople.forEach(u => { if (u.country) m.set(u.country, (m.get(u.country) ?? 0) + 1); });
+    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
+  }, [rawPeople]);
 
-  const fields = useMemo(() => {
-    const m = new Map<string, number>();
-    alumni.forEach(a => {
-      const f = a.career?.[0]?.job_field || a.education?.[0]?.major;
-      if (f) m.set(f, (m.get(f) ?? 0) + 1);
-    });
-    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 20);
-  }, [alumni]);
+  // Source list based on personType
+  const sourceList = useMemo(() => {
+    if (personType === "alumni")  return alumniAll;
+    if (personType === "students") return studentsAll;
+    if (personType === "faculty") return facultyAll;
+    return rawPeople;
+  }, [personType, rawPeople, alumniAll, studentsAll, facultyAll]);
 
-  const unis = useMemo(() => {
-    const m = new Map<string, number>();
-    alumni.forEach(a => {
-      const u = a.education?.[0]?.uni_name;
-      if (u) m.set(u, (m.get(u) ?? 0) + 1);
-    });
-    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 20);
-  }, [alumni]);
-
-  const classCounts = useMemo(() => {
-    const m = new Map<number, number>();
-    students.forEach(s => { if (s.current_class) m.set(s.current_class, (m.get(s.current_class) ?? 0) + 1); });
-    return m;
-  }, [students]);
-
-  const elementCounts = useMemo(() => {
-    const m = new Map<string, number>();
-    students.forEach(s => { if (s.current_elemental) m.set(s.current_elemental, (m.get(s.current_elemental) ?? 0) + 1); });
-    return m;
-  }, [students]);
-
+  // Filter
   const filtered = useMemo(() => {
-    const qLow = q.trim().toLowerCase();
     return sourceList.filter(u => {
-      if (activeCohort && String(u.kvis_year) !== activeCohort) return false;
+      if (activeCohort && u.kvis_year !== parseInt(activeCohort)) return false;
       if (activeCountry && u.country !== activeCountry) return false;
-      if (activeGrade && String(u.current_grade) !== activeGrade) return false;
-      if (activeClass && String(u.current_class) !== activeClass) return false;
+      if (activeGrade && u.current_grade !== parseInt(activeGrade)) return false;
+      if (activeClass && u.current_class !== parseInt(activeClass)) return false;
       if (activeElement && u.current_elemental !== activeElement) return false;
       if (activeField) {
-        const hasField = u.career?.some(c => c.job_field === activeField) || u.education?.some(e => e.major === activeField);
-        if (!hasField) return false;
+        if (u.job_field !== activeField) return false;
       }
       if (activeUni) {
-        const hasUni = u.education?.some(e => e.uni_name === activeUni);
-        if (!hasUni) return false;
+        if (u.edu_uni !== activeUni) return false;
       }
-      if (qLow) {
+      if (q.trim()) {
+        const qLow = q.toLowerCase();
         const hay = [
-          `${u.first_name} ${u.last_name}`, u.country, u.interests,
-          u.career?.[0]?.job_title, u.career?.[0]?.employer, u.career?.[0]?.job_field,
-          u.education?.[0]?.major, u.education?.[0]?.uni_name,
+          u.first_name, u.last_name, u.country, u.place, u.mbti, u.interests,
+          u.job_title, u.employer, u.job_field,
+          u.edu_major, u.edu_uni,
         ].filter(Boolean).join(" ").toLowerCase();
         if (!hay.includes(qLow)) return false;
       }
@@ -303,8 +390,8 @@ function SearchPageInner() {
   }, [filtered, sortBy]);
 
   const byCohort = useMemo(() => {
-    const m = new Map<number, UserCard[]>();
-    filtered.filter(u => !u.current_grade).forEach(a => {
+    const m = new Map<number, DirectoryCard[]>();
+    filtered.filter(u => !isFaculty(u) && !u.current_grade).forEach(a => {
       const k = a.kvis_year ?? 0;
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(a);
@@ -314,8 +401,8 @@ function SearchPageInner() {
   }, [filtered]);
 
   const byGrade = useMemo(() => {
-    const m = new Map<number, UserCard[]>();
-    filtered.filter(u => !!u.current_grade).forEach(s => {
+    const m = new Map<number, DirectoryCard[]>();
+    filtered.filter(u => !isFaculty(u) && !!u.current_grade).forEach(s => {
       const g = s.current_grade ?? 0;
       if (!m.has(g)) m.set(g, []);
       m.get(g)!.push(s);
@@ -323,15 +410,13 @@ function SearchPageInner() {
     return m;
   }, [filtered]);
 
-  // Show section headers only when:
-  // - no search/field/country/cohort/etc filters active
-  // - sort is cohort-asc (default)
-  // - personType is "alumni", "students", or "all" (all three qualify)
+  const filteredFaculty = useMemo(() => filtered.filter(u => isFaculty(u)), [filtered]);
+
   const showSectionHeaders =
     !activeCohort && !activeCountry && !activeGrade && !activeClass &&
     !activeElement && !activeField && !activeUni && !q.trim() &&
     (sortBy === "cohort-asc" || sortBy === "cohort-desc");
-  
+
   const hasRealFilter =
     !!activeCohort || !!activeCountry || !!activeGrade || !!activeClass ||
     !!activeElement || !!activeField || !!activeUni || q.trim().length > 0;
@@ -342,8 +427,9 @@ function SearchPageInner() {
     setActiveField(""); setActiveUni(""); setQ("");
   };
 
-  const showAlumni = personType === "all" || personType === "alumni";
+  const showAlumni   = personType === "all" || personType === "alumni";
   const showStudents = personType === "all" || personType === "students";
+  const showFaculty  = personType === "all" || personType === "faculty";
 
   if (authLoading || !user) {
     return (
@@ -379,14 +465,20 @@ function SearchPageInner() {
                 <span className="font-light text-foreground">Find your </span>
                 <span style={{ color: "var(--kvis-purple)" }}>People.</span>
               </h1>
-              <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed">
-                Browse {rawPeople.length} Kvisians by cohort, country, field, and interests.
+              <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
+                Browse {rawPeople.length} registered Kvisians by cohort, country, field, and interests.
+                <br />
+                Data reflects members who have joined KVIS Connect and may not represent the full alumni or student body.
               </p>
               <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
-                <span>{alumni.length} alumni</span>
+                <span>{alumniAll.length} alumni</span>
                 <span aria-hidden>·</span>
-                <span>{students.length} students</span>
+                <span>{studentsAll.length} students</span>
                 <span aria-hidden>·</span>
+                {facultyAll.length > 0 && <>
+                  <span>{facultyAll.length} faculty</span>
+                  <span aria-hidden>·</span>
+                </>}
                 <span>{countries.length} countries</span>
               </div>
             </header>
@@ -394,6 +486,7 @@ function SearchPageInner() {
 
           <FadeUp delay={0.1}>
             <nav className="py-4 border-b border-[var(--kvis-rule)] space-y-3">
+              {/* Search */}
               <div className="flex items-center gap-3 px-3 py-2 border border-[var(--kvis-rule)] rounded-sm">
                 <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                 <input value={q} onChange={e => setQ(e.target.value)}
@@ -402,65 +495,58 @@ function SearchPageInner() {
                 {q && <button onClick={() => setQ("")}><X className="h-3.5 w-3.5 text-muted-foreground" /></button>}
               </div>
 
+              {/* Person-type pills */}
               <div className="flex items-center flex-wrap gap-2">
-                {(["all", "alumni", "students"] as PersonType[]).map(t => (
+                {(["all", "alumni", "students", "faculty"] as PersonType[]).map(t => (
                   <button key={t} type="button"
-                    onClick={() => { setPersonType(t); setActiveCohort(""); setActiveGrade(""); setActiveClass(""); setActiveElement(""); setActiveField(""); setActiveUni(""); }}
+                    onClick={() => {
+                      setPersonType(t);
+                      setActiveCohort(""); setActiveGrade(""); setActiveClass(""); setActiveElement(""); setActiveField(""); setActiveUni("");
+                    }}
                     className="px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] border transition-colors rounded-sm"
                     style={{
                       borderColor: personType === t ? "var(--kvis-purple)" : "var(--kvis-rule)",
                       color: personType === t ? "var(--kvis-purple)" : "var(--kvis-text3)",
                       background: personType === t ? "var(--kvis-purple-soft)" : "transparent",
                     }}>
-                    {t === "all" ? "Everyone" : t === "alumni" ? "Alumni" : "Students"}
+                    {t === "all" ? "Everyone" : t === "alumni" ? "Alumni" : t === "students" ? "Students" : "Faculty"}
                   </button>
                 ))}
 
                 <div className="w-px h-4 bg-[var(--kvis-rule)]" />
 
                 <DropFilter label="Anywhere" active={!!activeCountry} value={activeCountry} onChange={setActiveCountry}
-                  options={[{ value: "", label: "Anywhere" }, ...countries.map(([c, n]) => ({ value: c, label: c, count: n }))]} />
+                  options={[{ value: "", label: "Anywhere" }, ...countries.map(([c, n]: [string, number]) => ({ value: c, label: c, count: n }))]} />
 
                 {(personType === "all" || personType === "alumni") && (
-                  <>
-                    <DropFilter label="Any cohort" active={!!activeCohort} value={activeCohort} onChange={setActiveCohort}
-                      options={[{ value: "", label: "Any cohort" }, ...COHORT_YEARS.map(y => ({ value: String(y), label: `K${y}` }))]} />
-                    <DropFilter label="Any field" active={!!activeField} value={activeField} onChange={setActiveField}
-                      options={[{ value: "", label: "Any field" }, ...fields.map(([f, n]) => ({ value: f, label: f, count: n }))]} />
-                    <DropFilter label="Any university" active={!!activeUni} value={activeUni} onChange={setActiveUni}
-                      options={[{ value: "", label: "Any university" }, ...unis.map(([u, n]) => ({ value: u, label: u, count: n }))]} />
-                  </>
+                  <DropFilter label="Any cohort" active={!!activeCohort} value={activeCohort} onChange={setActiveCohort}
+                    options={[{ value: "", label: "Any cohort" }, ...COHORT_YEARS_DESC.map(y => ({ value: String(y), label: `K${y}` }))]} />
                 )}
 
                 {(personType === "all" || personType === "students") && (
                   <>
                     <DropFilter label="Any grade" active={!!activeGrade} value={activeGrade} onChange={setActiveGrade}
-                      options={[{ value: "", label: "Any grade" }, ...GRADES.map(g => ({ value: String(g), label: gradeLabel(g) }))]} />
-                    <DropFilter label="Any element" active={!!activeElement} value={activeElement} onChange={setActiveElement}
-                      options={[{ value: "", label: "Any element" }, ...ELEMENTS.map(e => ({ value: e, label: ELEMENT_LABEL[e], count: elementCounts.get(e) ?? 0 }))]} />
+                      options={[{ value: "", label: "Any grade" }, ...GRADES.map(g => ({ value: String(g), label: `K${gradeToKvisYear(g)} (M.${g - 6})` }))]} />
                     <DropFilter label="Any class" active={!!activeClass} value={activeClass} onChange={setActiveClass}
-                      options={[{ value: "", label: "Any class" }, ...CLASSES.map(c => ({ value: String(c), label: `Class ${c}`, count: classCounts.get(c) ?? 0 }))]} />
+                      options={[{ value: "", label: "Any class" }, ...CLASSES.map(c => ({ value: String(c), label: `Class ${c}` }))]} />
+                    <DropFilter label="Any element" active={!!activeElement} value={activeElement} onChange={setActiveElement}
+                      options={[{ value: "", label: "Any element" }, ...ELEMENTS.map(e => ({ value: e, label: ELEMENT_LABEL[e] }))]} />
                   </>
                 )}
 
-                <div className="w-px h-4 bg-[var(--kvis-rule)]" />
-
                 <DropFilter
-                  label="Sort"
-                  active={sortBy !== "cohort-asc"}
-                  value={sortBy}
-                  onChange={setSortBy}
+                  label="Sort" active={sortBy !== "cohort-asc"} value={sortBy} onChange={v => setSortBy(v as typeof sortBy)}
                   sortIcon
                   options={[
-                    { value: "cohort-asc",  label: "Cohort ↑" },
+                    { value: "cohort-asc", label: "Cohort ↑" },
                     { value: "cohort-desc", label: "Cohort ↓" },
-                    { value: "name-asc",    label: "Name A–Z" },
-                    { value: "name-desc",   label: "Name Z–A" },
-                  ]} />
+                    { value: "name-asc", label: "Name A–Z" },
+                    { value: "name-desc", label: "Name Z–A" },
+                  ]}
+                />
 
                 {hasRealFilter && (
-                  <button type="button" onClick={resetFilters}
-                    className="flex items-center gap-1 px-2 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors">
+                  <button onClick={resetFilters} className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] border border-[var(--kvis-rule)] rounded-sm text-muted-foreground hover:text-foreground">
                     <X className="h-3 w-3" /> Reset
                   </button>
                 )}
@@ -468,89 +554,66 @@ function SearchPageInner() {
             </nav>
           </FadeUp>
 
-          {isLoading && (
-            <div className="pt-10 space-y-10">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i}>
-                  <Skeleton className="h-16 w-full mb-6" />
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                    {Array.from({ length: 10 }).map((_, j) => (
-                      <div key={j} className="rounded-2xl border border-[var(--kvis-rule)] overflow-hidden">
-                        <Skeleton className="h-1.5 w-full" />
-                        <div className="p-4 flex flex-col items-center gap-3">
-                          <Skeleton className="w-16 h-16 rounded-full" />
-                          <Skeleton className="h-4 w-3/4" />
-                          <Skeleton className="h-3 w-1/2" />
-                          <Skeleton className="h-3 w-2/3" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!isLoading && sortedFiltered.length === 0 && (
-            <FadeUp>
-              <div className="py-24 text-center">
-                <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4 text-[var(--kvis-text3)]">Nothing matches</p>
-                <p className="text-3xl font-black tracking-tight text-foreground mb-3">No one found</p>
-                {hasRealFilter && (
-                  <Button variant="link" onClick={resetFilters} className="h-auto p-0 text-sm underline hover:no-underline text-[var(--kvis-purple)]">
-                    Clear filters
-                  </Button>
-                )}
-              </div>
-            </FadeUp>
-          )}
-
-          {!isLoading && sortedFiltered.length > 0 && (
+          {/* Results */}
+          {showSectionHeaders ? (
             <>
-              {showSectionHeaders ? (
+              {sortBy === "cohort-desc" ? (
                 <>
-                  {showAlumni && [...COHORT_YEARS]
-                    .sort((a, b) => sortBy === "cohort-desc" ? a - b : b - a)
-                    .map(k => {
-                      const arr = byCohort.get(k) ?? [];
-                      return arr.length > 0 ? <CohortSection key={k} k={k} students={arr} /> : null;
-                    })}
-                  {showStudents && [...GRADES]
-                    .sort((a, b) => sortBy === "cohort-desc" ? b - a : a - b)
-                    .map(g => {
-                      const arr = byGrade.get(g) ?? [];
-                      return arr.length > 0 ? <GradeSection key={g} g={g} students={arr} /> : null;
-                    })}
+                  {/* Descending: students first (K12→K10), then alumni (K9→K1) */}
+                  {showStudents && Array.from(byGrade.keys())
+                    .sort((a, b) => a - b)
+                    .map(g => <GradeSection key={g} g={g} students={byGrade.get(g) ?? []} />)}
+                  {showAlumni && (
+                    Array.from(byCohort.keys())
+                      .sort((a, b) => b - a)
+                      .map(k => <CohortSection key={k} k={k} students={byCohort.get(k) ?? []} />)
+                  )}
+                  {showFaculty && <FacultySection people={filteredFaculty} />}
                 </>
               ) : (
-                <FadeUp>
-                  <section className="pt-14">
-                    <StaggerList key={`${sortBy}-${hasRealFilter}`}>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
-                        {sortedFiltered.map(u => (
-                          <StaggerItem key={u.id} className="h-full">
-                            <Portrait u={u} isAlumni={!u.current_grade} />
-                          </StaggerItem>
-                        ))}
-                      </div>
-                    </StaggerList>
-                  </section>
-                </FadeUp>
+                <>
+                  {/* Ascending: alumni first (K1→K9), then students (K10→K12) */}
+                  {showAlumni && (
+                    Array.from(byCohort.keys())
+                      .sort((a, b) => a - b)
+                      .map(k => <CohortSection key={k} k={k} students={byCohort.get(k) ?? []} />)
+                  )}
+                  {showStudents && Array.from(byGrade.keys())
+                    .sort((a, b) => b - a)
+                    .map(g => <GradeSection key={g} g={g} students={byGrade.get(g) ?? []} />)}
+                  {showFaculty && <FacultySection people={filteredFaculty} />}
+                </>
               )}
             </>
-          )}
-
-          {!isLoading && sortedFiltered.length > 0 && (
-            <FadeUp>
-              <footer className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between">
-                <span>- end -</span>
-                <span className="tabular-nums">{sortedFiltered.length} people{hasRealFilter && ` (of ${rawPeople.length})`}</span>
-              </footer>
+          ) : (
+            <FadeUp delay={0.2}>
+              <div className="pt-10">
+                <p className="text-xs uppercase tracking-[0.26em] font-bold mb-6 text-[var(--kvis-text3)]">{sortedFiltered.length} result{sortedFiltered.length !== 1 ? "s" : ""}</p>
+                <motion.div variants={staggerContainer} initial="initial" animate="animate"
+                  className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+                  {sortedFiltered.map((u: DirectoryCard, i) => i < ANIMATE_FIRST_N ? (
+                    <motion.div key={u.id} variants={staggerChild} className="h-full"><Portrait u={u} /></motion.div>
+                  ) : (
+                    <div key={u.id} className="h-full"><Portrait u={u} /></div>
+                  ))}
+                </motion.div>
+                {sortedFiltered.length === 0 && (
+                  <p className="text-center text-muted-foreground text-sm py-16">No results — <button onClick={resetFilters} className="underline">clear filters</button></p>
+                )}
+              </div>
             </FadeUp>
           )}
 
         </div>
       </div>
     </PageEntrance>
+  );
+}
+
+export default function KvisianPage() {
+  return (
+    <Suspense>
+      <KvisianInner />
+    </Suspense>
   );
 }

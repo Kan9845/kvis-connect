@@ -24,7 +24,6 @@ export function formatDate(iso: string) {
 }
 
 const COHORT_HUES = [10, 45, 80, 130, 170, 190, 210, 250, 280, 310];
-const COHORT_NAMES = ['red-orange','amber','yellow-lime','green','teal','cyan','sky','blue','indigo','pink-purple'];
 
 const COHORT_BASE: { l: string; c: string; text: string }[] = [
   ...COHORT_HUES.map(() => ({ l: '62%', c: '0.18', text: 'white' })),
@@ -37,7 +36,6 @@ function getCohortEraGroupSize(latestCohort: number): number {
   return 3;
 }
 
-// Pass the latest known cohort so grouping is retroactive.
 // For now we hardcode 9 as the latest — update when new cohorts graduate.
 const LATEST_COHORT = 9;
 
@@ -104,4 +102,35 @@ export function effectiveKvisYear(user: { kvis_year?: number | null; current_gra
   if (user.current_grade === 11) return LATEST_COHORT + 2;
   if (user.current_grade === 10) return LATEST_COHORT + 3;
   return null;
+}
+
+// ─── Faculty color ───────────────────────────────────────────────────────────
+// Gold hue (85°) — not used by any of the 10 cohort hues (10,45,80,130,…,310).
+// 80° is close but distinct; 85° reads as warm gold, evokes "professor".
+export const FACULTY_COLOR         = "oklch(62% 0.16 82)";
+export const FACULTY_COLOR_HEX     = "#B8941F";
+export const FACULTY_COLOR_SOFT_HEX = "#FBF3D9";
+export const FACULTY_TEXT_COLOR    = "white";
+
+/** Returns true for any user who has faculty fields set. */
+export function isFaculty(u: {
+  teach_start_year?: number | null;
+  is_current_teacher?: boolean | null;
+}): boolean {
+  return !!(u.teach_start_year || u.is_current_teacher);
+}
+
+/**
+ * "2018–present" or "2018–2024" or just "KVIS Faculty"
+ */
+export function facultyPeriodLabel(u: {
+  teach_start_year?: number | null;
+  teach_end_year?: number | null;
+  is_current_teacher?: boolean | null;
+}): string {
+  if (!u.teach_start_year) return "KVIS Faculty";
+  const end = u.is_current_teacher
+    ? "present"
+    : (u.teach_end_year ? String(u.teach_end_year) : "present");
+  return `${u.teach_start_year}–${end}`;
 }

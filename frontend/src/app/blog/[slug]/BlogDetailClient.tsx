@@ -248,7 +248,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
   useEffect(() => {
     if (!blog || !user) return;
     setLikeCount(blog.likes ?? 0);
-    setCommentsEnabled(blog.comments_enabled ?? true);
+    setCommentsEnabled((blog as { comments_enabled?: boolean }).comments_enabled ?? true);
     blogApi.getLike(slug)
       .then(({ likes, liked }) => { setLikeCount(likes); setLiked(liked); })
       .catch(() => {});

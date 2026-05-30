@@ -304,7 +304,9 @@ export default function StatsClient() {
                 <span className="font-light text-foreground">By the </span><span style={{ color: "var(--kvis-purple)" }}>Numbers.</span>
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
-                Where KVIS alumni went to study after graduation - the faculties they chose, the universities that took them in, and the countries they ended up in.
+                Where KVIS alumni went to study after graduation — the faculties they chose, the universities that took them in, and the countries they ended up in. 
+                <br />
+                Data covers registered members only and may not reflect the full alumni body.
               </p>
               <div className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap mt-6 text-[var(--kvis-text3)]">
                 <span>{dateline}</span>

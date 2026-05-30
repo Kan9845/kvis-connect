@@ -11,9 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { degreeLabel, jobFieldLabel } from "@/lib/constants/options";
-import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, formatDate, genLabel } from "@/lib/utils";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 import type { BlogRead } from "@/lib/types";
+import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, formatDate, genLabel, isFaculty, facultyPeriodLabel, FACULTY_COLOR, FACULTY_COLOR_HEX, FACULTY_COLOR_SOFT_HEX } from "@/lib/utils";
 
 function parseInterests(t?: string) {
   return (t ?? "").split(",").map((x) => x.trim()).filter(Boolean);
@@ -200,7 +200,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   const initials = `${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase();
   const interests = parseInterests(user.interests);
   const currentRole = user.career?.find((c) => c.is_current) ?? user.career?.[0];
-  const ringColor = cohortColor(user.kvis_year);
+  const ringColor = isFaculty(user) ? FACULTY_COLOR : cohortColor(user.kvis_year);
 
   const contacts: { label: string; display: string; href: string }[] = [];
   if (user.linkedin_url) contacts.push({ label: "LinkedIn", display: hostname(user.linkedin_url), href: user.linkedin_url });
@@ -248,14 +248,32 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 <div className="relative flex items-end justify-between p-7 md:p-10" style={{ minHeight: 220 }}>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-3 flex-wrap">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
-                        KVIS Connect · Alumni
-                      </p>
-                      {user.kvis_year && (
-                        <span className="text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
-                          style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
-                          {genLabel(user.kvis_year)}
-                        </span>
+                    {isFaculty(user) ? (
+                        <>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                            KVIS Connect · Faculty
+                          </p>
+                          <span className="text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
+                            style={{ background: "rgba(184,148,31,0.35)", color: "#FBF3D9" }}>
+                            Teacher · {facultyPeriodLabel(user)}
+                          </span>
+                        </>
+                      ) : user.current_grade ? (
+                        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                          KVIS Connect · Student
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                            KVIS Connect · Alumni
+                          </p>
+                          {user.kvis_year && (
+                            <span className="text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
+                              style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
+                              {genLabel(user.kvis_year)}
+                            </span>
+                          )}
+                        </>
                       )}
                       {user.is_verified && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/80">

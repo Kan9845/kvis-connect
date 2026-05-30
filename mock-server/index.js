@@ -1659,6 +1659,39 @@ app.delete("/api/blogs/:slug", requireAuth, (req, res) => {
   res.status(204).send();
 });
 
+app.get("/api/search/directory", (req, res) => {
+  const people = MOCK_ALUMNI.map(u => {
+    const currentJob = u.career?.find(c => c.is_current) ?? u.career?.[0];
+    const latestEdu = u.education?.find(e => !e.end_year) ?? u.education?.[0];
+    return {
+      id: String(u.id),
+      slug: u.slug ?? String(u.id),
+      first_name: u.first_name,
+      last_name: u.last_name,
+      kvis_year: u.kvis_year ?? null,
+      current_grade: u.current_grade ?? null,
+      current_class: u.current_class ?? null,
+      current_elemental: u.current_elemental ?? null,
+      teach_start_year: u.teach_start_year ?? null,
+      teach_end_year: u.teach_end_year ?? null,
+      is_current_teacher: u.is_current_teacher ?? false,
+      profile_pic_url: u.profile_pic_url ?? null,
+      country: u.country ?? null,
+      place: u.place ?? null,
+      mbti: u.mbti ?? null,
+      interests: u.interests ?? null,
+      is_verified: u.is_verified ?? false,
+      job_title: currentJob?.job_title ?? null,
+      employer: currentJob?.employer ?? null,
+      job_field: currentJob?.job_field ?? null,
+      edu_major: latestEdu?.major ?? null,
+      edu_degree: latestEdu?.degree ?? null,
+      edu_uni: latestEdu?.uni_name ?? null,
+    };
+  });
+  res.json(people);
+});
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {

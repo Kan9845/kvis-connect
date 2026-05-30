@@ -17,6 +17,22 @@ class Education(SQLModel, table=True):
     start_year: Optional[int] = None
     end_year: Optional[int] = None
 
+    # Extended
+    is_public: bool = True
+    major2: Optional[str] = None
+    minor1: Optional[str] = None
+    scholarship_type: Optional[str] = None
+    scholarship_bond: Optional[str] = None
+
+    # Medical track
+    med_school: Optional[str] = None
+    med_dual_degree: bool = False
+    med_dual_type: Optional[str] = None
+    med_dual_field: Optional[str] = None
+    med_hospital: Optional[str] = None
+    med_specialties: Optional[str] = None   # JSON list stored as text
+    med_subspecialty: Optional[str] = None
+
     user: Optional["User"] = Relationship(back_populates="education")
 
 
@@ -33,6 +49,12 @@ class Career(SQLModel, table=True):
     start_year: Optional[int] = None
     end_year: Optional[int] = None
 
+    # Extended
+    is_public: bool = True
+    company_type: Optional[str] = None
+    industry_sector: Optional[str] = None
+    role_type: Optional[str] = None
+
     user: Optional["User"] = Relationship(back_populates="career")
 
 
@@ -44,31 +66,42 @@ class User(SQLModel, table=True):
     hashed_password: Optional[str] = None
     google_id: Optional[str] = Field(default=None, index=True)
     email_verified: bool = False
-    is_verified: bool = False  # KVIS-Verified: confirmed @kvis.ac.th email ownership
-    kvis_email: Optional[str] = None  # the verified @kvis.ac.th email
+    is_verified: bool = False
+    kvis_email: Optional[str] = None
 
     # Basic info
     slug: str = Field(unique=True, index=True)
     first_name: str
     last_name: str
+    nickname: Optional[str] = None
+    nickname_public: bool = True
     kvis_year: Optional[int] = Field(default=None, index=True)
 
-    # Current student fields. Null = alumni or not enrolled.
-    # current_grade: 10 (M.4), 11 (M.5), 12 (M.6)
-    # current_class: 1-4
-    # current_elemental: earth | water | air | fire
+    # Current student fields
     current_grade: Optional[int] = Field(default=None, index=True)
     current_class: Optional[int] = None
     current_elemental: Optional[str] = None
 
+    # Status
+    current_status: Optional[str] = None
+
+    # Faculty / staff fields
+    teach_start_year: Optional[int] = Field(default=None, index=True)
+    teach_end_year: Optional[int] = None
+    is_current_teacher: bool = Field(default=False, index=True)
+
     # Contact & social
     facebook_url: Optional[str] = None
     linkedin_url: Optional[str] = None
+    instagram_url: Optional[str] = None
     line_id: Optional[str] = None
     website_url: Optional[str] = None
+    contact_email: Optional[str] = None
+    contact_email_public: bool = True
 
     # Location
-    place: Optional[str] = None          # Display text e.g. "Bangkok, Thailand"
+    place: Optional[str] = None
+    place_level2: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     country: Optional[str] = Field(default=None, index=True)
@@ -76,11 +109,27 @@ class User(SQLModel, table=True):
     # Profile
     profile_pic_url: Optional[str] = None
     bio: Optional[str] = None
-    mbti: Optional[str] = None           # e.g. "INTJ"
-    interests: Optional[str] = None      # comma-separated tags
+    mbti: Optional[str] = None
+    zodiac: Optional[str] = None
+    chronotype: Optional[str] = None
+    interests: Optional[str] = None
+    interests_public: bool = True
 
-    profile_setup_done: bool = Field(default=False)
+    # Research (JSON stored as text)
+    research_interests: Optional[str] = None
+    research_keywords: Optional[str] = None
+    projects: Optional[str] = None
+    publications: Optional[str] = None
+    portfolio_links: Optional[str] = None
 
+    # Personal / KVIS-only (JSON stored as text)
+    languages: Optional[str] = None
+    hobbies: Optional[str] = None
+    kvis_fav_menu: Optional[str] = None
+    kvis_fav_event: Optional[str] = None
+    kvis_fav_area: Optional[str] = None
+
+    profile_setup_done: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
