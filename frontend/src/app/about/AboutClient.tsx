@@ -59,11 +59,6 @@ export function AboutClient() {
                   network keeps growing long after graduation.
                 </p>
               </div>
-              <div
-                className="hidden md:block shrink-0 mt-2"
-                style={{ width: 120, height: 120, color: "var(--kvis-purple)" }}
-                dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 2.5 L 14.7 5 L 17.3 5 Z" fill="currentColor"/><path d="M 7.5 13.5 C 7.5 8 11.3 4.5 16 4.5 C 20.7 4.5 24.5 8 24.5 13.5 C 24.5 15 24.2 16 23.8 17 C 26 18 27.8 21 27.8 24 C 27.8 27.5 24.5 29.5 21 29.5 L 11 29.5 C 7.5 29.5 4.2 27.5 4.2 24 C 4.2 21 6 18 8.2 17 C 7.8 16 7.5 15 7.5 13.5 Z" fill="#fefcf8" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="13" cy="12.5" r="1.35" fill="#1a1410"/><circle cx="19" cy="12.5" r="1.35" fill="#1a1410"/><path d="M 13.4 16 L 18.6 16 L 16 18.8 Z" fill="#e89540"/><ellipse cx="12" cy="30.5" rx="2.4" ry="0.95" fill="#e89540"/><ellipse cx="20" cy="30.5" rx="2.4" ry="0.95" fill="#e89540"/></svg>` }}
-              />
             </header>
           </FadeUp>
 

@@ -4,7 +4,9 @@ export const DEGREES = [
   { value: "Bachelor", label: "Bachelor's" },
   { value: "Master", label: "Master's" },
   { value: "PhD", label: "PhD / Doctorate" },
-  { value: "MD", label: "MD (Medicine)" },
+  { value: "MD", label: "MD (Doctor of Medicine)" },
+  { value: "MBBS", label: "MBBS" },
+  { value: "MBChB", label: "MBChB" },
   { value: "Other", label: "Other" },
 ] as const;
 
