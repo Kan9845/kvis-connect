@@ -79,8 +79,7 @@ class User(SQLModel, table=True):
 
     # Current student fields
     current_grade: Optional[int] = Field(default=None, index=True)
-    current_class: Optional[int] = None
-    current_elemental: Optional[str] = None
+    expected_grad_year: Optional[int] = None
 
     # Status
     current_status: Optional[str] = None
@@ -89,6 +88,7 @@ class User(SQLModel, table=True):
     teach_start_year: Optional[int] = Field(default=None, index=True)
     teach_end_year: Optional[int] = None
     is_current_teacher: bool = Field(default=False, index=True)
+    teach_department: Optional[str] = None
 
     # Contact & social
     facebook_url: Optional[str] = None

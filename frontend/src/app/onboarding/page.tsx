@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { userApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ArrowRight, GraduationCap, Users, BookOpen } from "lucide-react";
+import { KVIS_DEPARTMENTS } from "@/lib/constants/options";
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const P = {
@@ -25,12 +26,6 @@ const GRADES = [
   { value: 12, label: "M.6", sub: "Final year" },
   { value: 11, label: "M.5", sub: "Second year" },
   { value: 10, label: "M.4", sub: "First year" },
-];
-const ELEMENTALS = [
-  { value: "earth", label: "Earth 🌍" },
-  { value: "water", label: "Water 💧" },
-  { value: "air",   label: "Air 💨" },
-  { value: "fire",  label: "Fire 🔥" },
 ];
 
 // ── Role card ─────────────────────────────────────────────────────────────────
@@ -113,6 +108,7 @@ export default function OnboardingPage() {
   const [teachStartYear, setTeachStartYear] = useState<string>("");
   const [isCurrentTeacher, setIsCurrentTeacher] = useState<boolean>(true);
   const [teachEndYear, setTeachEndYear] = useState<string>("");
+  const [department, setDepartment] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !me) router.push("/auth/login");
@@ -134,6 +130,7 @@ export default function OnboardingPage() {
       if (!grade) { setError("Please select your grade."); return; }
     } else if (role === "faculty") {
       if (!teachStartYear) { setError("Please enter your first year teaching at KVIS."); return; }
+      if (!department) { setError("Please select your department."); return; }
     }
 
     setSubmitting(true);
@@ -143,14 +140,13 @@ export default function OnboardingPage() {
       } else if (role === "student") {
         await userApi.updateMe({
           current_grade: grade ?? undefined,
-          current_elemental: elemental as any ?? undefined,
-          current_class: classNum ?? undefined,
         });
       } else if (role === "faculty") {
         await userApi.updateMe({
           teach_start_year: parseInt(teachStartYear),
           teach_end_year: !isCurrentTeacher && teachEndYear ? parseInt(teachEndYear) : undefined,
           is_current_teacher: isCurrentTeacher,
+          teach_department: department!,
         });
       }
       await refetch();
@@ -279,23 +275,30 @@ export default function OnboardingPage() {
                         <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Current grade</p>
                         <PillToggle options={GRADES} value={grade} onChange={setGrade} cols={3} />
                       </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Elemental class <span className="normal-case font-normal opacity-50">(optional)</span></p>
-                        <PillToggle options={ELEMENTALS} value={elemental} onChange={setElemental} cols={4} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>Class number <span className="normal-case font-normal opacity-50">(optional)</span></p>
-                        <PillToggle
-                          options={[1, 2, 3, 4].map(c => ({ value: c, label: String(c) }))}
-                          value={classNum} onChange={setClassNum} cols={4}
-                        />
-                      </div>
                     </div>
                   )}
 
                   {/* Faculty — teaching period */}
                   {role === "faculty" && (
                     <div className="space-y-6">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>
+                          Department <span className="text-[var(--kvis-purple)]">*</span>
+                        </p>
+                        <div className="grid grid-cols-1 gap-2">
+                          {KVIS_DEPARTMENTS.map(d => (
+                            <button key={d} type="button" onClick={() => setDepartment(d)}
+                              className="px-4 py-2.5 text-xs font-bold text-left border transition-all"
+                              style={{
+                                borderColor: department === d ? P.purple : P.rule,
+                                color: department === d ? P.purple : P.text3,
+                                background: department === d ? P.purpleSoft : "transparent",
+                              }}>
+                              {d}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                       <div>
                         <p className="text-xs font-bold uppercase tracking-[0.26em] mb-3" style={{ color: P.text3 }}>First year teaching at KVIS</p>
                         <input type="number" min={1990} max={new Date().getFullYear()}

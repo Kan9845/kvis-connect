@@ -23,6 +23,14 @@ export const avatarOptions = {
     "brows_up",
   ],
 
+  hair: [
+    "littlehair_bang",
+    "littlehair_chicken",
+    "littlehair_mount",
+    "littlehair_curl",
+    "littlehair_curly",
+  ],
+
   head: [
     "head_hat",
     "head_headphone",
@@ -49,15 +57,12 @@ export const avatarOptions = {
     "neck_lace",
     "neck_strap",
     "neck_bow",
-  ],
-
-  hair: [
-    "littlehair_bang",
-    "littlehair_chicken",
+    "neck_bigbow",
   ],
 
   hand: [
   "hand_lab",
+  "hand_mic",
 ],
 };
 
@@ -66,10 +71,10 @@ export const defaultAvatar: AvatarConfig = {
   eyes: "eye_default",
 
   brows: null,
+  hair: null,
   head: null,
   glasses: null,
   cheek: null,
   neck: null,
-  hair: null,
   hand: null,
 };

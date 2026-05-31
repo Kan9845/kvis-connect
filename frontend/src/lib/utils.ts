@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { LATEST_COHORT } from "@/lib/constants/options";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -35,9 +36,6 @@ function getCohortEraGroupSize(latestCohort: number): number {
   if (latestCohort <= 40) return 2;
   return 3;
 }
-
-// For now we hardcode 9 as the latest — update when new cohorts graduate.
-const LATEST_COHORT = 9;
 
 export function cohortColor(kvis_year: number | null | undefined): string {
   if (!kvis_year) return 'var(--kvis-purple)';
@@ -104,15 +102,12 @@ export function effectiveKvisYear(user: { kvis_year?: number | null; current_gra
   return null;
 }
 
-// ─── Faculty color ───────────────────────────────────────────────────────────
-// Gold hue (85°) — not used by any of the 10 cohort hues (10,45,80,130,…,310).
-// 80° is close but distinct; 85° reads as warm gold, evokes "professor".
-export const FACULTY_COLOR         = "oklch(62% 0.16 82)";
-export const FACULTY_COLOR_HEX     = "#B8941F";
+// ─── Faculty color ────────────────────────────────────────────────────────────
+export const FACULTY_COLOR          = "oklch(62% 0.16 82)";
+export const FACULTY_COLOR_HEX      = "#B8941F";
 export const FACULTY_COLOR_SOFT_HEX = "#FBF3D9";
-export const FACULTY_TEXT_COLOR    = "white";
+export const FACULTY_TEXT_COLOR     = "white";
 
-/** Returns true for any user who has faculty fields set. */
 export function isFaculty(u: {
   teach_start_year?: number | null;
   is_current_teacher?: boolean | null;
@@ -120,9 +115,6 @@ export function isFaculty(u: {
   return !!(u.teach_start_year || u.is_current_teacher);
 }
 
-/**
- * "2018–present" or "2018–2024" or just "KVIS Faculty"
- */
 export function facultyPeriodLabel(u: {
   teach_start_year?: number | null;
   teach_end_year?: number | null;

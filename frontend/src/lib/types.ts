@@ -50,9 +50,8 @@ export interface UserCard {
   mbti?: string;
   interests?: string;
   current_grade?: number;
-  current_class?: number;
-  current_elemental?: "earth" | "water" | "air" | "fire";
   // Faculty fields
+  teach_department?: string;
   teach_start_year?: number;
   teach_end_year?: number;
   is_current_teacher?: boolean;
@@ -64,6 +63,7 @@ export interface UserCard {
 }
 
 export interface UserPublic extends UserCard {
+  teach_department?: string;
   latitude?: number;
   longitude?: number;
   bio?: string;
@@ -75,6 +75,8 @@ export interface UserPublic extends UserCard {
 }
 
 export interface UserMe extends UserPublic {
+  teach_department?: string;
+  expected_grad_year?: number;
   email: string;
   line_id?: string;
   email_verified: boolean;
@@ -187,9 +189,8 @@ export interface DirectoryCard {
   first_name: string;
   last_name: string;
   kvis_year?: number;
+  expected_grad_year?: number;
   current_grade?: number;
-  current_class?: number;
-  current_elemental?: "earth" | "water" | "air" | "fire";
   teach_start_year?: number;
   teach_end_year?: number;
   is_current_teacher?: boolean;

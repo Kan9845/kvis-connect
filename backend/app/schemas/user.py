@@ -103,13 +103,12 @@ class UserPublic(BaseModel):
     nickname_public: bool = True
     kvis_year: Optional[int] = None
     current_grade: Optional[int] = None
-    current_class: Optional[int] = None
-    current_elemental: Optional[str] = None
     current_status: Optional[str] = None
     # Faculty
     teach_start_year: Optional[int] = None
     teach_end_year: Optional[int] = None
     is_current_teacher: bool = False
+    teach_department: Optional[str] = None
     # Location
     place: Optional[str] = None
     place_level2: Optional[str] = None
@@ -165,13 +164,12 @@ class UserUpdate(BaseModel):
     nickname_public: Optional[bool] = None
     kvis_year: Optional[int] = None
     current_grade: Optional[int] = None
-    current_class: Optional[int] = None
-    current_elemental: Optional[str] = None
     current_status: Optional[str] = None
     # Faculty
     teach_start_year: Optional[int] = None
     teach_end_year: Optional[int] = None
     is_current_teacher: Optional[bool] = None
+    teach_department: Optional[str] = None
     # Location
     place: Optional[str] = None
     place_level2: Optional[str] = None
@@ -218,10 +216,9 @@ class UserCard(BaseModel):
     nickname: Optional[str] = None
     kvis_year: Optional[int] = None
     current_grade: Optional[int] = None
-    current_class: Optional[int] = None
-    current_elemental: Optional[str] = None
     current_status: Optional[str] = None
     # Faculty
+    teach_department: Optional[str] = None
     teach_start_year: Optional[int] = None
     teach_end_year: Optional[int] = None
     is_current_teacher: bool = False

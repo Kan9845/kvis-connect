@@ -30,14 +30,10 @@ const staggerChild = {
 const ANIMATE_FIRST_N = 10;
 
 type PersonType = "all" | "alumni" | "students" | "faculty";
-type Element = "earth" | "water" | "air" | "fire";
 
 const COHORT_YEARS_ASC = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const COHORT_YEARS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1];
 const GRADES = [12, 11, 10];
-const CLASSES = [1, 2, 3, 4];
-const ELEMENTS: Element[] = ["earth", "water", "air", "fire"];
-const ELEMENT_LABEL: Record<Element, string> = { earth: "Earth", water: "Water", air: "Air", fire: "Fire" };
 
 const LATEST_COHORT = 9; // keep in sync with utils.ts
 function gradeToKvisYear(g: number) {
@@ -205,11 +201,9 @@ function CohortSection({ k, students }: { k: number; students: DirectoryCard[] }
 function GradeSection({ g, students }: { g: number; students: DirectoryCard[] }) {
   if (!students.length) return null;
   const pseudoYear = effectiveKvisYear({ current_grade: g });
-  const sorted = [...students].sort((a, b) => {
-    const ca = a.current_class ?? 99, cb = b.current_class ?? 99;
-    if (ca !== cb) return ca - cb;
-    return (a.first_name || "").localeCompare(b.first_name || "");
-  });
+  const sorted = [...students].sort((a, b) =>
+    (a.first_name || "").localeCompare(b.first_name || "")
+  );
   return (
     <FadeUp>
       <section className="pt-14">
@@ -313,8 +307,6 @@ function KvisianInner() {
   const [activeCohort, setActiveCohort] = useState("");
   const [activeCountry, setActiveCountry] = useState("");
   const [activeGrade, setActiveGrade] = useState("");
-  const [activeClass, setActiveClass] = useState("");
-  const [activeElement, setActiveElement] = useState("");
   const [activeField, setActiveField] = useState("");
   const [activeUni, setActiveUni] = useState("");
   const [q, setQ] = useState("");
@@ -357,8 +349,6 @@ function KvisianInner() {
       if (activeCohort && u.kvis_year !== parseInt(activeCohort)) return false;
       if (activeCountry && u.country !== activeCountry) return false;
       if (activeGrade && u.current_grade !== parseInt(activeGrade)) return false;
-      if (activeClass && u.current_class !== parseInt(activeClass)) return false;
-      if (activeElement && u.current_elemental !== activeElement) return false;
       if (activeField) {
         if (u.job_field !== activeField) return false;
       }
@@ -376,7 +366,7 @@ function KvisianInner() {
       }
       return true;
     });
-  }, [sourceList, activeCohort, activeCountry, activeGrade, activeClass, activeElement, activeField, activeUni, q]);
+  }, [sourceList, activeCohort, activeCountry, activeGrade, activeField, activeUni, q]);
 
   const sortedFiltered = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -413,18 +403,17 @@ function KvisianInner() {
   const filteredFaculty = useMemo(() => filtered.filter(u => isFaculty(u)), [filtered]);
 
   const showSectionHeaders =
-    !activeCohort && !activeCountry && !activeGrade && !activeClass &&
-    !activeElement && !activeField && !activeUni && !q.trim() &&
+    !activeCohort && !activeCountry && !activeGrade &&
+    !activeField && !activeUni && !q.trim() &&
     (sortBy === "cohort-asc" || sortBy === "cohort-desc");
 
   const hasRealFilter =
-    !!activeCohort || !!activeCountry || !!activeGrade || !!activeClass ||
-    !!activeElement || !!activeField || !!activeUni || q.trim().length > 0;
+    !!activeCohort || !!activeCountry || !!activeGrade ||
+    !!activeField || !!activeUni || q.trim().length > 0;
 
   const resetFilters = () => {
     setPersonType("all"); setActiveCohort(""); setActiveCountry("");
-    setActiveGrade(""); setActiveClass(""); setActiveElement("");
-    setActiveField(""); setActiveUni(""); setQ("");
+    setActiveGrade(""); setActiveField(""); setActiveUni(""); setQ("");
   };
 
   const showAlumni   = personType === "all" || personType === "alumni";
@@ -501,7 +490,7 @@ function KvisianInner() {
                   <button key={t} type="button"
                     onClick={() => {
                       setPersonType(t);
-                      setActiveCohort(""); setActiveGrade(""); setActiveClass(""); setActiveElement(""); setActiveField(""); setActiveUni("");
+                      setActiveCohort(""); setActiveGrade(""); setActiveField(""); setActiveUni("");
                     }}
                     className="px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] border transition-colors rounded-sm"
                     style={{
@@ -527,10 +516,6 @@ function KvisianInner() {
                   <>
                     <DropFilter label="Any grade" active={!!activeGrade} value={activeGrade} onChange={setActiveGrade}
                       options={[{ value: "", label: "Any grade" }, ...GRADES.map(g => ({ value: String(g), label: `K${gradeToKvisYear(g)} (M.${g - 6})` }))]} />
-                    <DropFilter label="Any class" active={!!activeClass} value={activeClass} onChange={setActiveClass}
-                      options={[{ value: "", label: "Any class" }, ...CLASSES.map(c => ({ value: String(c), label: `Class ${c}` }))]} />
-                    <DropFilter label="Any element" active={!!activeElement} value={activeElement} onChange={setActiveElement}
-                      options={[{ value: "", label: "Any element" }, ...ELEMENTS.map(e => ({ value: e, label: ELEMENT_LABEL[e] }))]} />
                   </>
                 )}
 

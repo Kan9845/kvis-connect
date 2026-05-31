@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Trash2, Upload, Loader2, Check, ShieldCheck, ShieldAlert, Globe, Lock } from "lucide-react";
-import { DEGREES, JOB_FIELDS, MBTI_TYPES, KVIS_YEARS } from "@/lib/constants/options";
+import { DEGREES, JOB_FIELDS, MBTI_TYPES, KVIS_YEARS, KVIS_DEPARTMENTS } from "@/lib/constants/options";
 import { CountrySelect, CitySelect, CITY_STATE_COUNTRIES } from "@/components/ui/location-selects";
 import { UniversityCombobox } from "@/components/ui/university-combobox";
 import { MajorCombobox } from "@/components/ui/major-combobox";
@@ -221,6 +221,8 @@ const generalSchema = z.object({
   nickname: z.string().optional(),
   nickname_public: z.boolean().optional(),
   kvis_year: z.coerce.number().optional(),
+  expected_grad_year: z.coerce.number().optional(),
+  teach_department: z.string().optional(),
   teach_start_year: z.coerce.number().optional(),
   teach_end_year: z.coerce.number().optional(),
   is_current_teacher_str: z.string().optional(),
@@ -376,6 +378,8 @@ export default function EditPageInner() {
     first_name: me.first_name,
     last_name: me.last_name,
     kvis_year: me.kvis_year ?? undefined,
+    expected_grad_year: me.expected_grad_year ?? undefined,
+    teach_department: me.teach_department ?? "",
     place: me.place ?? "",
     country: me.country ?? "",
     bio: me.bio ?? "",
@@ -754,6 +758,15 @@ export default function EditPageInner() {
                 {/* Teaching period — faculty only */}
                 {isFaculty(me) && (
                   <>
+                    <FieldRow label="Department" required>
+                      <Select defaultValue={me.teach_department ?? undefined}
+                        onValueChange={v => setValue("teach_department", v, { shouldDirty: true })}>
+                        <SelectTrigger className={selectTriggerCls}><SelectValue placeholder="Select department" /></SelectTrigger>
+                        <SelectContent>
+                          {KVIS_DEPARTMENTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </FieldRow>
                     <SectionHead numeral="III." kicker="Faculty" title="Teaching period" />
                     <FieldRow label="Start year" hint="First year you taught at KVIS">
                       <Input
@@ -810,6 +823,12 @@ export default function EditPageInner() {
                     </SelectContent>
                   </Select>
                 </FieldRow>
+                {(isStudent || ["undergraduate", "masters", "phd", "med_preclinical", "med_clinical"].includes(watch("current_status") ?? me.current_status ?? "")) && (
+                  <FieldRow label="Expected grad year" hint="We'll remind you to update your profile when you graduate.">
+                    <Input type="number" {...register("expected_grad_year", { valueAsNumber: true })}
+                      placeholder={`e.g. ${new Date().getFullYear() + 2}`} className={inputCls} />
+                  </FieldRow>
+                )}
                 <FieldRow label="MBTI">
                   <Select defaultValue={me.mbti ?? undefined} onValueChange={(v) => setValue("mbti", v, { shouldDirty: true })}>
                     <SelectTrigger className={selectTriggerCls}><SelectValue placeholder="Select MBTI" /></SelectTrigger>
@@ -884,16 +903,18 @@ export default function EditPageInner() {
                 </FieldRow>
               </section>
 
-              <div className="pt-8 flex items-center gap-4 flex-wrap">
-                <Button type="submit" disabled={isSubmitting || !isDirty}
-                  className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2">
-                  {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
-                  Save changes
-                </Button>
-                {!isDirty && !isSubmitting && (
-                  <span className="text-xs uppercase tracking-[0.22em] text-[var(--kvis-text3)]">No unsaved changes</span>
-                )}
-              </div>
+              {!isSetup && (
+                <div className="pt-8 flex items-center gap-4 flex-wrap">
+                  <Button type="submit" disabled={isSubmitting || !isDirty}
+                    className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2">
+                    {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                    Save changes
+                  </Button>
+                  {!isDirty && !isSubmitting && (
+                    <span className="text-xs uppercase tracking-[0.22em] text-[var(--kvis-text3)]">No unsaved changes</span>
+                  )}
+                </div>
+              )}
             </form>
           </>
         )}
@@ -1058,9 +1079,11 @@ export default function EditPageInner() {
               </div>
             ))}
             <div className="pt-8 flex items-center gap-4 flex-wrap">
-              <Button type="button" onClick={saveEducation} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
-                <Check className="h-3.5 w-3.5" /> Save education
-              </Button>
+              {!isSetup && (
+                <Button type="button" onClick={saveEducation} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
+                  <Check className="h-3.5 w-3.5" /> Save education
+                </Button>
+              )}
               <Button type="button" variant="outline" onClick={() => setEducation(prev => [...prev, { uni_name: "", degree: "", major: "", country: "", is_public: true }])}
                 className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2">
                 <Plus className="h-3.5 w-3.5" /> Add entry
@@ -1157,9 +1180,11 @@ export default function EditPageInner() {
               </div>
             ))}
             <div className="pt-8 flex items-center gap-4 flex-wrap">
-              <Button type="button" onClick={saveCareer} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
-                <Check className="h-3.5 w-3.5" /> Save career
-              </Button>
+              {!isSetup && (
+                <Button type="button" onClick={saveCareer} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
+                  <Check className="h-3.5 w-3.5" /> Save career
+                </Button>
+              )}
               <Button type="button" variant="outline" onClick={() => setCareer(prev => [...prev, { job_title: "", employer: "", job_field: "", country: "", is_current: false, is_public: true }])}
                 className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2">
                 <Plus className="h-3.5 w-3.5" /> Add entry
@@ -1278,11 +1303,13 @@ export default function EditPageInner() {
               </button>
             )}
 
-            <div className="pt-8">
-              <Button type="button" onClick={saveResearch} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
-                <Check className="h-3.5 w-3.5" /> Save research
-              </Button>
-            </div>
+            {!isSetup && (
+              <div className="pt-8">
+                <Button type="button" onClick={saveResearch} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
+                  <Check className="h-3.5 w-3.5" /> Save research
+                </Button>
+              </div>
+            )}
           </section>
         )}
 
@@ -1350,32 +1377,87 @@ export default function EditPageInner() {
               </div>
             ))}
 
-            <div className="pt-8">
-              <Button type="button" onClick={savePersonal} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
-                <Check className="h-3.5 w-3.5" /> Save personal
-              </Button>
-            </div>
+            {!isSetup && (
+              <div className="pt-8">
+                <Button type="button" onClick={savePersonal} className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
+                  <Check className="h-3.5 w-3.5" /> Save personal
+                </Button>
+              </div>
+            )}
           </section>
         )}
 
       </div>
       {isSetup && (
         <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--kvis-rule)] bg-background/95 backdrop-blur px-6 py-4 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">You can update your profile anytime from the menu.</p>
-          <Button
-            type="button"
-            onClick={async () => {
-              try {
-                await userApi.updateMe({ profile_setup_done: true });
-                await refetch();
-                router.push("/kvisian");
-              } catch {
-                toast.error("Something went wrong, try again.");
-              }
-            }}
-            className="h-auto rounded-none bg-foreground px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
-            <Check className="h-3.5 w-3.5" /> Done — take me in
-          </Button>
+          <p className="text-xs text-muted-foreground">
+            Step {(isStudent ? ["general", "research", "personal"] : ["general", "education", "career", "research", "personal"]).indexOf(tab) + 1} of {isStudent ? 3 : 5}
+          </p>
+          <div className="flex items-center gap-3">
+            {tab !== "general" && (
+              <Button type="button" variant="outline"
+                onClick={() => {
+                  const tabs = isStudent
+                    ? ["general", "research", "personal"]
+                    : ["general", "education", "career", "research", "personal"];
+                  const idx = tabs.indexOf(tab);
+                  if (idx > 0) setTab(tabs[idx - 1] as Tab);
+                }}
+                className="h-auto rounded-none border-foreground/30 px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] gap-2">
+                ← Back
+              </Button>
+            )}
+            {(() => {
+              const tabs = isStudent
+                ? ["general", "research", "personal"]
+                : ["general", "education", "career", "research", "personal"];
+              const isLast = tabs.indexOf(tab) === tabs.length - 1;
+              return isLast ? (
+                <Button type="button"
+                  onClick={async () => {
+                    try {
+                      // Auto-save last tab
+                      if (tab === "general") await handleSubmit(saveGeneral)();
+                      else if (tab === "education") await saveEducation();
+                      else if (tab === "career") await saveCareer();
+                      else if (tab === "research") await saveResearch();
+                      else if (tab === "personal") await savePersonal();
+                    } catch { /* ignore */ }
+                    try {
+                      await userApi.updateMe({ profile_setup_done: true });
+                      await refetch();
+                      router.push("/kvisian");
+                    } catch {
+                      toast.error("Something went wrong, try again.");
+                    }
+                  }}
+                  className="h-auto rounded-none bg-foreground px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
+                  <Check className="h-3.5 w-3.5" /> Done — take me in
+                </Button>
+              ) : (
+                <Button type="button"
+                  onClick={async () => {
+                    const idx = tabs.indexOf(tab);
+                    const next = tabs[idx + 1] as Tab;
+                    // Auto-save current tab before advancing
+                    try {
+                      if (tab === "general") await handleSubmit(saveGeneral)();
+                      else if (tab === "education") await saveEducation();
+                      else if (tab === "career") await saveCareer();
+                      else if (tab === "research") await saveResearch();
+                      else if (tab === "personal") await savePersonal();
+                    } catch {
+                      // Don't block navigation on save error — user can fix later
+                    }
+                    setTab(next);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  className="h-auto rounded-none bg-foreground px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
+                  Next — {tabs[tabs.indexOf(tab) + 1]} →
+                </Button>
+              );
+            })()}
+          </div>
         </div>
       )}
     </div>

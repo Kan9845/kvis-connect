@@ -1374,7 +1374,7 @@ const LIKED_BLOGS = new Set();
         created_at: `2025-${String(1 + Math.floor(R() * 12)).padStart(2, "0")}-${String(1 + Math.floor(R() * 28)).padStart(2, "0")}T08:00:00Z`,
         updated_at: "2025-09-01T08:00:00Z",
         education: [], career: [],
-        current_grade: grade, current_class: cls, current_elemental: house,
+        current_grade: grade,
       });
     }
   }
@@ -1501,7 +1501,7 @@ app.get("/api/search", (req, res) => {
     id: u.id, slug: u.slug ?? null, first_name: u.first_name, last_name: u.last_name,
     kvis_year: u.kvis_year, place: u.place, country: u.country, profile_pic_url: u.profile_pic_url,
     mbti: u.mbti, interests: u.interests ?? null, education: u.education, career: u.career,
-    current_grade: u.current_grade ?? null, current_class: u.current_class ?? null, current_elemental: u.current_elemental ?? null,
+    current_grade: u.current_grade ?? null
   })));
 });
 
@@ -1670,8 +1670,6 @@ app.get("/api/search/directory", (req, res) => {
       last_name: u.last_name,
       kvis_year: u.kvis_year ?? null,
       current_grade: u.current_grade ?? null,
-      current_class: u.current_class ?? null,
-      current_elemental: u.current_elemental ?? null,
       teach_start_year: u.teach_start_year ?? null,
       teach_end_year: u.teach_end_year ?? null,
       is_current_teacher: u.is_current_teacher ?? false,

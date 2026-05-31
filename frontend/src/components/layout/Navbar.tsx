@@ -35,6 +35,7 @@ import { keys } from "@/lib/cache/keys";
 import type { GlobePin } from "@/lib/types";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
 import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex } from "@/lib/utils";
+import { NotificationBell } from "@/components/NotificationBell";
 
 function AlumniSearch({
   solid = false,
@@ -622,8 +623,10 @@ export function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-1.5 pointer-events-auto shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <ThemeToggle dark={dark} />
+            {user && <NotificationBell />}
+            {user && <div className="w-2" />}
             {user ? (
               userMenu("focus:ring-2 focus:ring-white/50")
             ) : (
@@ -740,6 +743,8 @@ export function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-1.5 shrink-0">
           <ThemeToggle dark={false} />
+          {user && <NotificationBell />}
+          {user && <div className="w-2" />}
           {user ? (
             userMenu("focus:ring-2 focus:ring-blue-200")
           ) : (

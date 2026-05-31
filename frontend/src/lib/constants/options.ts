@@ -4,9 +4,9 @@ export const DEGREES = [
   { value: "Bachelor", label: "Bachelor's" },
   { value: "Master", label: "Master's" },
   { value: "PhD", label: "PhD / Doctorate" },
-  { value: "MD", label: "MD (Doctor of Medicine)" },
-  { value: "MBBS", label: "MBBS" },
-  { value: "MBChB", label: "MBChB" },
+  { value: "MD", label: "MD (Medicine)" },
+  { value: "MBBS", label: "MBBS (Medicine)" },
+  { value: "MBChB", label: "MBChB (Medicine)" },
   { value: "Other", label: "Other" },
 ] as const;
 
@@ -58,11 +58,42 @@ export const MBTI_TYPES = [
 
 export type MBTIType = (typeof MBTI_TYPES)[number];
 
+// ─── KVIS cohort automation ────────────────────────────────────────────────────
+// K1 graduated in 2018. Each May a new cohort graduates.
+// This function computes the current latest cohort automatically — no manual update needed.
+const KVIS_FIRST_GRAD_YEAR = 2018;
+
+export function getCurrentLatestCohort(): number {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 1-indexed
+  // Graduation happens ~May. Before May, latest cohort is previous year's.
+  const gradYear = month >= 5 ? year : year - 1;
+  return gradYear - KVIS_FIRST_GRAD_YEAR + 1;
+}
+
+export const LATEST_COHORT = getCurrentLatestCohort();
+
 export const KVIS_YEARS: Array<{ value: number; label: string }> = Array.from(
-  { length: 12 },
+  { length: LATEST_COHORT },
   (_, i) => ({ value: i + 1, label: `KVIS ${i + 1}` })
 );
 
+// ─── Faculty departments ───────────────────────────────────────────────────────
+export const KVIS_DEPARTMENTS = [
+  "Mathematics and Computer Science",
+  "Physics",
+  "Chemistry",
+  "Biology",
+  "Health and Physical Education",
+  "Social Studies / Social Science",
+  "Thai Language",
+  "Foreign Languages",
+  "Music and Applied Arts",
+  "Other",
+];
+
+// ─── Helper functions ─────────────────────────────────────────────────────────
 export function degreeLabel(value: string) {
   return DEGREES.find((d) => d.value === value)?.label ?? value;
 }

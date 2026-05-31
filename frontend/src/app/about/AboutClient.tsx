@@ -28,7 +28,7 @@ const CONTRIBUTORS: {
   image?: string;
   instagram?: string;
 }[] = [
-  { name: "Surapa Panjaphakdee", role: "Founder & Coordinator", batch: "KVIS 7", initials: "SP", instagram: "bio_surapa" },
+  { name: "Surapa Panjaphakdee", role: "Founder & Coordinator", batch: "KVIS 7", initials: "SP", image: "/bio.jpeg", instagram: "bio_surapa" },
   { name: "Chayada Pakpoomkamonlert", role: "Design & Fullstack", batch: "KVIS 7", initials: "CP", image: "/chp.jpeg", instagram: "cchayadap" },
   { name: "Naruesorn Prabpon", role: "Fullstack", batch: "KVIS 7", initials: "NP", image: "/narue.png", instagram: "l2h0_lv4l2u" },
   { name: "Popsuk Sumetchoengprachya", role: "Fullstack", batch: "KVIS 7", initials: "PS", image: "/pop.jpg", instagram: "p____p.x" },
