@@ -33,8 +33,10 @@ class Settings(BaseSettings):
     CACHE_TTL_SHORT: int = 120
     CACHE_TTL_LONG: int = 300
 
-    RESEND_API_KEY: str = ""
-    SMTP_FROM: str = "noreply@kvis.ac.th"
+    MS_TENANT_ID: str = ""
+    MS_CLIENT_ID: str = ""
+    MS_CLIENT_SECRET: str = ""
+    MS_SENDER: str = ""
 
     class Config:
         env_file = ".env"

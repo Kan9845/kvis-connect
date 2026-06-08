@@ -3,8 +3,6 @@ import secrets
 import threading
 from datetime import datetime, timedelta, timezone
 
-import resend
-
 from fastapi import APIRouter, Depends, HTTPException, Response, Request
 from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
@@ -14,6 +12,7 @@ from app.core.database import get_session
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from app.core.config import settings
 from app.core.deps import get_current_user
+from app.core.mailer import send_email
 from app.core.cache import invalidate_tags
 from app.core.slug import unique_user_slug
 from app.models.user import User
@@ -53,33 +52,29 @@ def _generate_otp() -> str:
 
 
 def _send_reset_email(to_email: str, token: str) -> None:
-    resend.api_key = settings.RESEND_API_KEY
     reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
-    resend.Emails.send({
-        "from": settings.SMTP_FROM,
-        "to": [to_email],
-        "subject": "KVIS Connect – Password Reset",
-        "text": (
+    send_email(
+        to_email,
+        "KVIS Connect - Password Reset",
+        (
             f"You requested a password reset for your KVIS Connect account.\n\n"
             f"Click the link below to set a new password:\n\n"
             f"  {reset_url}\n\n"
             f"This link expires in {RESET_TTL_MINUTES} minutes. If you did not request this, ignore this email."
         ),
-    })
+    )
 
 
 def _send_otp_email(to_email: str, otp: str) -> None:
-    resend.api_key = settings.RESEND_API_KEY
-    resend.Emails.send({
-        "from": settings.SMTP_FROM,
-        "to": [to_email],
-        "subject": "KVIS Connect – Email Verification Code",
-        "text": (
+    send_email(
+        to_email,
+        "KVIS Connect - Email Verification Code",
+        (
             f"Your KVIS Connect verification code is:\n\n"
             f"  {otp}\n\n"
             f"This code expires in {OTP_TTL_MINUTES} minutes. Do not share it with anyone."
         ),
-    })
+    )
 
 
 def _send_otp_email_async(to_email: str, otp: str) -> None:
