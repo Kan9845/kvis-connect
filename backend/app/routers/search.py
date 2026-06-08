@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select
+from sqlalchemy.orm import selectinload
+from sqlalchemy import text
 from typing import Optional
 
 from app.core.cache import cached
@@ -13,31 +15,58 @@ router = APIRouter(prefix="/search", tags=["search"])
 VALID_SORT = {"name", "kvis_year", "created_at"}
 
 
+@router.get("/directory")
+@cached(key="directory", tags=["users"], ttl=settings.CACHE_TTL_SHORT)
+def directory_list(session: Session = Depends(get_session)):
+    """Lean endpoint for the Kvisian directory page — no nested arrays."""
+    rows = session.exec(text("""
+        SELECT
+            u.id::text, u.slug, u.first_name, u.last_name, u.kvis_year,
+            u.current_grade, u.current_class, u.current_elemental,
+            u.teach_start_year, u.teach_end_year, u.is_current_teacher,
+            u.profile_pic_url, u.country, u.place, u.mbti, u.interests,
+            u.is_verified,
+            (SELECT job_title FROM career
+             WHERE user_id = u.id ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_title,
+            (SELECT employer FROM career
+             WHERE user_id = u.id ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS employer,
+            (SELECT job_field FROM career
+             WHERE user_id = u.id ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_field,
+            (SELECT major FROM education
+             WHERE user_id = u.id ORDER BY end_year DESC NULLS FIRST LIMIT 1) AS edu_major,
+            (SELECT degree FROM education
+             WHERE user_id = u.id ORDER BY end_year DESC NULLS FIRST LIMIT 1) AS edu_degree,
+            (SELECT uni_name FROM education
+             WHERE user_id = u.id ORDER BY end_year DESC NULLS FIRST LIMIT 1) AS edu_uni
+        FROM "user" u
+        ORDER BY u.kvis_year ASC NULLS LAST, u.first_name ASC
+    """)).mappings().all()
+    return [dict(r) for r in rows]
+
+
 @router.get("", response_model=list[UserCard])
 @cached(key="search:<args>", tags=["users"], ttl=settings.CACHE_TTL_SHORT)
 def search_users(
     session: Session = Depends(get_session),
-    # Basic filters
     name: Optional[str] = Query(default=None),
     kvis_year: Optional[int] = Query(default=None),
     country: Optional[str] = Query(default=None),
-    # Education filters
     uni_name: Optional[str] = Query(default=None),
     degree: Optional[str] = Query(default=None),
     major: Optional[str] = Query(default=None),
     scholarship: Optional[str] = Query(default=None),
-    # Career filters
     job_title: Optional[str] = Query(default=None),
     employer: Optional[str] = Query(default=None),
     job_field: Optional[str] = Query(default=None),
-    # Sort & pagination
     sort: str = Query(default="name"),
     order: str = Query(default="asc"),
     limit: int = Query(default=50, le=2000),
     offset: int = Query(default=0),
 ):
-    query = select(User)
-
+    query = select(User).options(
+        selectinload(User.education),
+        selectinload(User.career),
+    )
     if name:
         term = f"%{name}%"
         query = query.where(
@@ -50,7 +79,6 @@ def search_users(
 
     users = session.exec(query).all()
 
-    # Filter by education/career (done in Python to avoid complex multi-join)
     result = []
     for user in users:
         if not _matches_education(user.education, uni_name, degree, major, scholarship):
@@ -59,7 +87,6 @@ def search_users(
             continue
         result.append(user)
 
-    # Sort
     sort_key = sort if sort in VALID_SORT else "name"
     reverse = order == "desc"
     if sort_key == "name":
@@ -70,7 +97,6 @@ def search_users(
         result.sort(key=lambda u: u.created_at, reverse=reverse)
 
     result = result[offset: offset + limit]
-
     return [_to_card(u) for u in result]
 
 
@@ -114,19 +140,28 @@ def _to_card(user: User) -> dict:
         "slug": user.slug,
         "first_name": user.first_name,
         "last_name": user.last_name,
+        "nickname": getattr(user, "nickname", None),
         "kvis_year": user.kvis_year,
         "current_grade": user.current_grade,
         "current_class": user.current_class,
         "current_elemental": user.current_elemental,
+        "current_status": getattr(user, "current_status", None),
+        "teach_start_year": getattr(user, "teach_start_year", None),
+        "teach_end_year": getattr(user, "teach_end_year", None),
+        "is_current_teacher": getattr(user, "is_current_teacher", False),
         "place": user.place,
         "country": user.country,
         "profile_pic_url": user.profile_pic_url,
         "mbti": user.mbti,
+        "interests": user.interests,
+        "is_verified": user.is_verified,
         "education": [
             {
                 "id": e.id, "uni_name": e.uni_name, "degree": e.degree,
                 "major": e.major, "country": e.country, "state": e.state,
-                "scholarship": e.scholarship, "start_year": e.start_year, "end_year": e.end_year,
+                "scholarship": e.scholarship, "start_year": e.start_year,
+                "end_year": e.end_year, "is_public": getattr(e, "is_public", True),
+                "major2": getattr(e, "major2", None), "minor1": getattr(e, "minor1", None),
             }
             for e in user.education
         ],
@@ -134,7 +169,11 @@ def _to_card(user: User) -> dict:
             {
                 "id": c.id, "job_title": c.job_title, "employer": c.employer,
                 "job_field": c.job_field, "country": c.country, "state": c.state,
-                "is_current": c.is_current, "start_year": c.start_year, "end_year": c.end_year,
+                "is_current": c.is_current, "start_year": c.start_year,
+                "end_year": c.end_year, "is_public": getattr(c, "is_public", True),
+                "company_type": getattr(c, "company_type", None),
+                "industry_sector": getattr(c, "industry_sector", None),
+                "role_type": getattr(c, "role_type", None),
             }
             for c in user.career
         ],

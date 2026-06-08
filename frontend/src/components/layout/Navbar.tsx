@@ -34,6 +34,8 @@ import { userApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import type { GlobePin } from "@/lib/types";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
+import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex } from "@/lib/utils";
+import { NotificationBell } from "@/components/NotificationBell";
 
 function AlumniSearch({
   solid = false,
@@ -231,6 +233,7 @@ type PanelUser = {
   slug: string;
   profile_pic_url?: string | null;
   is_verified?: boolean;
+  kvis_year?: number | null;
 };
 
 function PanelDivider({ dark }: { dark: boolean }) {
@@ -371,7 +374,12 @@ function MobileNavPanel({
                 className="w-full h-full object-cover"
                 style={{ borderRadius: "inherit" }}
               />
-              <AvatarFallback>
+              <AvatarFallback
+                style={{
+                  background: `linear-gradient(135deg, ${cohortColorHex(user.kvis_year)} 0%, ${cohortColorSoftHex(user.kvis_year)} 100%)`,
+                  color: cohortTextColor(user.kvis_year),
+                }}
+              >
                 {`${user.first_name[0]}${user.last_name[0]}`.toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -469,6 +477,10 @@ export function Navbar() {
         <DropdownMenuTrigger asChild>
           <button
             className={`rounded-full outline-none ring-offset-2 ${ringClass}`}
+            style={{
+              outline: `3px solid ${cohortColor(user.kvis_year)}`,
+              outlineOffset: "2px",
+            }}
           >
             <Avatar className="h-9 w-9 cursor-pointer shadow-md overflow-hidden">
               <AvatarImage
@@ -477,7 +489,14 @@ export function Navbar() {
                 className="w-full h-full object-cover"
                 style={{ borderRadius: "inherit" }}
               />
-              <AvatarFallback>{initials}</AvatarFallback>
+              <AvatarFallback
+                style={{
+                  background: `linear-gradient(135deg, ${cohortColorHex(user.kvis_year)} 0%, ${cohortColorSoftHex(user.kvis_year)} 100%)`,
+                  color: cohortTextColor(user.kvis_year),
+                }}
+              >
+                {initials}
+              </AvatarFallback>
             </Avatar>
           </button>
         </DropdownMenuTrigger>
@@ -604,8 +623,10 @@ export function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-1.5 pointer-events-auto shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <ThemeToggle dark={dark} />
+            {user && <NotificationBell />}
+            {user && <div className="w-2" />}
             {user ? (
               userMenu("focus:ring-2 focus:ring-white/50")
             ) : (
@@ -722,6 +743,8 @@ export function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-1.5 shrink-0">
           <ThemeToggle dark={false} />
+          {user && <NotificationBell />}
+          {user && <div className="w-2" />}
           {user ? (
             userMenu("focus:ring-2 focus:ring-blue-200")
           ) : (

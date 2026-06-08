@@ -1199,14 +1199,12 @@ const MOCK_ALUMNI = [
   },
 ];
 
-// Mock blogs
 let MOCK_BLOGS = [
   {
     id: 1,
     slug: "life-at-mit",
     title: "Life at MIT as a Thai Student",
-    content:
-      "# Life at MIT\n\nComing from KVIS to MIT was a culture shock in the best possible way. The sheer density of brilliant people per square meter is unlike anything I'd experienced — even at KVIS.\n\n## Academic Culture\n\nProblem sets here don't have right answers. Professors want you to argue, break assumptions, and defend your reasoning. I failed my first two midterms and nearly flew home. Then I found my lab group, pulled three all-nighters in a row, and somehow published my first paper by semester two.\n\n## The Thai Community\n\nThere are about 40 Thai students across grad programs. We cook together every Sunday — pad see ew on a $12 portable induction cooktop in a dorm kitchen. It keeps you sane.\n\n## What KVIS Prepared Me For\n\nThe research mindset. Knowing how to sit with a hard problem for days without panicking. That's rarer than people think, even at MIT.",
+    content: "# Life at MIT\n\nComing from KVIS to MIT was a culture shock in the best possible way. The sheer density of brilliant people per square meter is unlike anything I'd experienced — even at KVIS.\n\n## Academic Culture\n\nProblem sets here don't have right answers. Professors want you to argue, break assumptions, and defend your reasoning. I failed my first two midterms and nearly flew home. Then I found my lab group, pulled three all-nighters in a row, and somehow published my first paper by semester two.\n\n## The Thai Community\n\nThere are about 40 Thai students across grad programs. We cook together every Sunday — pad see ew on a $12 portable induction cooktop in a dorm kitchen. It keeps you sane.\n\n## What KVIS Prepared Me For\n\nThe research mindset. Knowing how to sit with a hard problem for days without panicking. That's rarer than people think, even at MIT.",
     excerpt: "I failed my first two MIT midterms and nearly flew home. Here's what kept me — and what KVIS quietly prepared me for without telling me.",
     cover_image_url: "https://images.unsplash.com/photo-1607013251379-e6eecfffe234?w=800&q=80",
     tags: "MIT,USA,grad school",
@@ -1215,20 +1213,16 @@ let MOCK_BLOGS = [
     created_at: "2024-01-28T08:00:00Z",
     updated_at: "2024-02-01T08:00:00Z",
     author_id: 1,
-    author: {
-      id: 1,
-      first_name: "Somsak",
-      last_name: "Khamchoo",
-      profile_pic_url: null,
-      kvis_year: 14,
-    },
+    author: { id: 1, first_name: "Somsak", last_name: "Khamchoo", profile_pic_url: null, kvis_year: 14 },
+    likes: 0,
+    comments_enabled: true,
+    comments: [],
   },
   {
     id: 2,
     slug: "applying-dpst-scholarship",
     title: "How to Apply for DPST Scholarship: My Experience",
-    content:
-      "# DPST Scholarship Guide\n\nI applied to DPST on a dare from my roommate. I didn't think I'd get it — I was ranked 12th in my class at KVIS, not first. But DPST isn't looking for the top scorer. They want someone who can think under pressure and explain their reasoning out loud.\n\n## The Written Exam\n\nThink olympiad-style questions with no partial credit. Time management is everything. Skip problems that eat more than 8 minutes and come back.\n\n## The Interview\n\nThree professors. One whiteboard. They gave me a physics problem I'd never seen and watched how I approached it — not whether I solved it. Narrate your thinking. Silence kills you.\n\n## What Happens After\n\nYou get assigned a field. Mine was physics. I wanted biology. I negotiated — politely — and they moved me. It's possible if you have a coherent reason.\n\n## Timeline\n\n- January: Applications open\n- March: Written exam\n- May: Interview round\n- July: Results and field assignment",
+    content: "# DPST Scholarship Guide\n\nI applied to DPST on a dare from my roommate. I didn't think I'd get it — I was ranked 12th in my class at KVIS, not first. But DPST isn't looking for the top scorer. They want someone who can think under pressure and explain their reasoning out loud.\n\n## The Written Exam\n\nThink olympiad-style questions with no partial credit. Time management is everything. Skip problems that eat more than 8 minutes and come back.\n\n## The Interview\n\nThree professors. One whiteboard. They gave me a physics problem I'd never seen and watched how I approached it — not whether I solved it. Narrate your thinking. Silence kills you.\n\n## What Happens After\n\nYou get assigned a field. Mine was physics. I wanted biology. I negotiated — politely — and they moved me. It's possible if you have a coherent reason.\n\n## Timeline\n\n- January: Applications open\n- March: Written exam\n- May: Interview round\n- July: Results and field assignment",
     excerpt: "I applied on a dare and ranked 12th in my class. DPST isn't looking for the top scorer — here's what they're actually evaluating.",
     cover_image_url: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80",
     tags: "scholarship,DPST,tips",
@@ -1237,20 +1231,16 @@ let MOCK_BLOGS = [
     created_at: "2024-02-12T08:00:00Z",
     updated_at: "2024-02-15T08:00:00Z",
     author_id: 4,
-    author: {
-      id: 4,
-      first_name: "Chaiwat",
-      last_name: "Nakorn",
-      profile_pic_url: null,
-      kvis_year: 12,
-    },
+    author: { id: 4, first_name: "Chaiwat", last_name: "Nakorn", profile_pic_url: null, kvis_year: 12 },
+    likes: 0,
+    comments_enabled: true,
+    comments: [],
   },
   {
     id: 3,
     slug: "working-in-singapore-finance",
     title: "Breaking into Finance in Singapore",
-    content:
-      "# Finance Career in Singapore\n\nI graduated with a physics degree and zero finance experience. Eighteen months later I was an analyst at a sovereign wealth fund covering Southeast Asian tech. Here's exactly how that happened.\n\n## Why Singapore\n\nSingapore is the only city in Southeast Asia where you can work across all major asset classes — equities, fixed income, PE, VC — within a five-minute MRT ride. The talent density is absurd. So is the cost of living, but the compensation offsets it if you're at the right firm.\n\n## Getting the First Interview\n\nCold emails don't work. LinkedIn DMs to VPs don't work. What worked: I found three KVIS alumni already in finance here, bought each of them coffee, and asked specific questions about their role. Two of them passed my CV internally. One of those became a referral that got me an interview.\n\n## The Interview Process\n\nExpect a case study, a markets knowledge test, and at least one technical interview if you're going quant. Know your DCF. Know why interest rates affect equity valuations. Know the current macro environment and have an opinion on it — not a memorized one.\n\n## What KVIS Gives You\n\nA reputation for being able to think quantitatively. Use it. Finance is full of people who can network. Fewer can model.",
+    content: "# Finance Career in Singapore\n\nI graduated with a physics degree and zero finance experience. Eighteen months later I was an analyst at a sovereign wealth fund covering Southeast Asian tech. Here's exactly how that happened.\n\n## Why Singapore\n\nSingapore is the only city in Southeast Asia where you can work across all major asset classes — equities, fixed income, PE, VC — within a five-minute MRT ride. The talent density is absurd. So is the cost of living, but the compensation offsets it if you're at the right firm.\n\n## Getting the First Interview\n\nCold emails don't work. LinkedIn DMs to VPs don't work. What worked: I found three KVIS alumni already in finance here, bought each of them coffee, and asked specific questions about their role. Two of them passed my CV internally. One of those became a referral that got me an interview.\n\n## The Interview Process\n\nExpect a case study, a markets knowledge test, and at least one technical interview if you're going quant. Know your DCF. Know why interest rates affect equity valuations. Know the current macro environment and have an opinion on it — not a memorized one.\n\n## What KVIS Gives You\n\nA reputation for being able to think quantitatively. Use it. Finance is full of people who can network. Fewer can model.",
     excerpt: "Physics degree, no finance experience. Eighteen months later I was at a sovereign wealth fund. Here's the exact path — coffee meetings, cold emails that failed, and what actually worked.",
     cover_image_url: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80",
     tags: "Singapore,finance,career",
@@ -1259,24 +1249,17 @@ let MOCK_BLOGS = [
     created_at: "2024-02-28T08:00:00Z",
     updated_at: "2024-03-01T08:00:00Z",
     author_id: 4,
-    author: {
-      id: 4,
-      first_name: "Chaiwat",
-      last_name: "Nakorn",
-      profile_pic_url: null,
-      kvis_year: 12,
-    },
+    author: { id: 4, first_name: "Chaiwat", last_name: "Nakorn", profile_pic_url: null, kvis_year: 12 },
+    likes: 0,
+    comments_enabled: true,
+    comments: [],
   },
 ];
 
-// ─── Cohort normalization + procedural backfill ──────────────────────────────
-// KVIS only has 9 cohorts (K1–K9). The 50 hand-written profiles above use
-// legacy class codes (10–24); collapse them into K1–K9 so the almanac/stats
-// page reflects reality, then backfill each cohort to ~71 students using
-// procedural data sampled from realistic pools.
+const LIKED_BLOGS = new Set();
 
+// ─── Cohort normalization + procedural backfill ───────────────────────────────
 (function generateCohortPopulation() {
-  // ── 1. Squeeze legacy years into 1..9
   for (const u of MOCK_ALUMNI) {
     if (typeof u.kvis_year === "number") {
       u.kvis_year = ((u.kvis_year - 10 + 900) % 9) + 1;
@@ -1287,264 +1270,29 @@ let MOCK_BLOGS = [
     if (a && b.author) b.author.kvis_year = a.kvis_year;
   }
 
-  // ── 2. Data pools
-  const FIRSTS = [
-    "Anan","Apirak","Arthit","Boonmee","Chai","Chakrit","Chanin","Decha",
-    "Ekarat","Issara","Jakkrit","Kasem","Kittipong","Korn","Krit","Manop",
-    "Narongchai","Nattapong","Nirun","Pakorn","Panya","Phanuwat","Pongsak",
-    "Prasert","Rapeepan","Sakda","Sangchai","Sirichai","Somkid","Sompong",
-    "Suchart","Sunan","Surapong","Tanin","Thanawat","Thira","Veerapol",
-    "Wachira","Wanchai","Worawit","Yongyuth","Anuwat","Boonsong","Chaiyan",
-    "Danai","Niran","Pisit","Rachan","Saksit","Theerapong","Wisut",
-    "Anong","Apinya","Aporn","Benjawan","Boonsri","Chalisa","Chanika",
-    "Chompoo","Dao","Duangporn","Hathaichanok","Jiraporn","Kanchana",
-    "Kanya","Kessaree","Lalita","Malee","Mananchaya","Manee","Napaporn",
-    "Narisara","Nirada","Nittaya","Nuengruethai","Orawan","Pakwan",
-    "Patcharin","Phailin","Piyaporn","Pornthip","Praweena","Ratchada",
-    "Rinrada","Saichon","Sasipim","Siriporn","Somying","Sunisa",
-    "Suphanida","Tarisa","Thanaporn","Thidarat","Uraiwan","Wannisa",
-    "Warangkana","Wilai","Yupin","Kanyarat","Pattaraporn","Supitcha",
-    "Tippawan","Wanida",
-  ];
-  const LASTS = [
-    "Suwannathat","Tangkijvanich","Phongphaew","Srisaard","Wattanapong",
-    "Sukphanthawee","Chaisongkhram","Phakdiphisut","Limthongkul",
-    "Ngamthanachoti","Bunyaviroch","Suphawat","Prasertdee","Khamwan",
-    "Klaybor","Tinnirat","Pongdee","Inthanon","Kaewkamnerd","Kanchanaporn",
-    "Lertphol","Maneesin","Naowarat","Onsuwan","Phromsiri","Phongtongkam",
-    "Rattanaphol","Saetang","Sangtong","Siribut","Subin","Suttiwan",
-    "Tantibanchachai","Thaweesak","Vongkitisin","Watthanachai",
-    "Wongsanee","Yindee","Pannarunothai","Saengthong","Jindaprasert",
-    "Kraisin","Mongkolchai","Nopachai","Phantharak","Rachatabordeesakul",
-    "Sangkaroen","Termpong","Thanasit","Vivathana","Wasinwattana",
-    "Yotsuwankul","Charoenpong","Boriboon","Chumphon","Dechawat",
-    "Inthanin","Jaroensri","Khamsuk","Lertsiri","Moonsri","Norachit",
-    "Polchart","Ratanakul","Suttisak","Theerasak","Udomchai","Visetpong",
-    "Wongchai","Yothin","Bunyasarn","Chuenchom",
-  ];
-  const MBTIS = [
-    "INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP",
-    "ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP",
-  ];
+  const FIRSTS = ["Anan","Apirak","Arthit","Boonmee","Chai","Chakrit","Chanin","Decha","Ekarat","Issara","Jakkrit","Kasem","Kittipong","Korn","Krit","Manop","Narongchai","Nattapong","Nirun","Pakorn","Panya","Phanuwat","Pongsak","Prasert","Rapeepan","Sakda","Sangchai","Sirichai","Somkid","Sompong","Suchart","Sunan","Surapong","Tanin","Thanawat","Thira","Veerapol","Wachira","Wanchai","Worawit","Yongyuth","Anuwat","Boonsong","Chaiyan","Danai","Niran","Pisit","Rachan","Saksit","Theerapong","Wisut","Anong","Apinya","Aporn","Benjawan","Boonsri","Chalisa","Chanika","Chompoo","Dao","Duangporn","Hathaichanok","Jiraporn","Kanchana","Kanya","Kessaree","Lalita","Malee","Mananchaya","Manee","Napaporn","Narisara","Nirada","Nittaya","Nuengruethai","Orawan","Pakwan","Patcharin","Phailin","Piyaporn","Pornthip","Praweena","Ratchada","Rinrada","Saichon","Sasipim","Siriporn","Somying","Sunisa","Suphanida","Tarisa","Thanaporn","Thidarat","Uraiwan","Wannisa","Warangkana","Wilai","Yupin","Kanyarat","Pattaraporn","Supitcha","Tippawan","Wanida"];
+  const LASTS = ["Suwannathat","Tangkijvanich","Phongphaew","Srisaard","Wattanapong","Sukphanthawee","Chaisongkhram","Phakdiphisut","Limthongkul","Ngamthanachoti","Bunyaviroch","Suphawat","Prasertdee","Khamwan","Klaybor","Tinnirat","Pongdee","Inthanon","Kaewkamnerd","Kanchanaporn","Lertphol","Maneesin","Naowarat","Onsuwan","Phromsiri","Phongtongkam","Rattanaphol","Saetang","Sangtong","Siribut","Subin","Suttiwan","Tantibanchachai","Thaweesak","Vongkitisin","Watthanachai","Wongsanee","Yindee","Pannarunothai","Saengthong","Jindaprasert","Kraisin","Mongkolchai","Nopachai","Phantharak","Rachatabordeesakul","Sangkaroen","Termpong","Thanasit","Vivathana","Wasinwattana","Yotsuwankul","Charoenpong","Boriboon","Chumphon","Dechawat","Inthanin","Jaroensri","Khamsuk","Lertsiri","Moonsri","Norachit","Polchart","Ratanakul","Suttisak","Theerasak","Udomchai","Visetpong","Wongchai","Yothin","Bunyasarn","Chuenchom"];
+  const MBTIS = ["INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"];
+  const COUNTRY_W = [{w:58,v:"Thailand"},{w:8,v:"USA"},{w:6,v:"UK"},{w:5,v:"Japan"},{w:4,v:"Singapore"},{w:3,v:"Germany"},{w:2,v:"Australia"},{w:2,v:"Canada"},{w:2,v:"Switzerland"},{w:2,v:"South Korea"},{w:1,v:"Netherlands"},{w:1,v:"Hong Kong"},{w:1,v:"France"},{w:1,v:"Taiwan"},{w:1,v:"Sweden"},{w:1,v:"China"}];
+  const MAJOR_W = [{w:16,v:"Computer Science"},{w:9,v:"Software Engineering"},{w:5,v:"Data Science"},{w:9,v:"Mechanical Engineering"},{w:8,v:"Electrical Engineering"},{w:6,v:"Chemical Engineering"},{w:5,v:"Civil Engineering"},{w:3,v:"Aerospace Engineering"},{w:5,v:"Biomedical Engineering"},{w:4,v:"Materials Science"},{w:7,v:"Physics"},{w:5,v:"Mathematics"},{w:5,v:"Chemistry"},{w:5,v:"Biology"},{w:4,v:"Biochemistry"},{w:3,v:"Microbiology"},{w:3,v:"Neuroscience"},{w:7,v:"Medicine"},{w:3,v:"Pharmacy"},{w:2,v:"Dentistry"},{w:5,v:"Economics"},{w:4,v:"Business Administration"},{w:3,v:"Finance"},{w:2,v:"Architecture"},{w:2,v:"Industrial Design"},{w:2,v:"Environmental Science"},{w:2,v:"Agricultural Science"}];
+  const UNI_BY_COUNTRY = {Thailand:["Chulalongkorn University","Mahidol University","Kasetsart University","Thammasat University","King Mongkut's University of Technology Thonburi","King Mongkut's Institute of Technology Ladkrabang","King Mongkut's University of Technology North Bangkok","Chiang Mai University","Khon Kaen University","Prince of Songkla University","Silpakorn University","Srinakharinwirot University","Naresuan University","VISTEC","SIIT, Thammasat","Burapha University"],USA:["MIT","Harvard University","Stanford University","Carnegie Mellon University","UC Berkeley","Caltech","Cornell University","Yale University","Princeton University","Columbia University","University of Michigan","University of Washington","Georgia Tech","Johns Hopkins University","UIUC","UCLA","University of Chicago","Purdue University","Brown University"],UK:["University of Cambridge","University of Oxford","Imperial College London","UCL","LSE","University of Edinburgh","King's College London","University of Warwick","University of Manchester","University of Bristol"],Singapore:["NUS","NTU","SMU","SUTD"],Japan:["University of Tokyo","Kyoto University","Osaka University","Tokyo Institute of Technology","Tohoku University","Waseda University","Hokkaido University"],Germany:["TU Munich","RWTH Aachen","TU Berlin","Heidelberg University","LMU Munich","Karlsruhe Institute of Technology"],Canada:["University of Toronto","McGill University","University of British Columbia","University of Waterloo"],Australia:["University of Melbourne","University of Sydney","ANU","UNSW","Monash University"],Switzerland:["ETH Zurich","EPFL"],"South Korea":["KAIST","Seoul National University","POSTECH","Yonsei University"],Netherlands:["Delft University of Technology","TU Eindhoven","University of Amsterdam"],"Hong Kong":["HKUST","University of Hong Kong","CUHK"],France:["École Polytechnique","Sciences Po","Sorbonne University","ENS Paris"],Taiwan:["National Taiwan University"],Sweden:["KTH Royal Institute of Technology","Lund University"],China:["Tsinghua University","Peking University","Fudan University"]};
+  const PLACES = {Thailand:[["Bangkok, Thailand",13.7563,100.5018],["Chiang Mai, Thailand",18.7883,98.9853],["Khon Kaen, Thailand",16.4419,102.8350],["Phuket, Thailand",7.8804,98.3923],["Hat Yai, Thailand",7.0086,100.4747],["Rayong, Thailand",12.6802,101.2870],["Pathum Thani, Thailand",14.0208,100.5251],["Nakhon Ratchasima, Thailand",14.9799,102.0978]],USA:[["Cambridge, USA",42.3736,-71.1097],["Berkeley, USA",37.8715,-122.2730],["Stanford, USA",37.4275,-122.1697],["New York, USA",40.7128,-74.0060],["Pittsburgh, USA",40.4406,-79.9959],["Seattle, USA",47.6062,-122.3321],["Ann Arbor, USA",42.2808,-83.7430],["Atlanta, USA",33.7490,-84.3880],["Pasadena, USA",34.1478,-118.1445],["Ithaca, USA",42.4440,-76.5019]],UK:[["London, UK",51.5074,-0.1278],["Cambridge, UK",52.2053,0.1218],["Oxford, UK",51.7520,-1.2577],["Edinburgh, UK",55.9533,-3.1883],["Manchester, UK",53.4808,-2.2426]],Singapore:[["Singapore",1.3521,103.8198]],Japan:[["Tokyo, Japan",35.6762,139.6503],["Kyoto, Japan",35.0116,135.7681],["Osaka, Japan",34.6937,135.5023],["Sendai, Japan",38.2682,140.8694]],Germany:[["Munich, Germany",48.1351,11.5820],["Berlin, Germany",52.5200,13.4050],["Aachen, Germany",50.7753,6.0839],["Heidelberg, Germany",49.3988,8.6724]],Canada:[["Toronto, Canada",43.6532,-79.3832],["Vancouver, Canada",49.2827,-123.1207],["Waterloo, Canada",43.4643,-80.5204],["Montreal, Canada",45.5017,-73.5673]],Australia:[["Melbourne, Australia",-37.8136,144.9631],["Sydney, Australia",-33.8688,151.2093],["Canberra, Australia",-35.2809,149.1300]],Switzerland:[["Zurich, Switzerland",47.3769,8.5417],["Lausanne, Switzerland",46.5197,6.6323]],"South Korea":[["Seoul, South Korea",37.5665,126.9780],["Daejeon, South Korea",36.3504,127.3845]],Netherlands:[["Delft, Netherlands",52.0116,4.3571],["Amsterdam, Netherlands",52.3676,4.9041],["Eindhoven, Netherlands",51.4416,5.4697]],"Hong Kong":[["Hong Kong",22.3193,114.1694]],France:[["Paris, France",48.8566,2.3522]],Taiwan:[["Taipei, Taiwan",25.0330,121.5654]],Sweden:[["Stockholm, Sweden",59.3293,18.0686],["Lund, Sweden",55.7047,13.1910]],China:[["Beijing, China",39.9042,116.4074],["Shanghai, China",31.2304,121.4737]]};
+  const SCHOLARSHIPS = [null,null,null,null,null,null,"DPST","DPST","DPST","Royal Thai Government","Royal Thai Government","MEXT","ASEAN Scholarship","Chevening","Fulbright","Royal Golden Jubilee","Anandamahidol","King's Scholarship","JPA","DAAD"];
 
-  // Country pool — Thailand-dominant (most stay), then common destinations
-  const COUNTRY_W = [
-    { w: 58, v: "Thailand" },
-    { w: 8,  v: "USA" },
-    { w: 6,  v: "UK" },
-    { w: 5,  v: "Japan" },
-    { w: 4,  v: "Singapore" },
-    { w: 3,  v: "Germany" },
-    { w: 2,  v: "Australia" },
-    { w: 2,  v: "Canada" },
-    { w: 2,  v: "Switzerland" },
-    { w: 2,  v: "South Korea" },
-    { w: 1,  v: "Netherlands" },
-    { w: 1,  v: "Hong Kong" },
-    { w: 1,  v: "France" },
-    { w: 1,  v: "Taiwan" },
-    { w: 1,  v: "Sweden" },
-    { w: 1,  v: "China" },
-  ];
-
-  // Faculty / field of study — STEM-heavy reflecting KVIS's science focus
-  const MAJOR_W = [
-    { w: 16, v: "Computer Science" },
-    { w: 9,  v: "Software Engineering" },
-    { w: 5,  v: "Data Science" },
-    { w: 9,  v: "Mechanical Engineering" },
-    { w: 8,  v: "Electrical Engineering" },
-    { w: 6,  v: "Chemical Engineering" },
-    { w: 5,  v: "Civil Engineering" },
-    { w: 3,  v: "Aerospace Engineering" },
-    { w: 5,  v: "Biomedical Engineering" },
-    { w: 4,  v: "Materials Science" },
-    { w: 7,  v: "Physics" },
-    { w: 5,  v: "Mathematics" },
-    { w: 5,  v: "Chemistry" },
-    { w: 5,  v: "Biology" },
-    { w: 4,  v: "Biochemistry" },
-    { w: 3,  v: "Microbiology" },
-    { w: 3,  v: "Neuroscience" },
-    { w: 7,  v: "Medicine" },
-    { w: 3,  v: "Pharmacy" },
-    { w: 2,  v: "Dentistry" },
-    { w: 5,  v: "Economics" },
-    { w: 4,  v: "Business Administration" },
-    { w: 3,  v: "Finance" },
-    { w: 2,  v: "Architecture" },
-    { w: 2,  v: "Industrial Design" },
-    { w: 2,  v: "Environmental Science" },
-    { w: 2,  v: "Agricultural Science" },
-  ];
-
-  const UNI_BY_COUNTRY = {
-    Thailand: [
-      "Chulalongkorn University","Mahidol University","Kasetsart University",
-      "Thammasat University","King Mongkut's University of Technology Thonburi",
-      "King Mongkut's Institute of Technology Ladkrabang",
-      "King Mongkut's University of Technology North Bangkok",
-      "Chiang Mai University","Khon Kaen University","Prince of Songkla University",
-      "Silpakorn University","Srinakharinwirot University","Naresuan University",
-      "VISTEC","SIIT, Thammasat","Burapha University",
-    ],
-    USA: [
-      "MIT","Harvard University","Stanford University","Carnegie Mellon University",
-      "UC Berkeley","Caltech","Cornell University","Yale University",
-      "Princeton University","Columbia University","University of Michigan",
-      "University of Washington","Georgia Tech","Johns Hopkins University",
-      "UIUC","UCLA","University of Chicago","Purdue University","Brown University",
-    ],
-    UK: [
-      "University of Cambridge","University of Oxford","Imperial College London",
-      "UCL","LSE","University of Edinburgh","King's College London",
-      "University of Warwick","University of Manchester","University of Bristol",
-    ],
-    Singapore: ["NUS","NTU","SMU","SUTD"],
-    Japan: [
-      "University of Tokyo","Kyoto University","Osaka University",
-      "Tokyo Institute of Technology","Tohoku University","Waseda University",
-      "Hokkaido University",
-    ],
-    Germany: [
-      "TU Munich","RWTH Aachen","TU Berlin","Heidelberg University",
-      "LMU Munich","Karlsruhe Institute of Technology",
-    ],
-    Canada: [
-      "University of Toronto","McGill University","University of British Columbia",
-      "University of Waterloo",
-    ],
-    Australia: [
-      "University of Melbourne","University of Sydney","ANU","UNSW",
-      "Monash University",
-    ],
-    Switzerland: ["ETH Zurich","EPFL"],
-    "South Korea": ["KAIST","Seoul National University","POSTECH","Yonsei University"],
-    Netherlands: ["Delft University of Technology","TU Eindhoven","University of Amsterdam"],
-    "Hong Kong": ["HKUST","University of Hong Kong","CUHK"],
-    France: ["École Polytechnique","Sciences Po","Sorbonne University","ENS Paris"],
-    Taiwan: ["National Taiwan University"],
-    Sweden: ["KTH Royal Institute of Technology","Lund University"],
-    China: ["Tsinghua University","Peking University","Fudan University"],
-  };
-
-  const PLACES = {
-    Thailand: [
-      ["Bangkok, Thailand", 13.7563, 100.5018],
-      ["Chiang Mai, Thailand", 18.7883, 98.9853],
-      ["Khon Kaen, Thailand", 16.4419, 102.8350],
-      ["Phuket, Thailand", 7.8804, 98.3923],
-      ["Hat Yai, Thailand", 7.0086, 100.4747],
-      ["Rayong, Thailand", 12.6802, 101.2870],
-      ["Pathum Thani, Thailand", 14.0208, 100.5251],
-      ["Nakhon Ratchasima, Thailand", 14.9799, 102.0978],
-    ],
-    USA: [
-      ["Cambridge, USA", 42.3736, -71.1097],
-      ["Berkeley, USA", 37.8715, -122.2730],
-      ["Stanford, USA", 37.4275, -122.1697],
-      ["New York, USA", 40.7128, -74.0060],
-      ["Pittsburgh, USA", 40.4406, -79.9959],
-      ["Seattle, USA", 47.6062, -122.3321],
-      ["Ann Arbor, USA", 42.2808, -83.7430],
-      ["Atlanta, USA", 33.7490, -84.3880],
-      ["Pasadena, USA", 34.1478, -118.1445],
-      ["Ithaca, USA", 42.4440, -76.5019],
-    ],
-    UK: [
-      ["London, UK", 51.5074, -0.1278],
-      ["Cambridge, UK", 52.2053, 0.1218],
-      ["Oxford, UK", 51.7520, -1.2577],
-      ["Edinburgh, UK", 55.9533, -3.1883],
-      ["Manchester, UK", 53.4808, -2.2426],
-    ],
-    Singapore: [["Singapore", 1.3521, 103.8198]],
-    Japan: [
-      ["Tokyo, Japan", 35.6762, 139.6503],
-      ["Kyoto, Japan", 35.0116, 135.7681],
-      ["Osaka, Japan", 34.6937, 135.5023],
-      ["Sendai, Japan", 38.2682, 140.8694],
-    ],
-    Germany: [
-      ["Munich, Germany", 48.1351, 11.5820],
-      ["Berlin, Germany", 52.5200, 13.4050],
-      ["Aachen, Germany", 50.7753, 6.0839],
-      ["Heidelberg, Germany", 49.3988, 8.6724],
-    ],
-    Canada: [
-      ["Toronto, Canada", 43.6532, -79.3832],
-      ["Vancouver, Canada", 49.2827, -123.1207],
-      ["Waterloo, Canada", 43.4643, -80.5204],
-      ["Montreal, Canada", 45.5017, -73.5673],
-    ],
-    Australia: [
-      ["Melbourne, Australia", -37.8136, 144.9631],
-      ["Sydney, Australia", -33.8688, 151.2093],
-      ["Canberra, Australia", -35.2809, 149.1300],
-    ],
-    Switzerland: [
-      ["Zurich, Switzerland", 47.3769, 8.5417],
-      ["Lausanne, Switzerland", 46.5197, 6.6323],
-    ],
-    "South Korea": [
-      ["Seoul, South Korea", 37.5665, 126.9780],
-      ["Daejeon, South Korea", 36.3504, 127.3845],
-    ],
-    Netherlands: [
-      ["Delft, Netherlands", 52.0116, 4.3571],
-      ["Amsterdam, Netherlands", 52.3676, 4.9041],
-      ["Eindhoven, Netherlands", 51.4416, 5.4697],
-    ],
-    "Hong Kong": [["Hong Kong", 22.3193, 114.1694]],
-    France: [["Paris, France", 48.8566, 2.3522]],
-    Taiwan: [["Taipei, Taiwan", 25.0330, 121.5654]],
-    Sweden: [
-      ["Stockholm, Sweden", 59.3293, 18.0686],
-      ["Lund, Sweden", 55.7047, 13.1910],
-    ],
-    China: [
-      ["Beijing, China", 39.9042, 116.4074],
-      ["Shanghai, China", 31.2304, 121.4737],
-    ],
-  };
-
-  const SCHOLARSHIPS = [
-    null,null,null,null,null,null,
-    "DPST","DPST","DPST",
-    "Royal Thai Government","Royal Thai Government",
-    "MEXT","ASEAN Scholarship","Chevening",
-    "Fulbright","Royal Golden Jubilee","Anandamahidol",
-    "King's Scholarship","JPA","DAAD",
-  ];
-
-  // ── 3. Deterministic RNG (mulberry32) keeps generated data stable per run
   function makeRng(seed) {
     let a = (seed >>> 0) || 1;
-    return () => {
-      a = (a + 0x6D2B79F5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+    return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
   const R = makeRng(42);
   const pick = (arr) => arr[Math.floor(R() * arr.length)];
-  const wpick = (items) => {
-    const total = items.reduce((s, i) => s + i.w, 0);
-    let r = R() * total;
-    for (const i of items) if ((r -= i.w) <= 0) return i.v;
-    return items[items.length - 1].v;
-  };
+  const wpick = (items) => { const total = items.reduce((s, i) => s + i.w, 0); let r = R() * total; for (const i of items) if ((r -= i.w) <= 0) return i.v; return items[items.length - 1].v; };
 
-  // ── 4. Backfill each cohort to ~71 students (70-73 range)
   let nextId = MOCK_ALUMNI.reduce((m, u) => Math.max(m, u.id), 0) + 1;
-  let nextEduId = MOCK_ALUMNI
-    .flatMap((u) => u.education || [])
-    .reduce((m, e) => Math.max(m, e.id || 0), 0) + 1;
+  let nextEduId = MOCK_ALUMNI.flatMap((u) => u.education || []).reduce((m, e) => Math.max(m, e.id || 0), 0) + 1;
 
   for (let cohort = 1; cohort <= 9; cohort++) {
     const have = MOCK_ALUMNI.filter((u) => u.kvis_year === cohort).length;
-    const target = 70 + Math.floor(R() * 4); // 70..73
+    const target = 70 + Math.floor(R() * 4);
     const need = Math.max(0, target - have);
     for (let i = 0; i < need; i++) {
       const country = wpick(COUNTRY_W);
@@ -1556,134 +1304,51 @@ let MOCK_BLOGS = [
       const first = pick(FIRSTS);
       const last = pick(LASTS);
       const id = nextId++;
-      const startYear = 2014 + cohort + 2; // approx undergrad start
+      const startYear = 2014 + cohort + 2;
       MOCK_ALUMNI.push({
-        id,
-        email: `${first.toLowerCase()}.${last[0].toLowerCase()}${id}@kvis.ac.th`,
-        first_name: first,
-        last_name: last,
-        kvis_year: cohort,
-        place,
-        latitude: lat,
-        longitude: lng,
-        country,
-        profile_pic_url: null,
-        bio: null,
-        mbti: pick(MBTIS),
-        interests: null,
-        facebook_url: null,
-        linkedin_url: null,
-        website_url: null,
-        line_id: null,
-        email_verified: true,
-        is_verified: true,
+        id, email: `${first.toLowerCase()}.${last[0].toLowerCase()}${id}@kvis.ac.th`,
+        first_name: first, last_name: last, kvis_year: cohort, place,
+        latitude: lat, longitude: lng, country, profile_pic_url: null,
+        bio: null, mbti: pick(MBTIS), interests: null,
+        facebook_url: null, linkedin_url: null, website_url: null, line_id: null,
+        email_verified: true, is_verified: true,
         created_at: `2024-${String(1 + Math.floor(R() * 12)).padStart(2, "0")}-${String(1 + Math.floor(R() * 28)).padStart(2, "0")}T08:00:00Z`,
         updated_at: "2024-06-01T08:00:00Z",
-        education: [
-          {
-            id: nextEduId++,
-            uni_name: uni,
-            degree: "Bachelor",
-            major,
-            country,
-            state: null,
-            scholarship: pick(SCHOLARSHIPS),
-            start_year: startYear,
-            end_year: null,
-          },
-        ],
+        education: [{ id: nextEduId++, uni_name: uni, degree: "Bachelor", major, country, state: null, scholarship: pick(SCHOLARSHIPS), start_year: startYear, end_year: null }],
         career: [],
       });
     }
   }
 })();
 
-// ─── Seed current students (M.4-M.6) ──────────────────────────────────────────
-// KVIS structure: 3 grades (10/11/12 = M.4/M.5/M.6), 4 classes per grade,
-// 4 elemental houses (earth/water/air/fire). 18 students per house per grade
-// → 72 students per grade → 216 total. Houses rotate round-robin within each
-// grade so counts come out exactly 18 per house.
 (function seedCurrentStudents() {
-  const FIRSTS_M = [
-    "Anan","Akira","Apirak","Arthit","Boon","Chai","Chakrit","Chanin","Decha",
-    "Ekarat","Issara","Jakkrit","Kasem","Korn","Krit","Manop","Nattapong",
-    "Pakorn","Panya","Phanuwat","Pongsak","Prasert","Sakda","Sirichai",
-    "Somkid","Sompong","Suchart","Surapong","Tanin","Thanawat","Veerapol",
-    "Wachira","Wanchai","Worawit","Yongyuth","Anuwat","Boonsong","Chaiyan",
-    "Danai","Niran","Pisit","Rachan","Saksit","Theerapong","Wisut","Kit",
-    "Pun","Tee","Top","Bank",
-  ];
-  const FIRSTS_F = [
-    "Anong","Apinya","Aporn","Benjawan","Boonsri","Chalisa","Chanika",
-    "Chompoo","Dao","Duangporn","Hathaichanok","Jiraporn","Kanchana",
-    "Kanya","Kessaree","Lalita","Malee","Manee","Napaporn","Narisara",
-    "Nittaya","Orawan","Pakwan","Patcharin","Phailin","Piyaporn","Pornthip",
-    "Praweena","Ratchada","Saichon","Sasipim","Siriporn","Sunisa","Tarisa",
-    "Thanaporn","Thidarat","Uraiwan","Wannisa","Warangkana","Wilai","Yupin",
-    "Kanyarat","Pattaraporn","Supitcha","Tippawan","Wanida","Fern","Mint",
-    "Ploy","Nam",
-  ];
-  const LASTS_S = [
-    "Suwannathat","Tangkijvanich","Phongphaew","Srisaard","Wattanapong",
-    "Sukphanthawee","Chaisongkhram","Phakdiphisut","Limthongkul",
-    "Ngamthanachoti","Bunyaviroch","Suphawat","Prasertdee","Khamwan",
-    "Klaybor","Tinnirat","Pongdee","Inthanon","Kaewkamnerd","Kanchanaporn",
-    "Lertphol","Maneesin","Naowarat","Onsuwan","Phromsiri","Phongtongkam",
-    "Rattanaphol","Saetang","Sangtong","Siribut","Subin","Suttiwan",
-    "Tantibanchachai","Thaweesak","Vongkitisin","Watthanachai","Wongsanee",
-    "Yindee","Pannarunothai","Saengthong","Jindaprasert","Kraisin",
-    "Mongkolchai","Nopachai","Phantharak","Sangkaroen","Termpong","Thanasit",
-    "Vivathana","Wasinwattana","Charoenpong","Boriboon","Chumphon",
-    "Dechawat","Jaroensri","Khamsuk","Lertsiri","Norachit","Ratanakul",
-    "Suttisak","Theerasak","Udomchai","Visetpong","Wongchai","Yothin",
-  ];
-  const MBTIS_S = [
-    "INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP",
-    "ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP",
-  ];
+  const FIRSTS_M = ["Anan","Akira","Apirak","Arthit","Boon","Chai","Chakrit","Chanin","Decha","Ekarat","Issara","Jakkrit","Kasem","Korn","Krit","Manop","Nattapong","Pakorn","Panya","Phanuwat","Pongsak","Prasert","Sakda","Sirichai","Somkid","Sompong","Suchart","Surapong","Tanin","Thanawat","Veerapol","Wachira","Wanchai","Worawit","Yongyuth","Anuwat","Boonsong","Chaiyan","Danai","Niran","Pisit","Rachan","Saksit","Theerapong","Wisut","Kit","Pun","Tee","Top","Bank"];
+  const FIRSTS_F = ["Anong","Apinya","Aporn","Benjawan","Boonsri","Chalisa","Chanika","Chompoo","Dao","Duangporn","Hathaichanok","Jiraporn","Kanchana","Kanya","Kessaree","Lalita","Malee","Manee","Napaporn","Narisara","Nittaya","Orawan","Pakwan","Patcharin","Phailin","Piyaporn","Pornthip","Praweena","Ratchada","Saichon","Sasipim","Siriporn","Sunisa","Tarisa","Thanaporn","Thidarat","Uraiwan","Wannisa","Warangkana","Wilai","Yupin","Kanyarat","Pattaraporn","Supitcha","Tippawan","Wanida","Fern","Mint","Ploy","Nam"];
+  const LASTS_S = ["Suwannathat","Tangkijvanich","Phongphaew","Srisaard","Wattanapong","Sukphanthawee","Chaisongkhram","Phakdiphisut","Limthongkul","Ngamthanachoti","Bunyaviroch","Suphawat","Prasertdee","Khamwan","Klaybor","Tinnirat","Pongdee","Inthanon","Kaewkamnerd","Kanchanaporn","Lertphol","Maneesin","Naowarat","Onsuwan","Phromsiri","Phongtongkam","Rattanaphol","Saetang","Sangtong","Siribut","Subin","Suttiwan","Tantibanchachai","Thaweesak","Vongkitisin","Watthanachai","Wongsanee","Yindee","Pannarunothai","Saengthong","Jindaprasert","Kraisin","Mongkolchai","Nopachai","Phantharak","Sangkaroen","Termpong","Thanasit","Vivathana","Wasinwattana","Charoenpong","Boriboon","Chumphon","Dechawat","Jaroensri","Khamsuk","Lertsiri","Norachit","Ratanakul","Suttisak","Theerasak","Udomchai","Visetpong","Wongchai","Yothin"];
+  const MBTIS_S = ["INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"];
   const HOUSES = ["earth","water","air","fire"];
 
-  // Mulberry32 — deterministic so the roster stays stable across restarts.
   function makeRng(seed) {
     let a = seed >>> 0;
-    return function () {
-      a |= 0; a = (a + 0x6D2B79F5) | 0;
-      let t = Math.imul(a ^ (a >>> 15), 1 | a);
-      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-    };
+    return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   }
   const R = makeRng(2026);
   const pick = (arr) => arr[Math.floor(R() * arr.length)];
 
   let nextId = MOCK_ALUMNI.reduce((m, u) => Math.max(m, u.id), 0) + 1;
   const usedHandles = new Set();
-
-  // KVIS sits in Rayong, Thailand.
   const KVIS_LAT = 12.6916;
   const KVIS_LNG = 101.2787;
-
-  const GRADES = [10, 11, 12]; // M.4, M.5, M.6
+  const GRADES = [10, 11, 12];
   const CLASSES_PER_GRADE = 4;
-  const STUDENTS_PER_CLASS = 18; // 4 × 18 = 72 per grade, exactly 18 per house
+  const STUDENTS_PER_CLASS = 18;
 
   for (const grade of GRADES) {
-    // Build a class-and-house plan for this grade so house counts land at 18 each.
-    // 72 slots = 4 classes × 18 students. Distribute houses round-robin per slot
-    // so each class ends up with ~4-5 of each house, and the grade totals are
-    // exactly 18 of each.
     const plan = [];
     for (let cls = 1; cls <= CLASSES_PER_GRADE; cls++) {
-      for (let i = 0; i < STUDENTS_PER_CLASS; i++) {
-        plan.push({ cls, slot: plan.length });
-      }
+      for (let i = 0; i < STUDENTS_PER_CLASS; i++) { plan.push({ cls, slot: plan.length }); }
     }
-    // Assign houses round-robin in slot order: slot % 4 → house.
-    // This yields exactly 18 of each house per grade (72/4 = 18).
-    for (let s = 0; s < plan.length; s++) {
-      plan[s].house = HOUSES[s % HOUSES.length];
-    }
-    // Lightly shuffle within each class so houses look mixed, not in fixed order.
+    for (let s = 0; s < plan.length; s++) { plan[s].house = HOUSES[s % HOUSES.length]; }
     for (let cls = 1; cls <= CLASSES_PER_GRADE; cls++) {
       const slice = plan.filter((p) => p.cls === cls);
       for (let i = slice.length - 1; i > 0; i--) {
@@ -1691,7 +1356,6 @@ let MOCK_BLOGS = [
         const tmp = slice[i].house; slice[i].house = slice[j].house; slice[j].house = tmp;
       }
     }
-
     for (const { cls, house } of plan) {
       const female = R() < 0.5;
       const first = pick(female ? FIRSTS_F : FIRSTS_M);
@@ -1700,82 +1364,50 @@ let MOCK_BLOGS = [
       let handle = `${first.toLowerCase()}.${last[0].toLowerCase()}${id}`;
       while (usedHandles.has(handle)) handle = `${handle}x`;
       usedHandles.add(handle);
-
       MOCK_ALUMNI.push({
-        id,
-        email: `${handle}@kvis.ac.th`,
-        first_name: first,
-        last_name: last,
-        kvis_year: null, // current students haven't graduated
-        place: "Rayong, Thailand",
-        latitude: KVIS_LAT + (R() - 0.5) * 0.01,
-        longitude: KVIS_LNG + (R() - 0.5) * 0.01,
-        country: "Thailand",
-        profile_pic_url: null,
-        bio: null,
-        mbti: pick(MBTIS_S),
-        interests: null,
-        facebook_url: null,
-        linkedin_url: null,
-        website_url: null,
-        line_id: null,
-        email_verified: true,
-        is_verified: true,
+        id, email: `${handle}@kvis.ac.th`, first_name: first, last_name: last,
+        kvis_year: null, place: "Rayong, Thailand",
+        latitude: KVIS_LAT + (R() - 0.5) * 0.01, longitude: KVIS_LNG + (R() - 0.5) * 0.01,
+        country: "Thailand", profile_pic_url: null, bio: null, mbti: pick(MBTIS_S),
+        interests: null, facebook_url: null, linkedin_url: null, website_url: null, line_id: null,
+        email_verified: true, is_verified: true,
         created_at: `2025-${String(1 + Math.floor(R() * 12)).padStart(2, "0")}-${String(1 + Math.floor(R() * 28)).padStart(2, "0")}T08:00:00Z`,
         updated_at: "2025-09-01T08:00:00Z",
-        education: [],
-        career: [],
+        education: [], career: [],
         current_grade: grade,
-        current_class: cls,
-        current_elemental: house,
       });
     }
   }
 })();
 
-// Logged-in mock user (id=1)
 const MOCK_ME = { ...MOCK_ALUMNI[0], slug: "somsak-khamchoo" };
 
 // ─── Auth Helpers ─────────────────────────────────────────────────────────────
-
 const MOCK_TOKEN = "mock_access_token";
-
-function isAuthenticated(req) {
-  return req.cookies?.access_token === MOCK_TOKEN;
-}
-
+function isAuthenticated(req) { return req.cookies?.access_token === MOCK_TOKEN; }
 function requireAuth(req, res, next) {
-  if (!isAuthenticated(req)) {
-    return res.status(401).json({ detail: "Not authenticated" });
-  }
+  if (!isAuthenticated(req)) return res.status(401).json({ detail: "Not authenticated" });
   next();
 }
-
 function setCookies(res) {
   res.cookie("access_token", MOCK_TOKEN, { httpOnly: true, sameSite: "lax", maxAge: 3600000 });
 }
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
-app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", mode: "mock" });
-});
+app.get("/api/health", (req, res) => res.json({ status: "ok", mode: "mock" }));
 
 // Auth
 app.post("/api/auth/register", (req, res) => {
-  const { email, password, first_name, last_name } = req.body;
-  if (!email?.endsWith("@kvis.ac.th")) {
-    return res.status(400).json({ detail: "Only @kvis.ac.th emails are allowed" });
-  }
+  const { email } = req.body;
+  if (!email?.endsWith("@kvis.ac.th")) return res.status(400).json({ detail: "Only @kvis.ac.th emails are allowed" });
   setCookies(res);
   res.json({ message: "Registered successfully (mock)", user_id: 1 });
 });
 
 app.post("/api/auth/login", (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(401).json({ detail: "Invalid credentials" });
-  }
+  if (!email || !password) return res.status(401).json({ detail: "Invalid credentials" });
   setCookies(res);
   res.json({ message: "Logged in (mock)", user_id: 1 });
 });
@@ -1785,24 +1417,21 @@ app.post("/api/auth/logout", (req, res) => {
   res.json({ message: "Logged out" });
 });
 
-// Users — /me
-app.get("/api/users/me", requireAuth, (req, res) => {
-  res.json(MOCK_ME);
-});
+app.post("/api/auth/refresh", (req, res) => res.json({ access_token: "mock-token-refreshed" }));
+app.post("/api/refresh", (req, res) => res.json({ access_token: "mock-token-refreshed" }));
+
+// Users
+app.get("/api/users/me", requireAuth, (req, res) => res.json(MOCK_ME));
 
 app.patch("/api/users/me", requireAuth, (req, res) => {
   Object.assign(MOCK_ME, req.body);
-  Object.assign(MOCK_ALUMNI[0], req.body); // keep MOCK_ALUMNI in sync
+  Object.assign(MOCK_ALUMNI[0], req.body);
   res.json(MOCK_ME);
 });
 
 app.post("/api/users/me/profile-pic", requireAuth, upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).json({ detail: "No file provided" });
-  
-  const base64 = req.file.buffer.toString("base64");
-  const mimeType = req.file.mimetype;
-  const dataUrl = `data:${mimeType};base64,${base64}`;
-  
+  const dataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
   MOCK_ME.profile_pic_url = dataUrl;
   MOCK_ALUMNI[0].profile_pic_url = dataUrl;
   res.json({ url: dataUrl });
@@ -1818,20 +1447,12 @@ app.put("/api/users/me/career", requireAuth, (req, res) => {
   res.json({ message: "Career updated" });
 });
 
-// Globe pins
 app.get("/api/users/globe/pins", (req, res) => {
-  const pins = MOCK_ALUMNI
-    .filter((u) => u.latitude && u.longitude && !u.current_grade)
-    .map((u) => {
+  const pins = MOCK_ALUMNI.filter((u) => u.latitude && u.longitude && !u.current_grade).map((u) => {
     const currentJob = u.career.find((c) => c.is_current) || u.career[u.career.length - 1];
     return {
-      user_id: u.id,
-      first_name: u.first_name,
-      last_name: u.last_name,
-      latitude: u.latitude,
-      longitude: u.longitude,
-      place: u.place,
-      country: u.country,
+      user_id: u.id, first_name: u.first_name, last_name: u.last_name,
+      latitude: u.latitude, longitude: u.longitude, place: u.place, country: u.country,
       kvis_year: u.kvis_year,
       profile_pic_url: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${u.first_name}${u.last_name}`,
       mbti: u.mbti,
@@ -1841,174 +1462,172 @@ app.get("/api/users/globe/pins", (req, res) => {
   res.json(pins);
 });
 
-// User by ID — must come after /me and /globe/pins
 app.get("/api/users/:id", (req, res) => {
-  const param = req.params.id;
-  const user = MOCK_ALUMNI.find(
-    (u) => u.id === parseInt(param) || u.slug === param
-  );
+  const user = MOCK_ALUMNI.find((u) => u.id === parseInt(req.params.id) || u.slug === req.params.id);
   if (!user) return res.status(404).json({ detail: "User not found" });
   res.json(user);
 });
 
 // Search
 app.get("/api/search", (req, res) => {
-  const { name, kvis_year, country, uni_name, degree, major, scholarship,
-          job_title, employer, job_field, sort = "name", order = "asc",
-          limit = 50, offset = 0 } = req.query;
-
+  const { name, kvis_year, country, uni_name, degree, major, scholarship, job_title, employer, job_field, sort = "name", order = "asc", limit = 50, offset = 0 } = req.query;
   let results = [...MOCK_ALUMNI];
-
-  if (name) {
-    const t = name.toLowerCase();
-    results = results.filter(
-      (u) =>
-        u.first_name.toLowerCase().includes(t) ||
-        u.last_name.toLowerCase().includes(t)
-    );
-  }
+  if (name) { const t = name.toLowerCase(); results = results.filter((u) => u.first_name.toLowerCase().includes(t) || u.last_name.toLowerCase().includes(t)); }
   if (kvis_year) results = results.filter((u) => u.kvis_year === parseInt(kvis_year));
   if (country) results = results.filter((u) => u.country?.toLowerCase().includes(country.toLowerCase()));
-
   if (uni_name || degree || major || scholarship) {
-    results = results.filter((u) =>
-      u.education.some((e) => {
-        if (uni_name && !e.uni_name?.toLowerCase().includes(uni_name.toLowerCase())) return false;
-        if (degree && e.degree !== degree) return false;
-        if (major && !e.major?.toLowerCase().includes(major.toLowerCase())) return false;
-        if (scholarship && !e.scholarship?.toLowerCase().includes(scholarship.toLowerCase())) return false;
-        return true;
-      })
-    );
+    results = results.filter((u) => u.education.some((e) => {
+      if (uni_name && !e.uni_name?.toLowerCase().includes(uni_name.toLowerCase())) return false;
+      if (degree && e.degree !== degree) return false;
+      if (major && !e.major?.toLowerCase().includes(major.toLowerCase())) return false;
+      if (scholarship && !e.scholarship?.toLowerCase().includes(scholarship.toLowerCase())) return false;
+      return true;
+    }));
   }
-
   if (job_title || employer || job_field) {
-    results = results.filter((u) =>
-      u.career.some((c) => {
-        if (job_title && !c.job_title?.toLowerCase().includes(job_title.toLowerCase())) return false;
-        if (employer && !c.employer?.toLowerCase().includes(employer.toLowerCase())) return false;
-        if (job_field && c.job_field !== job_field) return false;
-        return true;
-      })
-    );
+    results = results.filter((u) => u.career.some((c) => {
+      if (job_title && !c.job_title?.toLowerCase().includes(job_title.toLowerCase())) return false;
+      if (employer && !c.employer?.toLowerCase().includes(employer.toLowerCase())) return false;
+      if (job_field && c.job_field !== job_field) return false;
+      return true;
+    }));
   }
-
-  // Sort
   const reverse = order === "desc";
-  if (sort === "name") {
-    results.sort((a, b) => {
-      const cmp = (a.first_name + a.last_name).localeCompare(b.first_name + b.last_name);
-      return reverse ? -cmp : cmp;
-    });
-  } else if (sort === "kvis_year") {
-    results.sort((a, b) => reverse ? (b.kvis_year || 0) - (a.kvis_year || 0) : (a.kvis_year || 0) - (b.kvis_year || 0));
-  } else if (sort === "created_at") {
-    results.sort((a, b) => {
-      const cmp = new Date(a.created_at) - new Date(b.created_at);
-      return reverse ? -cmp : cmp;
-    });
-  }
-
+  if (sort === "name") results.sort((a, b) => { const cmp = (a.first_name + a.last_name).localeCompare(b.first_name + b.last_name); return reverse ? -cmp : cmp; });
+  else if (sort === "kvis_year") results.sort((a, b) => reverse ? (b.kvis_year || 0) - (a.kvis_year || 0) : (a.kvis_year || 0) - (b.kvis_year || 0));
+  else if (sort === "created_at") results.sort((a, b) => { const cmp = new Date(a.created_at) - new Date(b.created_at); return reverse ? -cmp : cmp; });
   const page = results.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
-
-  // Return same shape as UserCard
-  res.json(
-    page.map((u) => ({
-      id: u.id,
-      first_name: u.first_name,
-      last_name: u.last_name,
-      kvis_year: u.kvis_year,
-      place: u.place,
-      country: u.country,
-      profile_pic_url: u.profile_pic_url,
-      mbti: u.mbti,
-      education: u.education,
-      career: u.career,
-      current_grade: u.current_grade ?? null,
-      current_class: u.current_class ?? null,
-      current_elemental: u.current_elemental ?? null,
-    }))
-  );
+  res.json(page.map((u) => ({
+    id: u.id, slug: u.slug ?? null, first_name: u.first_name, last_name: u.last_name,
+    kvis_year: u.kvis_year, place: u.place, country: u.country, profile_pic_url: u.profile_pic_url,
+    mbti: u.mbti, interests: u.interests ?? null, education: u.education, career: u.career,
+    current_grade: u.current_grade ?? null
+  })));
 });
 
 // Summary
 app.get("/api/summary", (req, res) => {
-  const by_kvis_year = {};
-  const by_country = {};
-  const by_job_field = {};
-  const by_degree = {};
-  const by_mbti = {};
-
+  const by_kvis_year = {}, by_country = {}, by_job_field = {}, by_degree = {}, by_mbti = {};
   for (const u of MOCK_ALUMNI) {
     if (u.kvis_year) by_kvis_year[u.kvis_year] = (by_kvis_year[u.kvis_year] || 0) + 1;
     if (u.country) by_country[u.country] = (by_country[u.country] || 0) + 1;
     if (u.mbti) by_mbti[u.mbti] = (by_mbti[u.mbti] || 0) + 1;
-    for (const e of u.education) {
-      if (e.degree) by_degree[e.degree] = (by_degree[e.degree] || 0) + 1;
-    }
-    for (const c of u.career) {
-      if (c.job_field) by_job_field[c.job_field] = (by_job_field[c.job_field] || 0) + 1;
-    }
+    for (const e of u.education) { if (e.degree) by_degree[e.degree] = (by_degree[e.degree] || 0) + 1; }
+    for (const c of u.career) { if (c.job_field) by_job_field[c.job_field] = (by_job_field[c.job_field] || 0) + 1; }
   }
-
-  res.json({
-    total: MOCK_ALUMNI.length,
-    by_kvis_year,
-    by_country,
-    by_job_field,
-    by_degree,
-    by_mbti,
-  });
+  res.json({ total: MOCK_ALUMNI.length, by_kvis_year, by_country, by_job_field, by_degree, by_mbti });
 });
 
-// Blogs
+// ── Upload
+app.post("/api/upload", requireAuth, upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ detail: "No file provided" });
+  const dataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`;
+  res.json({ url: dataUrl });
+});
+
+// ── Likes (before blog CRUD)
+app.post("/api/blogs/:slug/like", requireAuth, (req, res) => {
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  const key = `${req.cookies.access_token}-${req.params.slug}`;
+  if (LIKED_BLOGS.has(key)) {
+    LIKED_BLOGS.delete(key);
+    blog.likes = Math.max(0, (blog.likes ?? 0) - 1);
+    res.json({ likes: blog.likes, liked: false });
+  } else {
+    LIKED_BLOGS.add(key);
+    blog.likes = (blog.likes ?? 0) + 1;
+    res.json({ likes: blog.likes, liked: true });
+  }
+});
+
+app.get("/api/blogs/:slug/like", requireAuth, (req, res) => {
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  const key = `${req.cookies.access_token}-${req.params.slug}`;
+  res.json({ likes: blog.likes ?? 0, liked: LIKED_BLOGS.has(key) });
+});
+
+// ── Comments (before blog CRUD)
+app.get("/api/blogs/:slug/comments", (req, res) => {
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  res.json(blog.comments ?? []);
+});
+
+app.post("/api/blogs/:slug/comments", requireAuth, (req, res) => {
+  console.log("POST comment:", req.params.slug, "auth:", isAuthenticated(req), "body:", req.body);
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  console.log("Blog found:", !!blog, "comments_enabled:", blog?.comments_enabled);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  if (!blog.comments_enabled) return res.status(403).json({ detail: "Comments are closed" });
+  const { content, parent_id } = req.body;
+  console.log("Content:", content);
+  if (!content?.trim()) return res.status(400).json({ detail: "Content required" });
+  const comment = {
+    id: String(Date.now()),
+    content: content.trim(),
+    parent_id: parent_id ?? null,
+    created_at: new Date().toISOString(),
+    author: {
+      id: MOCK_ME.id, slug: MOCK_ME.slug,
+      first_name: MOCK_ME.first_name, last_name: MOCK_ME.last_name,
+      profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year,
+    },
+  };
+  if (!blog.comments) blog.comments = [];
+  blog.comments.push(comment);
+  res.status(201).json(comment);
+});
+
+app.delete("/api/blogs/:slug/comments/:id", requireAuth, (req, res) => {
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  const idx = blog.comments?.findIndex(c => c.id === req.params.id);
+  if (idx === -1 || idx === undefined) return res.status(404).json({ detail: "Comment not found" });
+  blog.comments.splice(idx, 1);
+  res.status(204).send();
+});
+
+app.patch("/api/blogs/:slug/comments/toggle", requireAuth, (req, res) => {
+  const blog = MOCK_BLOGS.find(b => b.slug === req.params.slug);
+  if (!blog) return res.status(404).json({ detail: "Not found" });
+  blog.comments_enabled = !blog.comments_enabled;
+  res.json({ comments_enabled: blog.comments_enabled });
+});
+
+// ── Blog list + detail (after comments/likes)
 app.get("/api/blogs", (req, res) => {
   const { tag, limit = 20, offset = 0 } = req.query;
   let blogs = MOCK_BLOGS.filter((b) => b.is_published);
   if (tag) blogs = blogs.filter((b) => b.tags?.toLowerCase().includes(tag.toLowerCase()));
-  
-  // Hydrate author with latest MOCK_ME data
   blogs = blogs.map((b) => ({
     ...b,
-    author: b.author_id === MOCK_ME.id
-      ? { ...b.author, profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year }
-      : b.author,
+    author: b.author_id === MOCK_ME.id ? { ...b.author, profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year } : b.author,
+    comments_enabled: b.comments_enabled ?? true,
+    likes: b.likes ?? 0,
   }));
-  
   res.json(blogs.slice(parseInt(offset), parseInt(offset) + parseInt(limit)));
 });
 
 app.get("/api/blogs/:slug", (req, res) => {
   const blog = MOCK_BLOGS.find((b) => b.slug === req.params.slug && b.is_published);
   if (!blog) return res.status(404).json({ detail: "Blog not found" });
-
   const hydrated = {
     ...blog,
-    author: blog.author_id === MOCK_ME.id
-      ? { ...blog.author, profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year }
-      : blog.author,
+    author: blog.author_id === MOCK_ME.id ? { ...blog.author, profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year } : blog.author,
+    comments_enabled: blog.comments_enabled ?? true,
+    likes: blog.likes ?? 0,
   };
-
   res.json(hydrated);
 });
 
-app.post("/api/upload", requireAuth, upload.single("file"), (req, res) => {
-  if (!req.file) return res.status(400).json({ detail: "No file provided" });
-  const base64 = req.file.buffer.toString("base64");
-  const mimeType = req.file.mimetype;
-  const dataUrl = `data:${mimeType};base64,${base64}`;
-  res.json({ url: dataUrl });
-});
-
+// ── Blog create / update / delete (last)
 app.post("/api/blogs", requireAuth, (req, res) => {
-  console.log("Blog POST - profile_pic_url:", MOCK_ME.profile_pic_url ? "HAS VALUE" : "NULL");
   const { title, content, excerpt, cover_image_url, tags, is_published } = req.body;
   const slug = title.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
   const blog = {
-    id: MOCK_BLOGS.length + 1,
-    slug,
-    title,
-    content,
+    id: MOCK_BLOGS.length + 1, slug, title, content,
     excerpt: excerpt || content.slice(0, 200),
     cover_image_url: cover_image_url || null,
     tags: tags || null,
@@ -2017,13 +1636,10 @@ app.post("/api/blogs", requireAuth, (req, res) => {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     author_id: MOCK_ME.id,
-    author: {
-      id: MOCK_ME.id,
-      first_name: MOCK_ME.first_name,
-      last_name: MOCK_ME.last_name,
-      profile_pic_url: MOCK_ME.profile_pic_url,
-      kvis_year: MOCK_ME.kvis_year,
-    },
+    author: { id: MOCK_ME.id, first_name: MOCK_ME.first_name, last_name: MOCK_ME.last_name, profile_pic_url: MOCK_ME.profile_pic_url, kvis_year: MOCK_ME.kvis_year },
+    likes: 0,
+    comments_enabled: true,
+    comments: [],
   };
   MOCK_BLOGS.push(blog);
   res.status(201).json(blog);
@@ -2043,11 +1659,40 @@ app.delete("/api/blogs/:slug", requireAuth, (req, res) => {
   res.status(204).send();
 });
 
-// ─── Start ────────────────────────────────────────────────────────────────────
+app.get("/api/search/directory", (req, res) => {
+  const people = MOCK_ALUMNI.map(u => {
+    const currentJob = u.career?.find(c => c.is_current) ?? u.career?.[0];
+    const latestEdu = u.education?.find(e => !e.end_year) ?? u.education?.[0];
+    return {
+      id: String(u.id),
+      slug: u.slug ?? String(u.id),
+      first_name: u.first_name,
+      last_name: u.last_name,
+      kvis_year: u.kvis_year ?? null,
+      current_grade: u.current_grade ?? null,
+      teach_start_year: u.teach_start_year ?? null,
+      teach_end_year: u.teach_end_year ?? null,
+      is_current_teacher: u.is_current_teacher ?? false,
+      profile_pic_url: u.profile_pic_url ?? null,
+      country: u.country ?? null,
+      place: u.place ?? null,
+      mbti: u.mbti ?? null,
+      interests: u.interests ?? null,
+      is_verified: u.is_verified ?? false,
+      job_title: currentJob?.job_title ?? null,
+      employer: currentJob?.employer ?? null,
+      job_field: currentJob?.job_field ?? null,
+      edu_major: latestEdu?.major ?? null,
+      edu_degree: latestEdu?.degree ?? null,
+      edu_uni: latestEdu?.uni_name ?? null,
+    };
+  });
+  res.json(people);
+});
 
+// ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`\n🟡 KVIS Connect MOCK server running at http://localhost:${PORT}`);
-  console.log(`   Swagger-style docs: not available in mock mode`);
   console.log(`   Health check: http://localhost:${PORT}/api/health\n`);
 });

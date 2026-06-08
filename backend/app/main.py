@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.core.config import settings
 from app.core.database import init_db
 from app.core import cache
-from app.routers import auth, users, search, summary, blogs
+from app.routers import auth, users, search, summary, blogs, notification
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,6 +45,7 @@ app.include_router(users.router, prefix="/api")
 app.include_router(search.router, prefix="/api")
 app.include_router(summary.router, prefix="/api")
 app.include_router(blogs.router, prefix="/api")
+app.include_router(notification.router, prefix="/api")
 
 
 @app.get("/api/health")

@@ -6,20 +6,22 @@ export interface FilterPillProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   active: boolean;
   count?: number;
+  activeColor?: string;
 }
 
 const FilterPill = React.forwardRef<HTMLButtonElement, FilterPillProps>(
-  ({ active, count, children, className, ...props }, ref) => (
+  ({ active, count, children, className, activeColor, ...props }, ref) => (
     <button
       ref={ref}
       type="button"
       className={cn(
         "group inline-flex items-baseline text-sm font-semibold uppercase tracking-[0.14em] leading-none transition-colors rounded-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         active
-          ? "text-[oklch(44%_0.26_294)] underline underline-offset-[6px] decoration-2"
+          ? "underline underline-offset-[6px] decoration-2"
           : "text-muted-foreground hover:text-foreground",
         className,
       )}
+      style={active && activeColor ? { color: activeColor, textDecorationColor: activeColor } : undefined}
       {...props}
     >
       <span>{children}</span>

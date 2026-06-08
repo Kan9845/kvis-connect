@@ -165,7 +165,7 @@ export default function NewBlogPage() {
           >
             KVIS Connect · New post
           </p>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
+          <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
             Write a post
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
@@ -373,7 +373,7 @@ export default function NewBlogPage() {
                   {content.trim() ? (
                     <article className="prose prose-lg max-w-none">
                       {title && (
-                        <h1 className="text-4xl md:text-5xl font-black tracking-[-0.02em] leading-[1.05] text-foreground !mb-6">
+                        <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                           {title}
                         </h1>
                       )}

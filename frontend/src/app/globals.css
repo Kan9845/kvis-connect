@@ -39,6 +39,7 @@ html, body {
     --kvis-purple-light: oklch(60% 0.18 294);
     --kvis-purple-soft: oklch(96% 0.025 294);
     --kvis-green: oklch(40% 0.16 148);
+    --kvis-green-light: oklch(60% 0.12 148);
     --kvis-ink: oklch(12% 0.012 294);
     --kvis-text2: oklch(42% 0.008 294);
     --kvis-text3: oklch(60% 0.006 294);
@@ -47,7 +48,7 @@ html, body {
   }
 
   .dark {
-    --background: 0 0% 0%;
+    --background: 222.2 10% 9%;
     --foreground: 210 40% 98%;
     --card: 0 0% 0%;
     --card-foreground: 210 40% 98%;
@@ -70,15 +71,20 @@ html, body {
     --kvis-purple-light: oklch(68% 0.2 294);
     --kvis-purple-soft: oklch(20% 0.03 294);
     --kvis-green: oklch(40% 0.16 148);
+    --kvis-green-light: oklch(60% 0.12 148);
     --kvis-ink: oklch(95% 0.005 294);
     --kvis-text2: oklch(72% 0.008 294);
     --kvis-text3: oklch(52% 0.006 294);
     --kvis-rule: oklch(22% 0.01 294);
-    --kvis-bg: oklch(11% 0.012 294);
+    --kvis-bg: oklch(26.574% 0.02613 294.361);
+    /* --kvis-bg: oklch(11% 0.012 294); */
   }
 }
 
 @layer base {
+  .font-display {
+    font-family: var(--font-bricolage), var(--font-be-vietnam-pro), sans-serif;
+  }
   * {
     @apply border-border;
   }

@@ -4,6 +4,7 @@ import { AvatarConfig } from "@/lib/avatarTypes";
 
 interface Props {
   config: AvatarConfig;
+  backgroundColor?: string;
 }
 
 const layers = [
@@ -18,48 +19,29 @@ const layers = [
   "hand",
 ] as const;
 
-export function AvatarCanvas({ config }: Props) {
+export function AvatarCanvas({ config, backgroundColor }: Props) {
   return (
     <div className="relative w-full h-full">
+      <img src="/goose/layout.png" alt="" className="absolute inset-0 w-full h-full z-50 pointer-events-none" />
 
-      {/* LAYOUT MASK */}
-      <img
-        src="/goose/layout.png"
-        alt=""
-        className="absolute inset-0 w-full h-full z-50 pointer-events-none"
+      {/* BACKGROUND — cohort color or fallback */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: backgroundColor
+            ? `linear-gradient(135deg, ${backgroundColor} 0%, white 100%)`
+            : "#6d28d9"
+        }}
       />
 
-      {/* BACKGROUND */}
-      {config.background && (
-        <img
-          src={`/goose/${config.background}.png`}
-          alt=""
-          className="absolute inset-0 w-full h-full object-contain"
-        />
-      )}
+      <img src="/goose/goose_base.png" alt="" className="absolute inset-0 w-full h-full object-contain" />
 
-      {/* BODY — ALWAYS EXISTS */}
-      <img
-        src="/goose/goose_base.png"
-        alt=""
-        className="absolute inset-0 w-full h-full object-contain"
-      />
-
-      {/* OTHER LAYERS */}
       {layers.map((layer) => {
         if (layer === "background") return null;
-
         const asset = config[layer];
-
         if (!asset) return null;
-
         return (
-          <img
-            key={layer}
-            src={`/goose/${asset}.png`}
-            alt=""
-            className="absolute inset-0 w-full h-full object-contain"
-          />
+          <img key={layer} src={`/goose/${asset}.png`} alt="" className="absolute inset-0 w-full h-full object-contain" />
         );
       })}
     </div>

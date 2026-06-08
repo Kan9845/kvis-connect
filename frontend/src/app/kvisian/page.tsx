@@ -9,299 +9,431 @@ import { keys } from "@/lib/cache/keys";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FilterPill } from "@/components/ui/filter-pill";
-import { Search, X } from "lucide-react";
-import type { UserCard } from "@/lib/types";
-import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
+import { Search, X, ChevronDown, ArrowUpDown } from "lucide-react";
+import type { DirectoryCard } from "@/lib/types";
+import { PageEntrance, FadeUp } from "@/components/ui/motion";
+import {
+  cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex,
+  effectiveKvisYear, genLabel,
+  isFaculty, facultyPeriodLabel,
+  FACULTY_COLOR, FACULTY_COLOR_HEX, FACULTY_COLOR_SOFT_HEX, FACULTY_TEXT_COLOR,
+} from "@/lib/utils";
+import { motion } from "framer-motion";
 
-const P = {
-  purple: "oklch(44% 0.26 294)",
-  purpleSoft: "oklch(95% 0.035 294)",
-  green: "oklch(40% 0.16 148)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.04 } },
 };
+const staggerChild = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+};
+const ANIMATE_FIRST_N = 10;
 
-type Tab = "alumni" | "students";
+type PersonType = "all" | "alumni" | "students" | "faculty";
 
-const COHORT_YEARS = [9, 8, 7, 6, 5, 4, 3, 2, 1];
+const COHORT_YEARS_ASC = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const COHORT_YEARS_DESC = [9, 8, 7, 6, 5, 4, 3, 2, 1];
 const GRADES = [12, 11, 10];
-const CLASSES = [1, 2, 3, 4];
-type Element = "earth" | "water" | "air" | "fire";
-const ELEMENTS: Element[] = ["earth", "water", "air", "fire"];
-const ELEMENT_LABEL: Record<Element, string> = {
-  earth: "Earth", water: "Water", air: "Air", fire: "Fire",
-};
 
-function cohortGradYear(k: number) { return 2017 + k; }
-function gradeLabel(g: number) { return `M.${g - 6}`; }
-function initials(u: UserCard) {
-  return `${u.first_name?.[0] ?? ""}${u.last_name?.[0] ?? ""}`.toUpperCase();
+const LATEST_COHORT = 9; // keep in sync with utils.ts
+function gradeToKvisYear(g: number) {
+  if (g === 12) return LATEST_COHORT + 1;
+  if (g === 11) return LATEST_COHORT + 2;
+  if (g === 10) return LATEST_COHORT + 3;
+  return LATEST_COHORT + 1;
 }
+function gradeBadgeLabel(g: number) { return `K${gradeToKvisYear(g)}`; }
+function gradeGradYear(g: number) { return 2017 + gradeToKvisYear(g); }
+function gradeMetaLabel(g: number) { return `Class of ${gradeGradYear(g)}`; }
+function cohortGradYear(k: number) { return 2017 + k; }
+function initials(u: DirectoryCard) { return `${u.first_name?.[0] ?? ""}${u.last_name?.[0] ?? ""}`.toUpperCase(); }
 
-function captionAlumni(u: UserCard): string {
-  const currentEdu = u.education?.find((e) => !e.end_year) ?? u.education?.[0];
-  const job = u.career?.find((c) => c.is_current) ?? u.career?.[0];
-  if (currentEdu && !job) return [currentEdu.major || currentEdu.degree, currentEdu.uni_name].filter(Boolean).join(" · ");
-  if (job) {
-    if (job.job_title) { const where = job.employer || job.job_field; return [job.job_title, where && `@ ${where}`].filter(Boolean).join(" "); }
-    if (job.job_field) return job.job_field;
-  }
-  if (currentEdu) return [currentEdu.major || currentEdu.degree, currentEdu.uni_name].filter(Boolean).join(" · ");
+function captionAlumni(u: any): string {
+  if (u.job_title) return [u.job_title, u.employer && `@ ${u.employer}`].filter(Boolean).join(" ");
+  if (u.edu_major) return [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean).join(" · ");
   return "Profile pending";
 }
 
-function captionStudent(u: UserCard): string {
-  const parts: string[] = [];
-  if (u.current_grade) parts.push(gradeLabel(u.current_grade));
-  if (u.current_class) parts.push(`Class ${u.current_class}`);
-  if (u.current_elemental) parts.push(ELEMENT_LABEL[u.current_elemental]);
-  if (parts.length === 0) return "Enrolled student";
-  return parts.join(" · ");
+function captionStudent(u: DirectoryCard): string {
+  if (u.interests) {
+    return u.interests.split(",").map(s => s.trim()).filter(Boolean).slice(0, 2).join(" · ");
+  }
+  return "KVIS Student";
 }
 
-function Portrait({ u, caption }: { u: UserCard; caption: string }) {
+function captionFaculty(u: DirectoryCard): string {
+  return facultyPeriodLabel(u);
+}
+
+// ── Portrait card ────────────────────────────────────────────────────────────
+function Portrait({ u }: { u: DirectoryCard }) {
   const name = `${u.first_name} ${u.last_name}`;
+  const faculty = isFaculty(u);
+
+  const color        = faculty ? FACULTY_COLOR        : cohortColor(effectiveKvisYear(u));
+  const colorHex     = faculty ? FACULTY_COLOR_HEX    : cohortColorHex(effectiveKvisYear(u));
+  const colorSoftHex = faculty ? FACULTY_COLOR_SOFT_HEX : cohortColorSoftHex(effectiveKvisYear(u));
+  const textColor    = faculty ? FACULTY_TEXT_COLOR   : cohortTextColor(effectiveKvisYear(u));
+
+  const caption = faculty
+    ? captionFaculty(u)
+    : u.current_grade
+      ? captionStudent(u)
+      : captionAlumni(u);
+
+  const badge = faculty
+    ? "Faculty"
+    : u.current_grade
+      ? gradeBadgeLabel(u.current_grade)
+      : u.kvis_year
+        ? genLabel(u.kvis_year)
+        : null;
+
   return (
-    <Link href={`/profile/${u.slug}`} className="group block">
-      <div className="relative aspect-square overflow-hidden bg-muted">
-        {u.profile_pic_url ? (
-          <Image
-            src={u.profile_pic_url}
-            alt={name}
-            fill
-            sizes="(min-width:1280px) 160px, (min-width:1024px) 150px, (min-width:640px) 140px, 30vw"
-            className="object-cover grayscale-[18%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-[1.03]"
-          />
+    <Link href={`/profile/${u.slug ?? u.id}`} className="group block h-full">
+      <div
+        className="relative flex flex-col h-full overflow-hidden rounded-2xl border border-[var(--kvis-rule)] transition-all duration-300 group-hover:border-transparent group-hover:shadow-lg"
+        style={{ background: "var(--kvis-bg)" }}
+      >
+        {/* Top color bar — solid gold for faculty, gradient for others */}
+        {faculty ? (
+          <div className="h-1.5 w-full flex-shrink-0" style={{ background: `linear-gradient(90deg, ${FACULTY_COLOR_HEX}, ${FACULTY_COLOR_SOFT_HEX})` }} />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-white font-black text-3xl tracking-tight" style={{ background: P.purple }}>
-            {initials(u)}
+          <div className="h-1.5 w-full flex-shrink-0" style={{ background: `linear-gradient(90deg, ${colorHex}, ${colorSoftHex})` }} />
+        )}
+
+        <div className="flex flex-col items-center gap-3 p-4 flex-1">
+          {/* Avatar */}
+          <div
+            className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 mt-1"
+            style={{ outline: `2.5px solid ${color}`, outlineOffset: "2px" }}
+          >
+            {u.profile_pic_url ? (
+              <Image src={u.profile_pic_url} alt={name} fill sizes="64px"
+                className="object-cover grayscale-[18%] group-hover:grayscale-0 transition-all duration-500" />
+            ) : (
+              <div
+                className="absolute inset-0 flex items-center justify-center font-black text-lg tracking-tight"
+                style={{
+                  background: `linear-gradient(135deg, ${colorHex} 0%, ${colorSoftHex} 100%)`,
+                  color: textColor,
+                }}
+              >
+                {initials(u)}
+              </div>
+            )}
           </div>
-        )}
-        {u.country && (
-          <span className="absolute bottom-1.5 right-1.5 text-[9px] font-bold uppercase tracking-[0.18em] px-1.5 py-0.5 bg-background/90 text-foreground">
-            {u.country.slice(0, 3)}
-          </span>
-        )}
+
+          {/* Name + badge */}
+          <div className="text-center min-w-0 w-full">
+            <p
+              className="text-sm font-bold text-foreground leading-tight truncate group-hover:underline decoration-2 underline-offset-[3px]"
+              style={{ textDecorationColor: color }}
+            >
+              {u.first_name} {u.last_name}
+            </p>
+            {badge && (
+              <span
+                className="inline-block mt-1 text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
+                style={{ background: `${colorHex}22`, color }}
+              >
+                {badge}
+              </span>
+            )}
+          </div>
+
+          {/* Caption */}
+          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-snug text-center w-full flex-1">{caption}</p>
+
+          {/* Country footer */}
+          {u.country && (
+            <div
+              className="w-full pt-2 mt-auto border-t text-[10px] font-semibold uppercase tracking-[0.14em] text-center"
+              style={{ borderColor: "var(--kvis-rule)", color: "var(--kvis-text3)" }}
+            >
+              {u.country}
+            </div>
+          )}
+        </div>
       </div>
-      <p className="pt-2 text-sm font-semibold text-foreground leading-tight group-hover:underline decoration-2 underline-offset-[3px]" style={{ textDecorationColor: P.purple }}>
-        {u.first_name} {u.last_name}
-      </p>
-      <p className="text-xs text-muted-foreground line-clamp-2 leading-snug mt-0.5">{caption}</p>
     </Link>
   );
 }
 
-function GridShell({ children }: { children: React.ReactNode }) {
+// ── Section headers ──────────────────────────────────────────────────────────
+function SectionHeader({
+  display, meta, count, unitLabel, kvis_year, isFacultyHeader,
+}: {
+  display: string; meta: string; count: number; unitLabel: string;
+  kvis_year?: number; isFacultyHeader?: boolean;
+}) {
+  const color = isFacultyHeader ? FACULTY_COLOR : cohortColor(kvis_year);
   return (
-    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
-      {children}
-    </div>
-  );
-}
-
-function SectionHeader({ display, meta, count, unitLabel }: { display: string; meta: string; count: number; unitLabel: string }) {
-  return (
-    <header className="flex items-end justify-between gap-6 pb-5 border-b mb-7" style={{ borderColor: P.rule }}>
+    <header className="flex items-end justify-between gap-6 pb-5 border-b border-[var(--kvis-rule)] mb-7">
       <div className="flex items-baseline gap-5">
-        <h2 className="text-6xl md:text-7xl font-black tracking-[-0.04em] leading-[0.85] text-foreground tabular-nums">{display}</h2>
-        <p className="text-xs font-bold uppercase tracking-[0.26em]" style={{ color: P.purple }}>{meta}</p>
+        <h2 className="font-display text-6xl md:text-7xl font-black tracking-[-0.04em] leading-[0.85] text-foreground tabular-nums">{display}</h2>
+        <p className="text-xs font-bold uppercase tracking-[0.26em]" style={{ color }}>{meta}</p>
       </div>
-      <p className="text-xs uppercase tracking-[0.22em] tabular-nums" style={{ color: P.text3 }}>{count} {unitLabel}</p>
+      <p className="text-xs uppercase tracking-[0.22em] tabular-nums text-[var(--kvis-text3)]">{count} {unitLabel}</p>
     </header>
   );
 }
 
-function CohortSection({ k, students }: { k: number; students: UserCard[] }) {
-  if (students.length === 0) return null;
+function CohortSection({ k, students }: { k: number; students: DirectoryCard[] }) {
+  if (!students.length) return null;
   return (
     <FadeUp>
       <section className="pt-14">
-        <SectionHeader display={`KVIS ${k}`} meta={`Class of ${cohortGradYear(k)}`} count={students.length} unitLabel="alumni" />
-        <StaggerList>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
-            {students.map((s) => (
-              <StaggerItem key={s.id}>
-                <Portrait u={s} caption={captionAlumni(s)} />
-              </StaggerItem>
-            ))}
-          </div>
-        </StaggerList>
+        <SectionHeader display={`KVIS ${k}`} meta={`Class of ${cohortGradYear(k)}`} count={students.length} unitLabel="alumni" kvis_year={k} />
+        <motion.div variants={staggerContainer} initial="initial" animate="animate"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+          {students.map((s, i) => i < ANIMATE_FIRST_N ? (
+            <motion.div key={s.id} variants={staggerChild} className="h-full"><Portrait u={s} /></motion.div>
+          ) : (
+            <div key={s.id} className="h-full"><Portrait u={s} /></div>
+          ))}
+        </motion.div>
       </section>
     </FadeUp>
   );
 }
 
-function GradeSection({ g, students }: { g: number; students: UserCard[] }) {
-  if (students.length === 0) return null;
-  const sorted = [...students].sort((a, b) => {
-    const ca = a.current_class ?? 99;
-    const cb = b.current_class ?? 99;
-    if (ca !== cb) return ca - cb;
-    return (a.first_name || "").localeCompare(b.first_name || "");
-  });
+function GradeSection({ g, students }: { g: number; students: DirectoryCard[] }) {
+  if (!students.length) return null;
+  const pseudoYear = effectiveKvisYear({ current_grade: g });
+  const sorted = [...students].sort((a, b) =>
+    (a.first_name || "").localeCompare(b.first_name || "")
+  );
   return (
     <FadeUp>
       <section className="pt-14">
-        <SectionHeader display={gradeLabel(g)} meta={`Grade ${g}`} count={students.length} unitLabel="in class" />
-        <StaggerList>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
-            {sorted.map((s) => (
-              <StaggerItem key={s.id}>
-                <Portrait u={s} caption={captionStudent(s)} />
-              </StaggerItem>
-            ))}
-          </div>
-        </StaggerList>
+        <SectionHeader display={`KVIS ${gradeToKvisYear(g)}`} meta={gradeMetaLabel(g)} count={sorted.length} unitLabel="students" kvis_year={pseudoYear ?? undefined} />
+        <motion.div variants={staggerContainer} initial="initial" animate="animate"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+          {sorted.map((s, i) => i < ANIMATE_FIRST_N ? (
+            <motion.div key={s.id} variants={staggerChild} className="h-full"><Portrait u={s} /></motion.div>
+          ) : (
+            <div key={s.id} className="h-full"><Portrait u={s} /></div>
+          ))}
+        </motion.div>
       </section>
     </FadeUp>
   );
 }
 
-function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+function FacultySection({ people }: { people: DirectoryCard[] }) {
+  if (!people.length) return null;
+  const sorted = [...people].sort((a, b) =>
+    (a.teach_start_year ?? 9999) - (b.teach_start_year ?? 9999) ||
+    (a.first_name || "").localeCompare(b.first_name || "")
+  );
   return (
-    <div className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-3.5 border-t first:border-t-0" style={{ borderColor: P.rule }}>
-      <span className="text-xs uppercase tracking-[0.26em] font-bold" style={{ color: P.text3 }}>{label}</span>
-      <div className="flex items-center flex-wrap gap-x-4 gap-y-2.5">{children}</div>
+    <FadeUp>
+      <section className="pt-14">
+        <SectionHeader display="Faculty" meta="KVIS Teachers & Staff" count={sorted.length} unitLabel="members" isFacultyHeader />
+        <motion.div variants={staggerContainer} initial="initial" animate="animate"
+          className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+          {sorted.map((s, i) => i < ANIMATE_FIRST_N ? (
+            <motion.div key={s.id} variants={staggerChild} className="h-full"><Portrait u={s} /></motion.div>
+          ) : (
+            <div key={s.id} className="h-full"><Portrait u={s} /></div>
+          ))}
+        </motion.div>
+      </section>
+    </FadeUp>
+  );
+}
+
+// ── Dropdown filter ──────────────────────────────────────────────────────────
+function DropFilter({ label, active, options, value, onChange, sortIcon = false }: {
+  label: string; active: boolean;
+  options: { value: string; label: string; count?: number }[];
+  value: string; onChange: (v: string) => void;
+  sortIcon?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = options.find(o => o.value === value)?.label ?? label;
+  return (
+    <div className="relative">
+      <button type="button" onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] border transition-colors rounded-sm"
+        style={{
+          borderColor: active ? "var(--kvis-purple)" : "var(--kvis-rule)",
+          color: active ? "var(--kvis-purple)" : "var(--kvis-text3)",
+          background: active ? "var(--kvis-purple-soft)" : "transparent",
+        }}>
+        {sortIcon && <ArrowUpDown className="h-3 w-3" />}
+        {active ? selectedLabel : label}
+        <ChevronDown className="h-3 w-3" />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute top-full left-0 mt-1 z-20 min-w-[150px] border border-[var(--kvis-rule)] bg-background shadow-lg rounded-sm overflow-hidden">
+            {options.map(o => (
+              <button key={o.value} type="button"
+                onClick={() => { onChange(o.value); setOpen(false); }}
+                className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors hover:bg-foreground/5 text-left"
+                style={{ color: o.value === value ? "var(--kvis-purple)" : "var(--kvis-text3)" }}>
+                {o.label}
+                {o.count !== undefined && <span className="text-[10px] tabular-nums ml-3 opacity-50">{o.count}</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-export default function SearchPage() {
-  return (
-    <Suspense fallback={null}>
-      <SearchPageInner />
-    </Suspense>
-  );
-}
-
-function SearchPageInner() {
-  const { user, loading: authLoading } = useAuth();
+// ── Main page (inner) ────────────────────────────────────────────────────────
+function KvisianInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabParam = searchParams.get("tab");
-  const initialTab: Tab = tabParam === "students" ? "students" : "alumni";
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading && !user) router.replace("/auth/login?next=/kvisian");
-    if (!authLoading && user && !user.profile_setup_done) router.replace("/onboarding");
+    if (authLoading) return;
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    if (user.profile_setup_done === false) {
+      router.push("/onboarding");
+    }
   }, [authLoading, user, router]);
 
-  const [tab, setTab] = useState<Tab>(initialTab);
-  useEffect(() => { setTab(initialTab); }, [initialTab]);
-
-  const [activeCohort, setActiveCohort] = useState<number | "all">("all");
-  const [activeCountry, setActiveCountry] = useState<string>("");
-  const [activeGrade, setActiveGrade] = useState<number | "all">("all");
-  const [activeClass, setActiveClass] = useState<number | "all">("all");
-  const [activeElement, setActiveElement] = useState<Element | "all">("all");
+  const [personType, setPersonType] = useState<PersonType>("all");
+  const [activeCohort, setActiveCohort] = useState("");
+  const [activeCountry, setActiveCountry] = useState("");
+  const [activeGrade, setActiveGrade] = useState("");
+  const [activeField, setActiveField] = useState("");
+  const [activeUni, setActiveUni] = useState("");
   const [q, setQ] = useState("");
+  const [sortBy, setSortBy] = useState<"cohort-asc" | "cohort-desc" | "name-asc" | "name-desc">("cohort-asc");
 
-  const { data: rawPeople = [], isLoading } = useQuery({
-    queryKey: keys.yearbook.all(),
-    queryFn: () => api.get<UserCard[]>("/api/search", { params: { sort: "kvis_year", order: "asc", limit: 1000 } }).then((r) => r.data),
-    enabled: !!user,
+  const { data: rawPeople = [], isLoading, error } = useQuery<DirectoryCard[]>({
+    queryKey: ["directory"],
+    queryFn: () => api.get<DirectoryCard[]>("/api/search/directory").then(r => {
+      console.log("directory data:", r.data?.length, r.data?.[0]);
+      return r.data;
+    }),
     staleTime: 5 * 60 * 1000,
+    enabled: !authLoading && !!user,
   });
 
-  const people = rawPeople;
-  const alumni = useMemo(() => people.filter((p) => !p.current_grade), [people]);
-  const students = useMemo(() => people.filter((p) => !!p.current_grade), [people]);
+  console.log("rawPeople:", rawPeople.length, "isLoading:", isLoading, "error:", error, "authLoading:", authLoading, "user:", !!user);
+
+  // Partition
+  const facultyAll  = useMemo(() => rawPeople.filter(u => isFaculty(u)), [rawPeople]);
+  const alumniAll   = useMemo(() => rawPeople.filter(u => !isFaculty(u) && !u.current_grade), [rawPeople]);
+  const studentsAll = useMemo(() => rawPeople.filter(u => !isFaculty(u) && !!u.current_grade), [rawPeople]);
 
   const countries = useMemo(() => {
     const m = new Map<string, number>();
-    alumni.forEach((a) => { if (a.country) m.set(a.country, (m.get(a.country) ?? 0) + 1); });
-    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).slice(0, 14);
-  }, [alumni]);
+    rawPeople.forEach(u => { if (u.country) m.set(u.country, (m.get(u.country) ?? 0) + 1); });
+    return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
+  }, [rawPeople]);
 
-  const filteredAlumni = useMemo(() => {
-    const qLow = q.trim().toLowerCase();
-    return alumni.filter((a) => {
-      if (activeCohort !== "all" && a.kvis_year !== activeCohort) return false;
-      if (activeCountry && a.country !== activeCountry) return false;
-      if (qLow) {
-        const job = a.career?.[0];
-        const edu = a.education?.[0];
-        const hay = [`${a.first_name} ${a.last_name}`, a.country, job?.job_title, job?.employer, edu?.major, edu?.uni_name].filter(Boolean).join(" ").toLowerCase();
+  // Source list based on personType
+  const sourceList = useMemo(() => {
+    if (personType === "alumni")  return alumniAll;
+    if (personType === "students") return studentsAll;
+    if (personType === "faculty") return facultyAll;
+    return rawPeople;
+  }, [personType, rawPeople, alumniAll, studentsAll, facultyAll]);
+
+  // Filter
+  const filtered = useMemo(() => {
+    return sourceList.filter(u => {
+      if (activeCohort && u.kvis_year !== parseInt(activeCohort)) return false;
+      if (activeCountry && u.country !== activeCountry) return false;
+      if (activeGrade && u.current_grade !== parseInt(activeGrade)) return false;
+      if (activeField) {
+        if (u.job_field !== activeField) return false;
+      }
+      if (activeUni) {
+        if (u.edu_uni !== activeUni) return false;
+      }
+      if (q.trim()) {
+        const qLow = q.toLowerCase();
+        const hay = [
+          u.first_name, u.last_name, u.country, u.place, u.mbti, u.interests,
+          u.job_title, u.employer, u.job_field,
+          u.edu_major, u.edu_uni,
+        ].filter(Boolean).join(" ").toLowerCase();
         if (!hay.includes(qLow)) return false;
       }
       return true;
     });
-  }, [alumni, activeCohort, activeCountry, q]);
+  }, [sourceList, activeCohort, activeCountry, activeGrade, activeField, activeUni, q]);
+
+  const sortedFiltered = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      if (sortBy === "name-asc") return (a.first_name || "").localeCompare(b.first_name || "");
+      if (sortBy === "name-desc") return (b.first_name || "").localeCompare(a.first_name || "");
+      const ky_a = effectiveKvisYear(a) ?? 999;
+      const ky_b = effectiveKvisYear(b) ?? 999;
+      if (sortBy === "cohort-desc") return ky_b - ky_a;
+      return ky_a - ky_b;
+    });
+  }, [filtered, sortBy]);
 
   const byCohort = useMemo(() => {
-    const m = new Map<number, UserCard[]>();
-    filteredAlumni.forEach((a) => {
+    const m = new Map<number, DirectoryCard[]>();
+    filtered.filter(u => !isFaculty(u) && !u.current_grade).forEach(a => {
       const k = a.kvis_year ?? 0;
       if (!m.has(k)) m.set(k, []);
       m.get(k)!.push(a);
     });
-    m.forEach((arr) => arr.sort((x, y) => (x.first_name || "").localeCompare(y.first_name || "")));
+    m.forEach(arr => arr.sort((x, y) => (x.first_name || "").localeCompare(y.first_name || "")));
     return m;
-  }, [filteredAlumni]);
-
-  const classCounts = useMemo(() => {
-    const m = new Map<number, number>();
-    students.forEach((s) => { if (s.current_class) m.set(s.current_class, (m.get(s.current_class) ?? 0) + 1); });
-    return m;
-  }, [students]);
-
-  const elementCounts = useMemo(() => {
-    const m = new Map<Element, number>();
-    students.forEach((s) => { if (s.current_elemental) m.set(s.current_elemental, (m.get(s.current_elemental) ?? 0) + 1); });
-    return m;
-  }, [students]);
-
-  const filteredStudents = useMemo(() => {
-    const qLow = q.trim().toLowerCase();
-    return students.filter((s) => {
-      if (activeGrade !== "all" && s.current_grade !== activeGrade) return false;
-      if (activeClass !== "all" && s.current_class !== activeClass) return false;
-      if (activeElement !== "all" && s.current_elemental !== activeElement) return false;
-      if (qLow && !`${s.first_name} ${s.last_name}`.toLowerCase().includes(qLow)) return false;
-      return true;
-    });
-  }, [students, activeGrade, activeClass, activeElement, q]);
+  }, [filtered]);
 
   const byGrade = useMemo(() => {
-    const m = new Map<number, UserCard[]>();
-    filteredStudents.forEach((s) => {
+    const m = new Map<number, DirectoryCard[]>();
+    filtered.filter(u => !isFaculty(u) && !!u.current_grade).forEach(s => {
       const g = s.current_grade ?? 0;
       if (!m.has(g)) m.set(g, []);
       m.get(g)!.push(s);
     });
     return m;
-  }, [filteredStudents]);
+  }, [filtered]);
 
-  const hasFilter = tab === "alumni"
-    ? activeCohort !== "all" || !!activeCountry || q.trim().length > 0
-    : activeGrade !== "all" || activeClass !== "all" || activeElement !== "all" || q.trim().length > 0;
+  const filteredFaculty = useMemo(() => filtered.filter(u => isFaculty(u)), [filtered]);
+
+  const showSectionHeaders =
+    !activeCohort && !activeCountry && !activeGrade &&
+    !activeField && !activeUni && !q.trim() &&
+    (sortBy === "cohort-asc" || sortBy === "cohort-desc");
+
+  const hasRealFilter =
+    !!activeCohort || !!activeCountry || !!activeGrade ||
+    !!activeField || !!activeUni || q.trim().length > 0;
 
   const resetFilters = () => {
-    if (tab === "alumni") { setActiveCohort("all"); setActiveCountry(""); }
-    else { setActiveGrade("all"); setActiveClass("all"); setActiveElement("all"); }
-    setQ("");
+    setPersonType("all"); setActiveCohort(""); setActiveCountry("");
+    setActiveGrade(""); setActiveField(""); setActiveUni(""); setQ("");
   };
 
-  const switchTab = (t: Tab) => {
-    if (t === tab) return;
-    setTab(t);
-    setQ("");
-    router.replace(t === "students" ? "/kvisian?tab=students" : "/kvisian", { scroll: false });
-  };
+  const showAlumni   = personType === "all" || personType === "alumni";
+  const showStudents = personType === "all" || personType === "students";
+  const showFaculty  = personType === "all" || personType === "faculty";
 
   if (authLoading || !user) {
     return (
       <PageEntrance>
         <div className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">
           <Skeleton className="h-32 w-full mb-8" />
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
-            {Array.from({ length: 14 }).map((_, i) => (
-              <div key={i}>
-                <Skeleton className="aspect-square mb-2" />
-                <Skeleton className="h-4 w-3/4 mb-1" />
-                <Skeleton className="h-3 w-1/2" />
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            {Array.from({ length: 15 }).map((_, i) => (
+              <div key={i} className="rounded-2xl border border-[var(--kvis-rule)] overflow-hidden">
+                <Skeleton className="h-1.5 w-full" />
+                <div className="p-4 flex flex-col items-center gap-3">
+                  <Skeleton className="w-16 h-16 rounded-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
               </div>
             ))}
           </div>
@@ -310,11 +442,6 @@ function SearchPageInner() {
     );
   }
 
-  const isAlumni = tab === "alumni";
-  const activeList = isAlumni ? filteredAlumni : filteredStudents;
-  const masterList = isAlumni ? alumni : students;
-  const unitWord = isAlumni ? "alumni" : "students";
-
   return (
     <PageEntrance>
       <div className="min-h-full bg-background">
@@ -322,167 +449,156 @@ function SearchPageInner() {
 
           <FadeUp>
             <header className="pb-7 border-b border-foreground/60">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3" style={{ color: P.purple }}>KVIS Connect · Directory</p>
-              <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
-                {isAlumni ? "Yearbook" : "Current Class"}
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)]">KVIS Connect · Directory</p>
+              <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
+                <span className="font-light text-foreground">Find your </span>
+                <span style={{ color: "var(--kvis-purple)" }}>People.</span>
               </h1>
-              <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed whitespace-nowrap overflow-hidden text-ellipsis">
-                {isAlumni ? "Every alum, grouped by cohort. Filter by year, country, or name." : "Every student, grouped by grade. Filter by class, house, or name."}
+              <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
+                Browse {rawPeople.length} registered Kvisians by cohort, country, field, and interests.
+                <br />
+                Data reflects members who have joined KVIS Connect and may not represent the full alumni or student body.
               </p>
-              <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap" style={{ color: P.text3 }}>
-                {isAlumni ? (
-                  <>
-                    <span>{alumni.length} alumni</span>
-                    <span aria-hidden>·</span>
-                    <span>{COHORT_YEARS.length} cohorts</span>
-                    <span aria-hidden>·</span>
-                    <span>{countries.length} countries</span>
-                  </>
-                ) : (
-                  <>
-                    <span>{students.length} students</span>
-                    <span aria-hidden>·</span>
-                    <span>{GRADES.length} grades</span>
-                    <span aria-hidden>·</span>
-                    <span>{CLASSES.length} classes</span>
-                    <span aria-hidden>·</span>
-                    <span>{ELEMENTS.length} elements</span>
-                  </>
-                )}
+              <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
+                <span>{alumniAll.length} alumni</span>
+                <span aria-hidden>·</span>
+                <span>{studentsAll.length} students</span>
+                <span aria-hidden>·</span>
+                {facultyAll.length > 0 && <>
+                  <span>{facultyAll.length} faculty</span>
+                  <span aria-hidden>·</span>
+                </>}
+                <span>{countries.length} countries</span>
               </div>
             </header>
           </FadeUp>
 
           <FadeUp delay={0.1}>
-            <Tabs value={tab} onValueChange={(v) => switchTab(v as Tab)} className="w-full">
-              <TabsList className="h-auto w-full justify-start gap-7 rounded-none border-b bg-transparent p-0 pt-5 pb-1" style={{ borderColor: P.rule }}>
-                <TabsTrigger value="alumni" className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2">Alumni</TabsTrigger>
-                <TabsTrigger value="students" className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[oklch(44%_0.26_294)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2">Current Students</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </FadeUp>
+            <nav className="py-4 border-b border-[var(--kvis-rule)] space-y-3">
+              {/* Search */}
+              <div className="flex items-center gap-3 px-3 py-2 border border-[var(--kvis-rule)] rounded-sm">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input value={q} onChange={e => setQ(e.target.value)}
+                  placeholder="Search by name, interest (chess, photography...), field, university..."
+                  className="flex-1 bg-transparent border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none" />
+                {q && <button onClick={() => setQ("")}><X className="h-3.5 w-3.5 text-muted-foreground" /></button>}
+              </div>
 
-          <FadeUp delay={0.15}>
-            <nav className="pt-2 pb-2">
-              {isAlumni ? (
-                <>
-                  <FilterRow label="Cohort">
-                    <FilterPill active={activeCohort === "all"} onClick={() => setActiveCohort("all")}>All</FilterPill>
-                    {COHORT_YEARS.map((y) => (
-                      <FilterPill key={y} active={activeCohort === y} onClick={() => setActiveCohort(activeCohort === y ? "all" : y)}>K{y}</FilterPill>
-                    ))}
-                  </FilterRow>
-                  {countries.length > 0 && (
-                    <FilterRow label="Country">
-                      <FilterPill active={!activeCountry} onClick={() => setActiveCountry("")}>All</FilterPill>
-                      {countries.map(([c, n]) => (
-                        <FilterPill key={c} active={activeCountry === c} onClick={() => setActiveCountry(activeCountry === c ? "" : c)} count={n}>{c}</FilterPill>
-                      ))}
-                    </FilterRow>
-                  )}
-                </>
-              ) : (
-                <>
-                  <FilterRow label="Grade">
-                    <FilterPill active={activeGrade === "all"} onClick={() => setActiveGrade("all")}>All</FilterPill>
-                    {GRADES.map((g) => (
-                      <FilterPill key={g} active={activeGrade === g} onClick={() => setActiveGrade(activeGrade === g ? "all" : g)}>{gradeLabel(g)}</FilterPill>
-                    ))}
-                  </FilterRow>
-                  <FilterRow label="Class">
-                    <FilterPill active={activeClass === "all"} onClick={() => setActiveClass("all")}>All</FilterPill>
-                    {CLASSES.map((c) => (
-                      <FilterPill key={c} active={activeClass === c} onClick={() => setActiveClass(activeClass === c ? "all" : c)} count={classCounts.get(c) ?? 0}>{c}</FilterPill>
-                    ))}
-                  </FilterRow>
-                  <FilterRow label="Element">
-                    <FilterPill active={activeElement === "all"} onClick={() => setActiveElement("all")}>All</FilterPill>
-                    {ELEMENTS.map((e) => (
-                      <FilterPill key={e} active={activeElement === e} onClick={() => setActiveElement(activeElement === e ? "all" : e)} count={elementCounts.get(e) ?? 0}>{ELEMENT_LABEL[e]}</FilterPill>
-                    ))}
-                  </FilterRow>
-                </>
-              )}
-              <div className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-center gap-x-5 py-2 border-t border-b" style={{ borderColor: P.rule }}>
-                <span className="text-xs uppercase tracking-[0.26em] font-bold" style={{ color: P.text3 }}>Find</span>
-                <div className="flex items-center gap-3">
-                  <Search className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <input
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    placeholder={isAlumni ? "Search by name, university, employer…" : "Search by name…"}
-                    className="flex-1 bg-transparent border-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
-                  />
-                  {hasFilter && (
-                    <Button type="button" variant="ghost" onClick={resetFilters} className="h-auto shrink-0 gap-1.5 px-2 py-1 text-xs font-bold uppercase tracking-[0.22em] hover:bg-transparent hover:text-foreground" style={{ color: P.text3 }}>
-                      <X className="h-3 w-3" /> Reset
-                    </Button>
-                  )}
-                </div>
+              {/* Person-type pills */}
+              <div className="flex items-center flex-wrap gap-2">
+                {(["all", "alumni", "students", "faculty"] as PersonType[]).map(t => (
+                  <button key={t} type="button"
+                    onClick={() => {
+                      setPersonType(t);
+                      setActiveCohort(""); setActiveGrade(""); setActiveField(""); setActiveUni("");
+                    }}
+                    className="px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] border transition-colors rounded-sm"
+                    style={{
+                      borderColor: personType === t ? "var(--kvis-purple)" : "var(--kvis-rule)",
+                      color: personType === t ? "var(--kvis-purple)" : "var(--kvis-text3)",
+                      background: personType === t ? "var(--kvis-purple-soft)" : "transparent",
+                    }}>
+                    {t === "all" ? "Everyone" : t === "alumni" ? "Alumni" : t === "students" ? "Students" : "Faculty"}
+                  </button>
+                ))}
+
+                <div className="w-px h-4 bg-[var(--kvis-rule)]" />
+
+                <DropFilter label="Anywhere" active={!!activeCountry} value={activeCountry} onChange={setActiveCountry}
+                  options={[{ value: "", label: "Anywhere" }, ...countries.map(([c, n]: [string, number]) => ({ value: c, label: c, count: n }))]} />
+
+                {(personType === "all" || personType === "alumni") && (
+                  <DropFilter label="Any cohort" active={!!activeCohort} value={activeCohort} onChange={setActiveCohort}
+                    options={[{ value: "", label: "Any cohort" }, ...COHORT_YEARS_DESC.map(y => ({ value: String(y), label: `K${y}` }))]} />
+                )}
+
+                {(personType === "all" || personType === "students") && (
+                  <>
+                    <DropFilter label="Any grade" active={!!activeGrade} value={activeGrade} onChange={setActiveGrade}
+                      options={[{ value: "", label: "Any grade" }, ...GRADES.map(g => ({ value: String(g), label: `K${gradeToKvisYear(g)} (M.${g - 6})` }))]} />
+                  </>
+                )}
+
+                <DropFilter
+                  label="Sort" active={sortBy !== "cohort-asc"} value={sortBy} onChange={v => setSortBy(v as typeof sortBy)}
+                  sortIcon
+                  options={[
+                    { value: "cohort-asc", label: "Cohort ↑" },
+                    { value: "cohort-desc", label: "Cohort ↓" },
+                    { value: "name-asc", label: "Name A–Z" },
+                    { value: "name-desc", label: "Name Z–A" },
+                  ]}
+                />
+
+                {hasRealFilter && (
+                  <button onClick={resetFilters} className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] border border-[var(--kvis-rule)] rounded-sm text-muted-foreground hover:text-foreground">
+                    <X className="h-3 w-3" /> Reset
+                  </button>
+                )}
               </div>
             </nav>
           </FadeUp>
 
-          {isLoading && (
-            <div className="pt-10 space-y-10">
-              {Array.from({ length: 2 }).map((_, i) => (
-                <div key={i}>
-                  <Skeleton className="h-16 w-full mb-6" />
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-x-5 gap-y-7">
-                    {Array.from({ length: 14 }).map((_, j) => (
-                      <div key={j}>
-                        <Skeleton className="aspect-square mb-2" />
-                        <Skeleton className="h-4 w-3/4 mb-1" />
-                        <Skeleton className="h-3 w-1/2" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {!isLoading && activeList.length === 0 && (
-            <FadeUp>
-              <div className="py-24 text-center">
-                <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4" style={{ color: P.text3 }}>Nothing matches</p>
-                <p className="text-3xl font-black tracking-tight text-foreground mb-3">
-                  {isAlumni ? "No alumni match this filter" : "No current students match"}
-                </p>
-                {hasFilter && (
-                  <Button variant="link" onClick={resetFilters} className="h-auto p-0 text-sm underline hover:no-underline" style={{ color: P.purple }}>
-                    Clear filters
-                  </Button>
+          {/* Results */}
+          {showSectionHeaders ? (
+            <>
+              {sortBy === "cohort-desc" ? (
+                <>
+                  {/* Descending: students first (K12→K10), then alumni (K9→K1) */}
+                  {showStudents && Array.from(byGrade.keys())
+                    .sort((a, b) => a - b)
+                    .map(g => <GradeSection key={g} g={g} students={byGrade.get(g) ?? []} />)}
+                  {showAlumni && (
+                    Array.from(byCohort.keys())
+                      .sort((a, b) => b - a)
+                      .map(k => <CohortSection key={k} k={k} students={byCohort.get(k) ?? []} />)
+                  )}
+                  {showFaculty && <FacultySection people={filteredFaculty} />}
+                </>
+              ) : (
+                <>
+                  {/* Ascending: alumni first (K1→K9), then students (K10→K12) */}
+                  {showAlumni && (
+                    Array.from(byCohort.keys())
+                      .sort((a, b) => a - b)
+                      .map(k => <CohortSection key={k} k={k} students={byCohort.get(k) ?? []} />)
+                  )}
+                  {showStudents && Array.from(byGrade.keys())
+                    .sort((a, b) => b - a)
+                    .map(g => <GradeSection key={g} g={g} students={byGrade.get(g) ?? []} />)}
+                  {showFaculty && <FacultySection people={filteredFaculty} />}
+                </>
+              )}
+            </>
+          ) : (
+            <FadeUp delay={0.2}>
+              <div className="pt-10">
+                <p className="text-xs uppercase tracking-[0.26em] font-bold mb-6 text-[var(--kvis-text3)]">{sortedFiltered.length} result{sortedFiltered.length !== 1 ? "s" : ""}</p>
+                <motion.div variants={staggerContainer} initial="initial" animate="animate"
+                  className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 items-stretch">
+                  {sortedFiltered.map((u: DirectoryCard, i) => i < ANIMATE_FIRST_N ? (
+                    <motion.div key={u.id} variants={staggerChild} className="h-full"><Portrait u={u} /></motion.div>
+                  ) : (
+                    <div key={u.id} className="h-full"><Portrait u={u} /></div>
+                  ))}
+                </motion.div>
+                {sortedFiltered.length === 0 && (
+                  <p className="text-center text-muted-foreground text-sm py-16">No results — <button onClick={resetFilters} className="underline">clear filters</button></p>
                 )}
               </div>
-            </FadeUp>
-          )}
-
-          {!isLoading && activeList.length > 0 && (
-            <>
-              {isAlumni
-                ? COHORT_YEARS.map((k) => {
-                    const arr = byCohort.get(k) ?? [];
-                    return arr.length > 0 ? <CohortSection key={k} k={k} students={arr} /> : null;
-                  })
-                : GRADES.map((g) => {
-                    const arr = byGrade.get(g) ?? [];
-                    return arr.length > 0 ? <GradeSection key={g} g={g} students={arr} /> : null;
-                  })}
-            </>
-          )}
-
-          {!isLoading && activeList.length > 0 && (
-            <FadeUp>
-              <footer className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between">
-                <span>- end -</span>
-                <span className="tabular-nums">{activeList.length} {unitWord}{hasFilter && ` (of ${masterList.length})`}</span>
-              </footer>
             </FadeUp>
           )}
 
         </div>
       </div>
     </PageEntrance>
+  );
+}
+
+export default function KvisianPage() {
+  return (
+    <Suspense>
+      <KvisianInner />
+    </Suspense>
   );
 }

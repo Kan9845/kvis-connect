@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Be_Vietnam_Pro } from "next/font/google";
+import { Inter, Be_Vietnam_Pro, Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NavbarVariantProvider } from "@/contexts/NavbarVariantContext";
 import { Providers, RQProviders } from "./providers";
-import { Navbar } from "@/components/layout/Navbar";
+import { Navbar } from "@/components/layout/NavbarWrapper";
 import { Toaster } from "@/components/layout/Toaster";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -12,6 +12,11 @@ const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   variable: "--font-be-vietnam-pro",
+});
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-bricolage",
 });
 
 export const metadata: Metadata = {
@@ -33,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin=""
         />
       </head>
-      <body className={`${inter.className} ${beVietnamPro.variable}`}>
+      <body className={`${inter.className} ${beVietnamPro.variable} ${bricolage.variable}`}>
         <Providers>
           <AuthProvider>
             <RQProviders>

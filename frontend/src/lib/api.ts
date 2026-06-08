@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { BlogComment } from "./types";
 import type {
   UserMe, UserPublic, UserCard, GlobePin,
   BlogRead, BlogDetail, Summary, SearchParams,
@@ -130,6 +131,18 @@ export const blogApi = {
     const res = await api.post<{ url: string }>("/api/upload", formData);
     return res.data;
   },
+  getLike: (slug: string) =>
+    api.get<{ likes: number; liked: boolean }>(`/api/blogs/${slug}/like`).then(r => r.data),
+  toggleLike: (slug: string) =>
+    api.post<{ likes: number; liked: boolean }>(`/api/blogs/${slug}/like`).then(r => r.data),
+  getComments: (slug: string) =>
+    api.get<BlogComment[]>(`/api/blogs/${slug}/comments`).then(r => r.data),
+  addComment: (slug: string, content: string, parent_id?: string) =>
+    api.post<BlogComment>(`/api/blogs/${slug}/comments`, { content, parent_id: parent_id ?? null }).then(r => r.data),
+  deleteComment: (slug: string, commentId: string) =>
+    api.delete(`/api/blogs/${slug}/comments/${commentId}`),
+  toggleComments: (slug: string) =>
+    api.patch<{ comments_enabled: boolean }>(`/api/blogs/${slug}/comments/toggle`).then(r => r.data),
 };
 
 export default api;
