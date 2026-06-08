@@ -206,8 +206,7 @@ def _user_to_public(user: User) -> dict:
     return {
         "id": user.id, "slug": user.slug, "first_name": user.first_name, "last_name": user.last_name,
         "kvis_year": user.kvis_year,
-        "current_grade": user.current_grade, "current_class": user.current_class,
-        "current_elemental": user.current_elemental,
+        "current_grade": user.current_grade,
         "place": user.place, "latitude": user.latitude,
         "longitude": user.longitude, "country": user.country,
         "profile_pic_url": user.profile_pic_url, "bio": user.bio,

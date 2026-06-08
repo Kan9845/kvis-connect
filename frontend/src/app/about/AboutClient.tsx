@@ -51,7 +51,7 @@ export function AboutClient() {
                   KVIS Connect · About
                 </p>
                 <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
-                  <span className="font-light text-foreground">About </span><span style={{ color: "var(--kvis-purple)" }}>Us.</span>
+                  <span className="font-light text-foreground">About </span><span style={{ color: "var(--kvis-purple)" }}>Us</span>
                 </h1>
                 <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
                   KVIS Connect maps the global footprint of Kamnoetvidya Science Academy

@@ -4,10 +4,9 @@ import { blogApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import { onBlogDeleteSuccess } from "@/lib/cache/invalidate";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, ArrowLeft, Trash2, Heart, MessageSquare, Lock, Unlock, ChevronDown, ChevronUp, CornerDownRight } from "lucide-react";
+import { ArrowLeft, Trash2, Heart, MessageSquare, Lock, Unlock, ChevronDown, ChevronUp, CornerDownRight, Dot } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
@@ -45,7 +44,7 @@ function CommentAvatar({ author, size = 32 }: { author: BlogComment["author"]; s
   return (
     <Avatar style={{ width: size, height: size, outline: `2px solid ${ringColor}`, outlineOffset: "1px", flexShrink: 0 }}>
       <AvatarImage src={author.profile_pic_url} alt={name} />
-      <AvatarFallback style={{ background: `linear-gradient(135deg, ${color}, ${colorSoft})`, color: textColor, fontSize: size * 0.35 }}>
+      <AvatarFallback style={{ background: color, color: textColor, fontSize: size * 0.35 }}>
         {initials}
       </AvatarFallback>
     </Avatar>
@@ -83,7 +82,7 @@ function CommentInput({ slug, parentId, onDone, autoFocus = false }: {
         onChange={e => setText(e.target.value)}
         placeholder={parentId ? "Write a reply..." : "Write a comment..."}
         rows={3}
-        className="w-full bg-transparent border border-[var(--kvis-rule)] rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[var(--kvis-purple)] transition-colors resize-none"
+        className="w-full bg-transparent border border-[var(--kvis-border)] rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[var(--kvis-purple)] transition-colors resize-none"
       />
       <div className="flex gap-2 justify-end">
         <Button
@@ -146,12 +145,12 @@ function CommentNode({ comment, slug, user, depth = 0, onDelete, onAdd }: {
                 {comment.author.first_name} {comment.author.last_name}
               </Link>
               {comment.author.kvis_year && (
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: `${cohortColorHex(comment.author.kvis_year)}22`, color }}>
                   {genLabel(comment.author.kvis_year)}
                 </span>
               )}
-              <span className="text-[10px] text-[var(--kvis-text3)] font-mono">
+              <span className="text-xs text-[var(--kvis-text3)] font-mono">
                 {formatDate(comment.created_at)}
               </span>
             </div>
@@ -164,7 +163,7 @@ function CommentNode({ comment, slug, user, depth = 0, onDelete, onAdd }: {
               {user && (
                 <button
                   onClick={() => setReplying(v => !v)}
-                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.14em] transition-colors"
+                  className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.14em] transition-colors"
                   style={{ color: replying ? "var(--kvis-purple)" : "var(--kvis-text3)" }}
                 >
                   <CornerDownRight className="h-3 w-3" />
@@ -174,7 +173,7 @@ function CommentNode({ comment, slug, user, depth = 0, onDelete, onAdd }: {
               {hasReplies && (
                 <button
                   onClick={() => setCollapsed(v => !v)}
-                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.14em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
                 >
                   {collapsed
                     ? <><ChevronDown className="h-3 w-3" /> {comment.replies!.length} {comment.replies!.length === 1 ? "reply" : "replies"}</>
@@ -185,7 +184,7 @@ function CommentNode({ comment, slug, user, depth = 0, onDelete, onAdd }: {
               {isOwn && (
                 <button
                   onClick={handleDelete}
-                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--kvis-text3)] hover:text-destructive transition-colors ml-auto"
+                  className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.14em] text-[var(--kvis-text3)] hover:text-destructive transition-colors ml-auto"
                 >
                   <Trash2 className="h-3 w-3" /> Delete
                 </button>
@@ -354,83 +353,87 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
   return (
     <PageEntrance>
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <div className="mx-auto max-w-3xl px-6 lg:px-8 py-10 lg:py-14">
 
         <FadeUp>
-          <Button variant="ghost" size="sm" asChild className="mb-6 -ml-2">
-            <Link href="/blog"><ArrowLeft className="h-4 w-4 mr-1" /> Back to Blog</Link>
-          </Button>
+          <Link href="/blog"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[var(--kvis-text3)] hover:text-foreground transition-colors mb-10 group">
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+            Stories
+          </Link>
         </FadeUp>
 
-        {blog.cover_image_url && (
-          <FadeUp delay={0.05}>
-            <div className="relative h-72 w-full rounded-xl overflow-hidden mb-8">
-              <Image src={blog.cover_image_url} alt={blog.title} fill className="object-cover" />
-            </div>
-          </FadeUp>
-        )}
-
-        <FadeUp delay={0.1}>
-          {tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-            </div>
-          )}
-          <h1 className="text-3xl font-bold leading-tight mb-4">{blog.title}</h1>
-        </FadeUp>
-
-        <FadeUp delay={0.15}>
-          <div className="flex items-center justify-between mb-8 pb-6 border-b">
-            <Link href={`/profile/${blog.author.slug}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <Avatar className="h-10 w-10" style={{ outline: `2px solid ${ringColor}`, outlineOffset: "2px" }}>
-                <AvatarImage src={blog.author.profile_pic_url ?? ""} />
-                <AvatarFallback style={{
-                  background: `linear-gradient(135deg, ${cohortColorHex(blog.author.kvis_year)} 0%, ${cohortColorSoftHex(blog.author.kvis_year)} 100%)`,
-                  color: cohortTextColor(blog.author.kvis_year),
-                }}>
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-sm font-medium">{blog.author.first_name} {blog.author.last_name}</p>
-                {blog.author.kvis_year && (
-                  <p className="text-xs font-bold" style={{ color: ringColor }}>
-                    {genLabel(blog.author.kvis_year)}
-                  </p>
-                )}
+        <FadeUp delay={0.05}>
+          <header className="mb-8 pb-8 border-b border-foreground/60">
+            {tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-5">
+                {tags.map(tag => (
+                  <span key={tag} className="text-xs font-bold uppercase tracking-[0.14em] px-2.5 py-1"
+                    style={{ background: "var(--kvis-purple-soft)", color: "var(--kvis-purple)" }}>
+                    {tag}
+                  </span>
+                ))}
               </div>
-            </Link>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
+            )}
+            <h1 className="font-display text-4xl md:text-5xl font-black tracking-[-0.025em] leading-[0.95] text-foreground mb-6">
+              {blog.title}
+            </h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Link href={`/profile/${blog.author.slug}`} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
+                <Avatar className="h-8 w-8" style={{ outline: `2px solid ${ringColor}`, outlineOffset: "2px" }}>
+                  <AvatarImage src={blog.author.profile_pic_url ?? ""} />
+                  <AvatarFallback style={{
+                    background: `linear-gradient(135deg, ${cohortColorHex(blog.author.kvis_year)} 0%, ${cohortColorSoftHex(blog.author.kvis_year)} 100%)`,
+                    color: cohortTextColor(blog.author.kvis_year),
+                  }}>
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-bold text-foreground">{blog.author.first_name} {blog.author.last_name}</span>
+                  {blog.author.kvis_year && (
+                    <span className="text-xs font-bold" style={{ color: ringColor }}>{genLabel(blog.author.kvis_year)}</span>
+                  )}
+                </div>
+              </Link>
+              <Dot className="h-3 w-3 text-[var(--kvis-text3)] shrink-0" />
+              <span className="text-xs text-[var(--kvis-text3)] tabular-nums">
                 {blog.published_at ? formatDate(blog.published_at) : "Draft"}
               </span>
               {isAuthor && (
-                <>
+                <div className="ml-auto flex items-center gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--kvis-text3)] hover:text-foreground"
+                    className="h-7 gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--kvis-text3)] hover:text-foreground px-2"
                     onClick={handleToggleComments}
                   >
                     {commentsEnabled
-                      ? <><Unlock className="h-3.5 w-3.5" /> Close comments</>
-                      : <><Lock className="h-3.5 w-3.5" /> Open comments</>
+                      ? <><Unlock className="h-3 w-3" /> Close</>
+                      : <><Lock className="h-3 w-3" /> Open</>
                     }
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    className="h-7 w-7 text-destructive hover:text-destructive"
                     onClick={() => { if (confirm("Delete this post?")) deleteMutation.mutate(); }}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
-                </>
+                </div>
               )}
             </div>
-          </div>
+          </header>
         </FadeUp>
+
+        {blog.cover_image_url && (
+          <FadeUp delay={0.1}>
+            <div className="relative h-72 w-full overflow-hidden mb-8">
+              <Image src={blog.cover_image_url} alt={blog.title} fill className="object-cover" />
+            </div>
+          </FadeUp>
+        )}
 
         <FadeUp delay={0.2}>
           <article className="prose">
@@ -440,7 +443,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
         {/* Like button */}
         <FadeUp delay={0.25}>
-          <div className="mt-12 pt-8 border-t border-[var(--kvis-rule)] flex items-center justify-center">
+          <div className="mt-12 pt-8 border-t border-[var(--kvis-border)] flex items-center justify-center">
             <button
               type="button"
               onClick={handleLike}
@@ -450,7 +453,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
               <div
                 className="flex items-center justify-center w-14 h-14 rounded-full border-2 transition-all duration-200 group-hover:scale-110"
                 style={{
-                  borderColor: liked ? "var(--kvis-purple)" : "var(--kvis-rule)",
+                  borderColor: liked ? "var(--kvis-purple)" : "var(--kvis-border)",
                   background: liked ? "var(--kvis-purple-soft)" : "transparent",
                 }}
               >
@@ -472,7 +475,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
         {/* Comments section */}
         <FadeUp delay={0.3}>
-          <section className="mt-12 pt-8 border-t border-[var(--kvis-rule)]">
+          <section className="mt-12 pt-8 border-t border-[var(--kvis-border)]">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-[var(--kvis-text3)]" />
@@ -480,7 +483,10 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
                   Discussion
                 </h2>
                 {count > 0 && (
-                  <span className="text-xs font-mono text-[var(--kvis-text3)]">· {count}</span>
+                  <span className="flex items-center gap-1.5 text-xs font-mono text-[var(--kvis-text3)]">
+                    <Dot className="h-3 w-3 text-[var(--kvis-text3)] shrink-0" />
+                    {count}
+                  </span>
                 )}
               </div>
               {!commentsEnabled && (
@@ -498,7 +504,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
             )}
 
             {commentsEnabled && !user && (
-              <div className="mb-8 px-4 py-3 border border-[var(--kvis-rule)] rounded-lg text-sm text-muted-foreground">
+              <div className="mb-8 px-4 py-3 border border-[var(--kvis-border)] rounded-lg text-sm text-muted-foreground">
                 <Link href="/auth/login" className="text-[var(--kvis-purple)] font-semibold underline underline-offset-2">
                   Sign in
                 </Link>{" "}to join the discussion.

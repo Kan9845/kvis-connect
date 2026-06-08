@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -545,7 +545,7 @@ export function Navbar() {
           backdropFilter: "none",
         }}
       >
-        {/* Top bar — hidden on mobile when panel is open */}
+        {/* Top bar - hidden on mobile when panel is open */}
         <div
           className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-6 h-16`}
         >
@@ -795,3 +795,4 @@ export function Navbar() {
     </header>
   );
 }
+

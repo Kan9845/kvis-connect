@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 const BASE = "https://countriesnow.space/api/v0.1";
 
-// Countries that are effectively a single city — no city selection needed.
+// Countries that are effectively a single city - no city selection needed.
 export const CITY_STATE_COUNTRIES = new Set([
   "Singapore", "Monaco", "Vatican City", "San Marino", "Liechtenstein",
   "Maldives", "Bahrain", "Luxembourg", "Malta", "Andorra",
@@ -242,3 +242,4 @@ export function CitySelect({ country, value, onChange, borderColor, variant = "b
     </Popover>
   );
 }
+

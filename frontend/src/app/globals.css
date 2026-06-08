@@ -40,10 +40,19 @@ html, body {
     --kvis-purple-soft: oklch(96% 0.025 294);
     --kvis-green: oklch(40% 0.16 148);
     --kvis-green-light: oklch(60% 0.12 148);
+    --cohort-p1: oklch(44% 0.26 294);
+    --cohort-p2: oklch(50% 0.24 294);
+    --cohort-p3: oklch(56% 0.21 294);
+    --cohort-p4: oklch(38% 0.26 294);
+    --cohort-g1: oklch(40% 0.17 148);
+    --cohort-g2: oklch(46% 0.18 148);
+    --cohort-g3: oklch(51% 0.18 148);
+    --cohort-g4: oklch(35% 0.18 148);
     --kvis-ink: oklch(12% 0.012 294);
     --kvis-text2: oklch(42% 0.008 294);
     --kvis-text3: oklch(60% 0.006 294);
     --kvis-rule: oklch(90% 0.007 294);
+    --kvis-border: oklch(76% 0.009 294);
     --kvis-bg: oklch(98.5% 0.004 294);
   }
 
@@ -72,10 +81,19 @@ html, body {
     --kvis-purple-soft: oklch(20% 0.03 294);
     --kvis-green: oklch(40% 0.16 148);
     --kvis-green-light: oklch(60% 0.12 148);
+    --cohort-p1: oklch(70% 0.18 294);
+    --cohort-p2: oklch(75% 0.16 294);
+    --cohort-p3: oklch(78% 0.14 294);
+    --cohort-p4: oklch(66% 0.20 294);
+    --cohort-g1: oklch(65% 0.17 148);
+    --cohort-g2: oklch(70% 0.16 148);
+    --cohort-g3: oklch(74% 0.15 148);
+    --cohort-g4: oklch(60% 0.18 148);
     --kvis-ink: oklch(95% 0.005 294);
     --kvis-text2: oklch(72% 0.008 294);
     --kvis-text3: oklch(52% 0.006 294);
     --kvis-rule: oklch(22% 0.01 294);
+    --kvis-border: oklch(40% 0.014 294);
     --kvis-bg: oklch(26.574% 0.02613 294.361);
     /* --kvis-bg: oklch(11% 0.012 294); */
   }
@@ -101,13 +119,13 @@ html, body {
 .prose h1 { @apply text-3xl font-bold mt-8 mb-4; }
 .prose h2 { @apply text-2xl font-semibold mt-6 mb-3; }
 .prose h3 { @apply text-xl font-semibold mt-4 mb-2; }
-.prose p  { @apply mb-4 leading-7; }
+.prose p  { @apply mb-5 leading-8 text-base; }
 .prose ul  { @apply list-disc pl-6 mb-4 space-y-1; }
 .prose ol  { @apply list-decimal pl-6 mb-4 space-y-1; }
 .prose code { @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono; }
 .prose pre  { @apply bg-muted p-4 rounded-lg overflow-x-auto mb-4; }
 .prose pre code { @apply bg-transparent p-0; }
-.prose blockquote { @apply border-l-4 border-primary/40 pl-4 italic text-muted-foreground my-4; }
+.prose blockquote { @apply bg-[var(--kvis-purple-soft)] px-5 py-4 italic text-foreground/70 my-6 rounded-none; }
 .prose a { @apply text-primary hover:underline; }
 .prose strong { @apply font-semibold; }
 

@@ -11,7 +11,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { onMeUpdateSuccess } from "@/lib/cache/invalidate";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +19,7 @@ import {
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, Upload, Loader2, Check, ShieldCheck, ShieldAlert, Globe, Lock } from "lucide-react";
+import { Plus, Trash2, Upload, Loader2, Check, ShieldCheck, ShieldAlert, Globe, Lock, ArrowLeft, ArrowRight } from "lucide-react";
 import { DEGREES, JOB_FIELDS, MBTI_TYPES, KVIS_YEARS, KVIS_DEPARTMENTS } from "@/lib/constants/options";
 import { CountrySelect, CitySelect, CITY_STATE_COUNTRIES } from "@/components/ui/location-selects";
 import { UniversityCombobox } from "@/components/ui/university-combobox";
@@ -266,7 +265,7 @@ function FieldRow({ label, required, hint, error, noBorder, children }: {
   label: string; required?: boolean; hint?: string; error?: string; noBorder?: boolean; children: React.ReactNode;
 }) {
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-4${noBorder ? "" : " border-b border-[var(--kvis-rule)]"}`}>
+    <div className={`grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-4${noBorder ? "" : " border-b border-[var(--kvis-border)]"}`}>
       <div className="md:pt-2.5">
         <span className="text-xs uppercase tracking-[0.24em] font-bold text-[var(--kvis-text3)]">
           {label}{required && <span className="text-[var(--kvis-purple)]"> *</span>}
@@ -284,7 +283,7 @@ function FieldRow({ label, required, hint, error, noBorder, children }: {
 function PrivacyToggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
     <button type="button" onClick={() => onChange(!value)}
-      className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors"
+      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] transition-colors"
       style={{ color: value ? "var(--kvis-green-light)" : "var(--kvis-text3)" }}>
       {value ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
       {value ? "Public" : "KVIS only"}
@@ -297,14 +296,14 @@ function TagPills({ options, selected, onChange }: {
 }) {
   const toggle = (o: string) => onChange(selected.includes(o) ? selected.filter(x => x !== o) : [...selected, o]);
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       {options.map(o => (
         <button key={o} type="button" onClick={() => toggle(o)}
-          className="px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors border"
+          className="px-2.5 py-1.5 text-xs font-semibold transition-colors border"
           style={{
             background: selected.includes(o) ? "var(--kvis-purple)" : "transparent",
-            color: selected.includes(o) ? "white" : "var(--kvis-text3)",
-            borderColor: selected.includes(o) ? "var(--kvis-purple)" : "var(--kvis-rule)",
+            color: selected.includes(o) ? "white" : "var(--foreground)",
+            borderColor: selected.includes(o) ? "var(--kvis-purple)" : "var(--kvis-border)",
           }}>
           {o}
         </button>
@@ -321,6 +320,10 @@ const selectTriggerCls = "w-full bg-transparent border-0 border-b border-foregro
 export default function EditPageInner() {
   const searchParams = useSearchParams();
   const isSetup = searchParams.get("setup") === "1";
+  const notify = {
+    success: (msg: string) => { if (!isSetup) toast.success(msg); },
+    error: (msg: string) => { if (!isSetup) toast.error(msg); },
+  };
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -416,26 +419,26 @@ export default function EditPageInner() {
         const { url } = await userApi.uploadProfilePic(pendingFile);
         picUrl = url;
         setPendingFile(null);
-      } catch { toast.error("Photo upload failed"); return; }
+      } catch { notify.error("Photo upload failed"); return; }
     }
     const updated = await userApi.updateMe({
       ...(picUrl ? { ...data, profile_pic_url: picUrl } : data),
     });
     onMeUpdateSuccess(qc, updated);
     await refetch();
-    toast.success("Profile updated");
+    notify.success("Profile updated");
   };
 
   const saveEducation = async () => {
     await userApi.updateEducation(education);
     await refetch();
-    toast.success("Education saved");
+    notify.success("Education saved");
   };
 
   const saveCareer = async () => {
     await userApi.updateCareer(career);
     await refetch();
-    toast.success("Career saved");
+    notify.success("Career saved");
   };
 
   const saveResearch = async () => {
@@ -446,8 +449,8 @@ export default function EditPageInner() {
         projects, publications, portfolio_links: portfolioLinks,
       });
       await refetch();
-      toast.success("Research saved");
-    } catch { toast.error("Failed to save"); }
+      notify.success("Research saved");
+    } catch { notify.error("Failed to save"); }
   };
 
   const savePersonal = async () => {
@@ -459,8 +462,8 @@ export default function EditPageInner() {
         kvis_fav_area: kvisFavArea,
       });
       await refetch();
-      toast.success("Personal info saved");
-    } catch { toast.error("Failed to save"); }
+      notify.success("Personal info saved");
+    } catch { notify.error("Failed to save"); }
   };
 
   const handlePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -525,10 +528,10 @@ export default function EditPageInner() {
         onMeUpdateSuccess(qc, updated);
         await refetch();
         setPicPreview(url);
-        toast.success("Goose profile updated");
+        notify.success("Goose profile updated");
       }, "image/png");
     } catch (err: any) {
-      toast.error("Failed to generate goose profile");
+      notify.error("Failed to generate goose profile");
     }
   };
 
@@ -564,8 +567,8 @@ export default function EditPageInner() {
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
             {isSetup
-              ? "Fill in as much or as little as you like across the tabs below — you can always update everything later."
-              : "Update your dossier — the page other Kvisians see when they look you up."}
+              ? "Fill in as much or as little as you like across the tabs below - you can always update everything later."
+              : "Update your dossier - the page other Kvisians see when they look you up."}
           </p>
           <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
             <span>{me.email}</span>
@@ -577,7 +580,7 @@ export default function EditPageInner() {
         </header>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)} className="w-full">
-          <TabsList className="h-auto w-full justify-start gap-7 rounded-none border-b border-[var(--kvis-rule)] bg-transparent p-0 pt-5 pb-1 overflow-x-auto">
+          <TabsList className="h-auto w-full justify-start gap-7 rounded-none border-b border-[var(--kvis-border)] bg-transparent p-0 pt-5 pb-1 overflow-x-auto">
             {(isStudent
               ? ["general", "research", "personal"]
               : ["general", "education", "career", "research", "personal"]
@@ -592,10 +595,10 @@ export default function EditPageInner() {
         {/* ── GENERAL TAB ─────────────────────────────────────────────────── */}
         {tab === "general" && (
           <>
-            {/* Portrait section — unchanged */}
+            {/* Portrait section - unchanged */}
             <section>
               <SectionHead numeral="I." kicker="Portrait" title="Profile picture" />
-              <div className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-12 py-6 border-b border-[var(--kvis-rule)] items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-12 py-6 border-b border-[var(--kvis-border)] items-start">
                 <div className="space-y-6 self-start">
                   <div className="relative w-full max-w-[320px] rounded-full"
                     style={{ outline: `5px solid ${cohortColor(me.kvis_year)}`, outlineOffset: "2px" }}>
@@ -618,7 +621,7 @@ export default function EditPageInner() {
                   </div>
                 </div>
                 <div className="w-full max-w-2xl space-y-8">
-                  <div className="flex items-center gap-6 border-b border-[var(--kvis-rule)] pb-4">
+                  <div className="flex items-center gap-6 border-b border-[var(--kvis-border)] pb-4">
                     {(["upload", "goose"] as const).map((mode) => (
                       <button key={mode} type="button" onClick={() => setProfileMode(mode)}
                         className="text-xs font-bold uppercase tracking-[0.28em] pb-1 transition-colors"
@@ -644,7 +647,7 @@ export default function EditPageInner() {
                           </div>
                           <div className="flex gap-3">
                             <Button type="button" className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2"
-                              onClick={async () => { try { const file = await getCroppedFile(); setPendingFile(file); setPicPreview(URL.createObjectURL(file)); setCropSrc(null); } catch { toast.error("Crop failed"); } }}>
+                              onClick={async () => { try { const file = await getCroppedFile(); setPendingFile(file); setPicPreview(URL.createObjectURL(file)); setCropSrc(null); } catch { notify.error("Crop failed"); } }}>
                               <Check className="h-3.5 w-3.5" /> Apply crop
                             </Button>
                             <Button type="button" variant="outline" className="h-auto rounded-none border-foreground/30 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] gap-2" onClick={() => setCropSrc(null)}>
@@ -682,8 +685,8 @@ export default function EditPageInner() {
                             await refetch();
                             setPicPreview(url);
                             setPendingFile(null);
-                            toast.success("Profile picture updated");
-                          } catch { toast.error("Upload failed"); }
+                            notify.success("Profile picture updated");
+                          } catch { notify.error("Upload failed"); }
                         }
                       }}
                       disabled={profileMode === "upload" && !pendingFile}>
@@ -694,16 +697,16 @@ export default function EditPageInner() {
               </div>
             </section>
 
-            {/* Credential — unchanged */}
+            {/* Credential - unchanged */}
             <section>
               <SectionHead numeral="II." kicker="Credential" title="KVIS-verified badge" />
               <div className="py-5">
                 <div className="border" style={{ borderColor: me.is_verified ? "var(--kvis-green-light)" : "var(--kvis-rule)" }}>
                   <div className="flex items-center justify-between gap-3 px-5 py-2.5 border-b" style={{ borderColor: me.is_verified ? "var(--kvis-green-light)" : "var(--kvis-rule)" }}>
-                    <span className="text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: me.is_verified ? "var(--kvis-green-light)" : "var(--kvis-text3)" }}>
+                    <span className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: me.is_verified ? "var(--kvis-green-light)" : "var(--kvis-text3)" }}>
                       {me.is_verified ? "Issued · Automatic" : "No credential on file"}
                     </span>
-                    <span className="text-[10px] font-mono tabular-nums tracking-[0.2em] text-[var(--kvis-text3)]">KVIS · V01</span>
+                    <span className="text-xs font-mono tabular-nums tracking-[0.2em] text-[var(--kvis-text3)]">KVIS · V01</span>
                   </div>
                   <div className="px-5 py-6 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-5 md:items-center">
                     <div className="min-w-0">
@@ -722,7 +725,7 @@ export default function EditPageInner() {
                       </Button>
                     )}
                   </div>
-                  <div className="px-5 py-3 border-t border-[var(--kvis-rule)]">
+                  <div className="px-5 py-3 border-t border-[var(--kvis-border)]">
                     <p className="text-xs text-muted-foreground leading-relaxed truncate">
                       {me.is_verified ? "Issued automatically on @kvis.ac.th email confirmation." : "We send a one-time code to your @kvis.ac.th address to issue this credential."}
                     </p>
@@ -755,7 +758,7 @@ export default function EditPageInner() {
                     </Select>
                   </FieldRow>
                 )}
-                {/* Teaching period — faculty only */}
+                {/* Teaching period - faculty only */}
                 {isFaculty(me) && (
                   <>
                     <FieldRow label="Department" required>
@@ -924,10 +927,10 @@ export default function EditPageInner() {
           <section>
             <SectionHead numeral="I." kicker="Schooling" title="Education" />
             {education.length === 0 && (
-              <div className="py-10 border-b border-[var(--kvis-rule)] text-sm text-muted-foreground italic">No education added yet.</div>
+              <div className="py-10 border-b border-[var(--kvis-border)] text-sm text-muted-foreground italic">No education added yet.</div>
             )}
             {education.map((edu, i) => (
-              <div key={i} className="py-7 border-b border-[var(--kvis-rule)]">
+              <div key={i} className="py-7 border-b border-[var(--kvis-border)]">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-baseline gap-3">
                     <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">{String(i + 1).padStart(2, "0")}</span>
@@ -950,11 +953,11 @@ export default function EditPageInner() {
                     <SelectContent>{DEGREES.map((d) => <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>)}</SelectContent>
                   </Select>
                 </FieldRow>
-                {/* Medical track — shown when degree is MD/MBBS */}
+                {/* Medical track - shown when degree is MD/MBBS */}
                 {MED_DEGREES.includes(edu.degree) && (
                   <>
-                    <div className="mt-4 mb-2 py-2 px-3 border-l-2 border-[var(--kvis-purple)]">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--kvis-purple)]">Medical Track Details</p>
+                    <div className="mt-4 mb-2 py-2 border-b border-[var(--kvis-border)]">
+                      <p className="text-xs font-bold uppercase tracking-[0.22em]" style={{ color: "var(--kvis-purple)" }}>Medical Track Details</p>
                     </div>
                 
                     <FieldRow label="Medical school">
@@ -1097,16 +1100,16 @@ export default function EditPageInner() {
           <section>
             <SectionHead numeral="I." kicker="Work" title="What you do" />
             {career.length === 0 && (
-              <div className="py-10 border-b border-[var(--kvis-rule)] text-sm text-muted-foreground italic">No positions added yet.</div>
+              <div className="py-10 border-b border-[var(--kvis-border)] text-sm text-muted-foreground italic">No positions added yet.</div>
             )}
             {career.map((job, i) => (
-              <div key={i} className="py-7 border-b border-[var(--kvis-rule)]">
+              <div key={i} className="py-7 border-b border-[var(--kvis-border)]">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-baseline gap-3">
                     <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">{String(i + 1).padStart(2, "0")}</span>
                     <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">Position</span>
                     {job.is_current && (
-                      <Badge className="rounded-none border-transparent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.22em] leading-none text-white bg-[var(--kvis-green-light)]">Current</Badge>
+                      <span className="px-1.5 py-0.5 text-xs font-bold uppercase tracking-[0.22em] leading-none text-white" style={{ background: "var(--kvis-green-light)" }}>Current</span>
                     )}
                   </div>
                   <div className="flex items-center gap-4">
@@ -1197,16 +1200,16 @@ export default function EditPageInner() {
         {tab === "research" && (
           <section>
             {isStudent && (
-              <div className="mt-8 mb-2 px-4 py-3 border-l-2 border-[var(--kvis-purple)]">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--kvis-purple)] mb-1">For students</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">Share your research interests and ongoing projects — this is what other Kvisians will see when they look you up.</p>
+              <div className="mt-8 mb-2 py-3 border-b border-[var(--kvis-border)]">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] mb-1" style={{ color: "var(--kvis-purple)" }}>For students</p>
+                <p className="text-xs leading-relaxed" style={{ color: "var(--kvis-text2)" }}>Share your research interests and ongoing projects - this is what other Kvisians will see when they look you up.</p>
               </div>
             )}
             <SectionHead numeral="I." kicker="Research" title="Areas of interest" />
-            <div className="py-4 border-b border-[var(--kvis-rule)]">
+            <div className="py-4 border-b border-[var(--kvis-border)]">
               {RESEARCH_CATEGORIES.map(cat => (
-                <div key={cat.group} className="mb-5">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--kvis-text3)] mb-2">{cat.group}</p>
+                <div key={cat.group} className="pt-5 pb-4 border-b border-[var(--kvis-border)]">
+                  <p className="text-xs font-bold uppercase tracking-[0.26em] text-foreground mb-3">{cat.group}</p>
                   <TagPills options={cat.options} selected={researchInterests} onChange={setResearchInterests} />
                 </div>
               ))}
@@ -1219,7 +1222,7 @@ export default function EditPageInner() {
 
             <SectionHead numeral="III." kicker="Research" title="Projects" />
             {projects.map((p, i) => (
-              <div key={i} className="py-5 border-b border-[var(--kvis-rule)]">
+              <div key={i} className="py-5 border-b border-[var(--kvis-border)]">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-mono tabular-nums text-[var(--kvis-text3)]">{String(i + 1).padStart(2, "0")}</span>
                   <button type="button" onClick={() => setProjects(prev => prev.filter((_, j) => j !== i))}
@@ -1259,7 +1262,7 @@ export default function EditPageInner() {
 
             <SectionHead numeral="IV." kicker="Research" title="Publications" />
             {publications.map((p, i) => (
-              <div key={i} className="py-5 border-b border-[var(--kvis-rule)]">
+              <div key={i} className="py-5 border-b border-[var(--kvis-border)]">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-mono tabular-nums text-[var(--kvis-text3)]">{String(i + 1).padStart(2, "0")}</span>
                   <button type="button" onClick={() => setPublications(prev => prev.filter((_, j) => j !== i))}
@@ -1284,7 +1287,7 @@ export default function EditPageInner() {
 
             <SectionHead numeral="V." kicker="Research" title="Portfolio links" />
             {portfolioLinks.map((l, i) => (
-              <div key={i} className="py-3 border-b border-[var(--kvis-rule)]">
+              <div key={i} className="py-3 border-b border-[var(--kvis-border)]">
                 <div className="flex items-center gap-3">
                   <Select value={l.type} onValueChange={v => setPortfolioLinks(prev => prev.map((x, j) => j === i ? { ...x, type: v } : x))}>
                     <SelectTrigger className={`${selectTriggerCls} w-36`}><SelectValue /></SelectTrigger>
@@ -1365,8 +1368,8 @@ export default function EditPageInner() {
 
             <SectionHead numeral="III." kicker="Personal · KVIS only" title="Hobbies & interests" />
             {(Object.entries(HOBBIES) as [string, string[]][]).map(([cat, opts]) => (
-              <div key={cat} className="py-4 border-b border-[var(--kvis-rule)]">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--kvis-text3)] mb-3">
+              <div key={cat} className="pt-5 pb-4 border-b border-[var(--kvis-border)]">
+                <p className="text-xs font-bold uppercase tracking-[0.26em] text-foreground mb-3">
                   {cat.replace(/_/g, " ")}
                 </p>
                 <TagPills
@@ -1389,13 +1392,33 @@ export default function EditPageInner() {
 
       </div>
       {isSetup && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--kvis-rule)] bg-background/95 backdrop-blur px-6 py-4 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Step {(isStudent ? ["general", "research", "personal"] : ["general", "education", "career", "research", "personal"]).indexOf(tab) + 1} of {isStudent ? 3 : 5}
-          </p>
+        <div className="sticky bottom-0 left-0 right-0 z-50 border-t border-[var(--kvis-border)] bg-background/95 backdrop-blur px-6 py-4 flex items-center justify-between gap-4">
+          {/* Step indicator */}
+          {(() => {
+            const tabs = isStudent
+              ? ["general", "research", "personal"]
+              : ["general", "education", "career", "research", "personal"];
+            const idx = tabs.indexOf(tab);
+            return (
+              <div className="flex items-center gap-3">
+                <span className="font-mono font-black text-2xl tabular-nums" style={{ color: "var(--kvis-green-light)", letterSpacing: "-0.02em" }}>
+                  {String(idx + 1).padStart(2, "0")}
+                </span>
+                <div className="flex gap-1">
+                  {tabs.map((t, j) => (
+                    <div key={t} className="h-1 w-6 transition-colors" style={{ background: j <= idx ? "var(--kvis-purple)" : "var(--kvis-border)" }} />
+                  ))}
+                </div>
+                <span className="text-xs uppercase tracking-[0.22em] hidden sm:block" style={{ color: "var(--kvis-text2)" }}>
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </span>
+              </div>
+            );
+          })()}
+
           <div className="flex items-center gap-3">
             {tab !== "general" && (
-              <Button type="button" variant="outline"
+              <button type="button"
                 onClick={() => {
                   const tabs = isStudent
                     ? ["general", "research", "personal"]
@@ -1403,9 +1426,9 @@ export default function EditPageInner() {
                   const idx = tabs.indexOf(tab);
                   if (idx > 0) setTab(tabs[idx - 1] as Tab);
                 }}
-                className="h-auto rounded-none border-foreground/30 px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] gap-2">
-                ← Back
-              </Button>
+                className="flex items-center gap-1.5 px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] border border-[var(--kvis-border)] bg-transparent text-foreground hover:bg-foreground hover:text-background transition-colors">
+                <ArrowLeft className="h-3.5 w-3.5" /> Back
+              </button>
             )}
             {(() => {
               const tabs = isStudent
@@ -1413,10 +1436,9 @@ export default function EditPageInner() {
                 : ["general", "education", "career", "research", "personal"];
               const isLast = tabs.indexOf(tab) === tabs.length - 1;
               return isLast ? (
-                <Button type="button"
+                <button type="button"
                   onClick={async () => {
                     try {
-                      // Auto-save last tab
                       if (tab === "general") await handleSubmit(saveGeneral)();
                       else if (tab === "education") await saveEducation();
                       else if (tab === "career") await saveCareer();
@@ -1428,33 +1450,30 @@ export default function EditPageInner() {
                       await refetch();
                       router.push("/kvisian");
                     } catch {
-                      toast.error("Something went wrong, try again.");
+                      notify.error("Something went wrong, try again.");
                     }
                   }}
-                  className="h-auto rounded-none bg-foreground px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
-                  <Check className="h-3.5 w-3.5" /> Done — take me in
-                </Button>
+                  className="flex items-center gap-2 px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity">
+                  <Check className="h-3.5 w-3.5" /> Done - take me in
+                </button>
               ) : (
-                <Button type="button"
+                <button type="button"
                   onClick={async () => {
                     const idx = tabs.indexOf(tab);
                     const next = tabs[idx + 1] as Tab;
-                    // Auto-save current tab before advancing
                     try {
                       if (tab === "general") await handleSubmit(saveGeneral)();
                       else if (tab === "education") await saveEducation();
                       else if (tab === "career") await saveCareer();
                       else if (tab === "research") await saveResearch();
                       else if (tab === "personal") await savePersonal();
-                    } catch {
-                      // Don't block navigation on save error — user can fix later
-                    }
+                    } catch { /* don't block */ }
                     setTab(next);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className="h-auto rounded-none bg-foreground px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2">
-                  Next — {tabs[tabs.indexOf(tab) + 1]} →
-                </Button>
+                  className="flex items-center gap-2 px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity">
+                  Next <ArrowRight className="h-3.5 w-3.5" />
+                </button>
               );
             })()}
           </div>

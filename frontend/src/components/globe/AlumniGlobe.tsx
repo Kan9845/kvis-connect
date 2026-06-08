@@ -264,7 +264,7 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
   card.innerHTML = "";
   card.style.position = "fixed";
 
-  // Close button — always present, critical for touch where hover-out never fires
+  // Close button - always present, critical for touch where hover-out never fires
   const closeBtn = document.createElement("button");
   closeBtn.type = "button";
   closeBtn.style.cssText = `
@@ -782,3 +782,4 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
 
 const AlumniGlobe = memo(AlumniGlobeImpl);
 export default AlumniGlobe;
+

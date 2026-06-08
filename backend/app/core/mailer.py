@@ -38,6 +38,9 @@ def _get_graph_token() -> str:
 
 
 def send_email(to_email: str, subject: str, text: str) -> None:
+    if not settings.MS_TENANT_ID or not settings.MS_CLIENT_ID or not settings.MS_CLIENT_SECRET:
+        logger.warning("MS Graph not configured — email skipped. To: %s | Subject: %s\n%s", to_email, subject, text)
+        return
     token = _get_graph_token()
     url = f"https://graph.microsoft.com/v1.0/users/{settings.MS_SENDER}/sendMail"
     body = {

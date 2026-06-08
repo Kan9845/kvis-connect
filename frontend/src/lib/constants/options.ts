@@ -1,4 +1,4 @@
-// Migrated from legacy kvis-alumni-website schema
+﻿// Migrated from legacy kvis-alumni-website schema
 
 export const DEGREES = [
   { value: "Bachelor", label: "Bachelor's" },
@@ -60,7 +60,7 @@ export type MBTIType = (typeof MBTI_TYPES)[number];
 
 // ─── KVIS cohort automation ────────────────────────────────────────────────────
 // K1 graduated in 2018. Each May a new cohort graduates.
-// This function computes the current latest cohort automatically — no manual update needed.
+// This function computes the current latest cohort automatically - no manual update needed.
 const KVIS_FIRST_GRAD_YEAR = 2018;
 
 export function getCurrentLatestCohort(): number {

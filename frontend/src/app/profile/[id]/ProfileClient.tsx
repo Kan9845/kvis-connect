@@ -5,8 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, Dot, ShieldCheck } from "lucide-react";
 import { userApi, blogApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -48,7 +46,7 @@ function EntryRow({ index, title, subtitle, meta, pill, years }: {
   meta?: string; pill?: { label: string; color: string }; years?: string;
 }) {
   return (
-    <div className="grid items-baseline py-6 border-b border-[var(--kvis-rule)]"
+    <div className="grid items-baseline py-6 border-b border-[var(--kvis-border)]"
       style={{ gridTemplateColumns: "1.75rem minmax(0, 1fr) auto", columnGap: "1.25rem" }}>
       <span className="text-xs font-mono tabular-nums font-semibold pt-1 text-[var(--kvis-text3)]">
         {String(index + 1).padStart(2, "0")}
@@ -59,13 +57,13 @@ function EntryRow({ index, title, subtitle, meta, pill, years }: {
             {title}
           </p>
           {pill && (
-            <Badge className="rounded-none border-transparent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.22em] leading-none text-white"
+            <span className="px-1.5 py-0.5 text-xs font-bold uppercase tracking-[0.22em] leading-none text-white"
               style={{ background: pill.color }}>
               {pill.label}
-            </Badge>
+            </span>
           )}
         </div>
-        {subtitle && <p className="text-sm md:text-[15px] text-muted-foreground mt-1.5 leading-snug">{subtitle}</p>}
+        {subtitle && <p className="text-sm md:text-base mt-1.5 leading-snug" style={{ color: "var(--kvis-text2)" }}>{subtitle}</p>}
         {meta && <p className="text-xs uppercase tracking-[0.22em] mt-2 tabular-nums text-[var(--kvis-text3)]">{meta}</p>}
       </div>
       <span className="text-sm font-mono tabular-nums text-right whitespace-nowrap text-[var(--kvis-text3)]">
@@ -79,7 +77,7 @@ function ContactRow({ label, display, href }: { label: string; display: string; 
   const external = /^https?:/.test(href);
   return (
     <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}
-      className="group grid items-center py-4 border-b border-[var(--kvis-rule)]"
+      className="group grid items-center py-4 border-b border-[var(--kvis-border)]"
       style={{ gridTemplateColumns: "100px minmax(0, 1fr) auto", columnGap: "1.25rem" }}>
       <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">{label}</span>
       <span className="text-sm md:text-base text-foreground truncate group-hover:underline decoration-2 underline-offset-[5px] decoration-[var(--kvis-purple)]">
@@ -95,7 +93,7 @@ function StoryCard({ blog, ringColor }: { blog: BlogRead; ringColor: string }) {
 
   return (
     <Link href={`/blog/${blog.slug}`} className="group block h-full">
-      <div className="rounded-2xl overflow-hidden border border-[var(--kvis-rule)] transition-all duration-300 group-hover:border-transparent group-hover:shadow-lg h-full flex flex-col"
+      <div className="overflow-hidden border border-[var(--kvis-border)] transition-all duration-300 group-hover:border-[var(--kvis-purple)] h-full flex flex-col"
         style={{ background: "var(--kvis-bg)" }}>
 
         {/* Cover image or stripe */}
@@ -121,7 +119,7 @@ function StoryCard({ blog, ringColor }: { blog: BlogRead; ringColor: string }) {
         {/* Text below */}
         <div className="p-3 flex flex-col flex-1">
           {tags[0] && (
-            <p className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--kvis-text3)] mb-1">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--kvis-text3)] mb-1">
               {tags[0]}
             </p>
           )}
@@ -129,7 +127,7 @@ function StoryCard({ blog, ringColor }: { blog: BlogRead; ringColor: string }) {
             style={{ textDecorationColor: ringColor }}>
             {blog.title}
           </h3>
-          <p className="text-[10px] text-[var(--kvis-text3)] mt-auto pt-2 font-mono">
+          <p className="text-xs text-[var(--kvis-text3)] mt-auto pt-2 font-mono">
             {blog.published_at ? formatDate(blog.published_at) : "Draft"}
           </p>
         </div>
@@ -163,7 +161,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
         <div className="min-h-full bg-background">
           <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
             <Skeleton className="h-4 w-48 mb-4" />
-            <div className="grid grid-cols-[140px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 pb-7 border-b border-foreground/40">
+            <div className="grid grid-cols-[140px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 pb-7 border-b border-[var(--kvis-border)]">
               <Skeleton className="aspect-square w-full rounded-full" />
               <div className="space-y-4">
                 <Skeleton className="h-16 w-3/4" />
@@ -187,7 +185,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
           <div className="mx-auto max-w-5xl px-6 lg:px-10 py-24 text-center">
             <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4 text-[var(--kvis-text3)]">404</p>
             <p className="text-4xl font-black tracking-tight text-foreground mb-3">Profile not found</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm" style={{ color: "var(--kvis-text2)" }}>
               <Link href="/kvisian" className="underline text-[var(--kvis-purple)]">Browse the directory</Link>
             </p>
           </div>
@@ -225,10 +223,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
         <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
 
           <FadeUp>
-            <header className="pb-8 border-b border-foreground/60">
-              {/* Full bleed hero card */}
+            <header className="pb-8 border-b border-[var(--kvis-border)]">
+              {/* Hero banner */}
               <div
-                className="relative overflow-hidden rounded-2xl mb-6"
+                className="relative overflow-hidden mb-6"
                 style={{ minHeight: 220, background: cohortColor(user.kvis_year) }}
               >
                 {/* Stripe */}
@@ -243,32 +241,32 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                   position: "absolute", inset: 0,
                   background: "linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 100%)",
                 }} />
-          
+
                 {/* Content */}
                 <div className="relative flex items-end justify-between p-7 md:p-10" style={{ minHeight: 220 }}>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-3 flex-wrap">
                     {isFaculty(user) ? (
                         <>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                          <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
                             KVIS Connect · Faculty
                           </p>
-                          <span className="text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
+                          <span className="text-xs font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
                             style={{ background: "rgba(184,148,31,0.35)", color: "#FBF3D9" }}>
                             Teacher · {facultyPeriodLabel(user)}
                           </span>
                         </>
                       ) : user.current_grade ? (
-                        <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                        <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
                           KVIS Connect · Student
                         </p>
                       ) : (
                         <>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/60">
+                          <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
                             KVIS Connect · Alumni
                           </p>
                           {user.kvis_year && (
-                            <span className="text-[10px] font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
+                            <span className="text-xs font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
                               style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
                               {genLabel(user.kvis_year)}
                             </span>
@@ -276,16 +274,16 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                         </>
                       )}
                       {user.is_verified && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/80">
+                        <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-white/80">
                           <ShieldCheck className="h-3 w-3" /> Verified
                         </span>
                       )}
                     </div>
-                    
+
                     <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.9] text-white mb-3">
                       {user.first_name}<br />{user.last_name}
                     </h1>
-                    
+
                     {currentRole && (
                       <p className="text-sm text-white/75 mb-4">
                         {currentRole.job_title}
@@ -293,18 +291,18 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                         {user.place && ` · ${user.place}`}
                       </p>
                     )}
-          
+
                     {/* Tags / interests */}
                     {interests.length > 0 && (
                       <div className="flex items-center gap-2 flex-wrap">
                         {user.mbti && (
-                          <span className="text-[10px] font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full"
+                          <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full"
                             style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
                             {user.mbti}
                           </span>
                         )}
                         {interests.slice(0, 4).map(t => (
-                          <span key={t} className="text-[10px] font-semibold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full"
+                          <span key={t} className="text-xs font-semibold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full"
                             style={{ background: "rgba(255,255,255,0.12)", color: "white" }}>
                             {t}
                           </span>
@@ -312,7 +310,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Avatar */}
                   <div className="shrink-0 ml-6">
                     <div
@@ -339,7 +337,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                   </div>
                 </div>
               </div>
-                    
+
               {/* Below card — meta + edit button */}
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
@@ -354,9 +352,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                   )}
                 </div>
                 {isMe && (
-                  <Button asChild className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90">
-                    <Link href="/profile/edit">Edit profile</Link>
-                  </Button>
+                  <Link href="/profile/edit"
+                    className="px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity">
+                    Edit profile
+                  </Link>
                 )}
               </div>
             </header>
@@ -432,7 +431,6 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
             </FadeUp>
           )}
 
-          {/* Blog posts */}
           {userBlogs.length > 0 && (
             <FadeUp>
               <section>
@@ -451,7 +449,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
           )}
 
           <FadeUp>
-            <footer className="mt-20 pt-6 border-t border-foreground/60 text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between">
+            <footer className="mt-20 pt-6 border-t border-[var(--kvis-border)] text-xs uppercase tracking-[0.22em] flex items-center justify-between" style={{ color: "var(--kvis-text2)" }}>
               <span>- end -</span>
               <span className="tabular-nums">KVIS Connect · {new Date().getFullYear()}</span>
             </footer>

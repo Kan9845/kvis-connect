@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 
-// Fade up on scroll — wrap any section with this
+// Fade up on scroll - wrap any section with this
 export function FadeUp({
   children,
   delay = 0,
@@ -29,7 +29,7 @@ export function FadeUp({
   );
 }
 
-// Stagger children — wrap a list with this
+// Stagger children - wrap a list with this
 export function StaggerList({
   children,
   className,
@@ -56,7 +56,7 @@ export function StaggerList({
   );
 }
 
-// Individual stagger item — wrap each card/row with this
+// Individual stagger item - wrap each card/row with this
 export function StaggerItem({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <motion.div
@@ -71,7 +71,7 @@ export function StaggerItem({ children, className }: { children: React.ReactNode
   );
 }
 
-// Page entrance — wrap page content with this
+// Page entrance - wrap page content with this
 export function PageEntrance({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <motion.div
@@ -85,7 +85,7 @@ export function PageEntrance({ children, className }: { children: React.ReactNod
   );
 }
 
-// Hover card effect — wrap any card with this
+// Hover card effect - wrap any card with this
 export function HoverCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <motion.div

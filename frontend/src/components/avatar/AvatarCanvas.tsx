@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { AvatarConfig } from "@/lib/avatarTypes";
 
@@ -24,7 +24,7 @@ export function AvatarCanvas({ config, backgroundColor }: Props) {
     <div className="relative w-full h-full">
       <img src="/goose/layout.png" alt="" className="absolute inset-0 w-full h-full z-50 pointer-events-none" />
 
-      {/* BACKGROUND — cohort color or fallback */}
+      {/* BACKGROUND - cohort color or fallback */}
       <div
         className="absolute inset-0"
         style={{

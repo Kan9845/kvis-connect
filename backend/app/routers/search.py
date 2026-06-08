@@ -22,7 +22,7 @@ def directory_list(session: Session = Depends(get_session)):
     rows = session.exec(text("""
         SELECT
             u.id::text, u.slug, u.first_name, u.last_name, u.kvis_year,
-            u.current_grade, u.current_class, u.current_elemental,
+            u.current_grade,
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
             u.profile_pic_url, u.country, u.place, u.mbti, u.interests,
             u.is_verified,
@@ -143,8 +143,6 @@ def _to_card(user: User) -> dict:
         "nickname": getattr(user, "nickname", None),
         "kvis_year": user.kvis_year,
         "current_grade": user.current_grade,
-        "current_class": user.current_class,
-        "current_elemental": user.current_elemental,
         "current_status": getattr(user, "current_status", None),
         "teach_start_year": getattr(user, "teach_start_year", None),
         "teach_end_year": getattr(user, "teach_end_year", None),

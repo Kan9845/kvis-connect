@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PenLine, Search, X, ChevronDown, Heart, ArrowUpDown } from "lucide-react";
+import { PenLine, Search, X, ChevronDown, Heart, ArrowUpDown, Dot } from "lucide-react";
 import { blogApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDate, genLabel, cohortColor, cohortColorHex, cohortColorSoftHex, cohortTextColor } from "@/lib/utils";
 import type { BlogRead } from "@/lib/types";
-import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
+import { PageEntrance, FadeUp } from "@/components/ui/motion";
 
 function parseTags(t?: string) {
   return (t ?? "").split(",").map((x) => x.trim()).filter(Boolean);
@@ -28,7 +28,7 @@ function AuthorAvatar({ blog, size = 26 }: { blog: BlogRead; size?: number }) {
   return (
     <Avatar style={{ width: size, height: size, outline: `2px solid ${ringColor}`, outlineOffset: "1px", flexShrink: 0 }}>
       <AvatarImage src={blog.author.profile_pic_url} alt={name} />
-      <AvatarFallback style={{ background: `linear-gradient(135deg, ${color}, ${colorSoft})`, color: textColor, fontSize: size * 0.35 }}>
+      <AvatarFallback style={{ background: color, color: textColor, fontSize: size * 0.35 }}>
         {initials}
       </AvatarFallback>
     </Avatar>
@@ -45,17 +45,17 @@ function DropFilter({ label, active, options, value, onChange }: {
   return (
     <div className="relative">
       <button type="button" onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors"
         style={{
           background: active ? "var(--kvis-purple)" : "transparent",
           color: active ? "white" : "var(--kvis-text3)",
-          border: active ? "none" : "0.5px solid var(--kvis-rule)",
+          border: active ? "none" : "0.5px solid var(--kvis-border)",
         }}>
         {active ? selectedLabel : label}
         {active ? <ChevronDown className="h-3 w-3" /> : <ArrowUpDown className="h-3 w-3" />}
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-[var(--kvis-rule)] shadow-lg min-w-[140px]"
+        <div className="absolute top-full left-0 mt-1 z-50 bg-background border border-[var(--kvis-border)] shadow-lg min-w-[140px]"
           onMouseLeave={() => setOpen(false)}>
           {options.map(o => (
             <button key={o.value} type="button"
@@ -71,30 +71,28 @@ function DropFilter({ label, active, options, value, onChange }: {
   );
 }
 
-function StripeBackground({ blog, height = 120, showAvatar = false, avatarSize = 40 }: {
+function CardBanner({ blog, height = 120, showAvatar = false, avatarSize = 40 }: {
   blog: BlogRead; height?: number; showAvatar?: boolean; avatarSize?: number;
 }) {
-  const color = cohortColorHex(blog.author.kvis_year);
+  const colorHex = cohortColorHex(blog.author.kvis_year);
+  const colorSoftHex = cohortColorSoftHex(blog.author.kvis_year);
   const name = `${blog.author.first_name} ${blog.author.last_name}`;
   const initials = name.split(" ").map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-  const colorSoft = cohortColorSoftHex(blog.author.kvis_year);
   const textColor = cohortTextColor(blog.author.kvis_year);
   const ringColor = cohortColor(blog.author.kvis_year);
 
   return (
     <div style={{
       height, position: "relative", overflow: "hidden",
-      backgroundImage: `repeating-linear-gradient(135deg, ${color} 0, ${color} 1px, transparent 0, transparent 50%)`,
-      backgroundSize: "8px 8px",
+      background: "var(--kvis-bg)",
     }}>
-      <div style={{ position: "absolute", inset: 0, background: "var(--background)", opacity: 0.82 }} />
       {blog.cover_image_url ? (
-        <Image src={blog.cover_image_url} alt={blog.title} fill className="object-cover" style={{ opacity: 0.9 }} />
+        <Image src={blog.cover_image_url} alt={blog.title} fill className="object-cover" />
       ) : showAvatar && (
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <Avatar style={{ width: avatarSize, height: avatarSize, outline: `2.5px solid ${ringColor}`, outlineOffset: "2px" }}>
+          <Avatar style={{ width: avatarSize, height: avatarSize, outline: `2px solid ${ringColor}`, outlineOffset: "2px" }}>
             <AvatarImage src={blog.author.profile_pic_url} alt={name} />
-            <AvatarFallback style={{ background: `linear-gradient(135deg, ${color}, ${colorSoft})`, color: textColor, fontSize: avatarSize * 0.35 }}>
+            <AvatarFallback style={{ background: colorHex, color: textColor, fontSize: avatarSize * 0.35 }}>
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -112,21 +110,21 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
 
   return (
     <Link href={`/blog/${blog.slug}`} className="group block">
-      <div className="rounded-2xl overflow-hidden border border-[var(--kvis-rule)] transition-all duration-300 group-hover:border-transparent group-hover:shadow-lg"
+      <div className="overflow-hidden border border-[var(--kvis-border)] transition-colors duration-200 group-hover:border-[var(--kvis-border)]"
         style={{ background: "var(--kvis-bg)" }}>
         <div className="grid md:grid-cols-2 min-h-[240px]">
-          <StripeBackground blog={blog} height={240} showAvatar avatarSize={48} />
+          <CardBanner blog={blog} height={240} showAvatar avatarSize={48} />
           <div className="p-6 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 {badge && (
-                  <span className="text-[10px] font-bold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full"
-                    style={{ background: `${colorHex}22`, color }}>
+                  <span className="text-xs font-bold uppercase tracking-[0.14em] px-2 py-0.5 rounded-full"
+                    style={{ color }}>
                     {badge}
                   </span>
                 )}
                 {tags[0] && (
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--kvis-text3)]">
+                  <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--kvis-text3)]">
                     {tags[0]}
                   </span>
                 )}
@@ -139,14 +137,15 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{blog.excerpt}</p>
               )}
             </div>
-            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--kvis-rule)]">
+            <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[var(--kvis-border)]">
               <AuthorAvatar blog={blog} size={26} />
               <span className="text-xs font-semibold text-foreground">{blog.author.first_name} {blog.author.last_name}</span>
-              <span className="text-[11px] text-[var(--kvis-text3)]">
-                · {blog.published_at ? formatDate(blog.published_at) : "Draft"}
+              <Dot className="h-3 w-3 text-[var(--kvis-text3)] shrink-0" />
+              <span className="text-xs text-[var(--kvis-text3)]">
+                {blog.published_at ? formatDate(blog.published_at) : "Draft"}
               </span>
               {(blog.likes ?? 0) > 0 && (
-                <span className="ml-auto flex items-center gap-1 text-[10px] text-[var(--kvis-text3)]">
+                <span className="ml-auto flex items-center gap-1 text-xs text-[var(--kvis-text3)]">
                   <Heart className="h-3 w-3" /> {blog.likes}
                 </span>
               )}
@@ -158,52 +157,47 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
   );
 }
 
-function StoryCard({ blog }: { blog: BlogRead }) {
+function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
   const tags = parseTags(blog.tags);
   const color = cohortColor(blog.author.kvis_year);
-  const colorHex = cohortColorHex(blog.author.kvis_year);
   const badge = blog.author.kvis_year ? genLabel(blog.author.kvis_year) : null;
 
   return (
-    <Link href={`/blog/${blog.slug}`} className="group block h-full">
-      <div className="rounded-2xl overflow-hidden border border-[var(--kvis-rule)] transition-all duration-300 group-hover:border-transparent group-hover:shadow-lg h-full flex flex-col"
-        style={{ background: "var(--kvis-bg)" }}>
-        <StripeBackground blog={blog} height={100} showAvatar avatarSize={36} />
-        <div className="p-4 flex flex-col flex-1">
-          <div className="flex items-center gap-2 mb-2">
+    <Link href={`/blog/${blog.slug}`} className="group block">
+      <div className="py-4 flex items-baseline gap-4 border-b border-[var(--kvis-border)]">
+        <span className="text-xs tabular-nums font-bold text-[var(--kvis-text3)] w-5 shrink-0">
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        <div className="flex-1 min-w-0">
+          <h3
+            className="text-sm font-bold text-foreground leading-snug line-clamp-1 group-hover:underline decoration-2 underline-offset-[3px]"
+            style={{ textDecorationColor: color }}
+          >
+            {blog.title}
+          </h3>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <span className="text-xs text-[var(--kvis-text3)]">
+              {blog.author.first_name} {blog.author.last_name}
+            </span>
             {badge && (
-              <span className="text-[10px] font-bold uppercase tracking-[0.12em] px-2 py-0.5 rounded-full"
-                style={{ background: `${colorHex}22`, color }}>
+              <span className="text-xs font-bold" style={{ color }}>
                 {badge}
               </span>
             )}
             {tags[0] && (
-              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--kvis-text3)]">
-                {tags[0]}
-              </span>
+              <span className="text-xs text-[var(--kvis-text3)]">#{tags[0]}</span>
             )}
           </div>
-          <h3 className="text-sm font-bold leading-[1.25] text-foreground mb-2 line-clamp-2 group-hover:underline decoration-2 underline-offset-[3px]"
-            style={{ textDecorationColor: color }}>
-            {blog.title}
-          </h3>
-          {blog.excerpt && (
-            <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 mb-3 flex-1">
-              {blog.excerpt}
-            </p>
-          )}
-          <div className="flex items-center gap-2 pt-2 border-t border-[var(--kvis-rule)] mt-auto">
-            <AuthorAvatar blog={blog} size={20} />
-            <span className="text-[11px] font-semibold text-foreground truncate">{blog.author.first_name} {blog.author.last_name}</span>
-            <span className="text-[10px] text-[var(--kvis-text3)] shrink-0">
-              {blog.published_at ? formatDate(blog.published_at) : "Draft"}
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {(blog.likes ?? 0) > 0 && (
+            <span className="flex items-center gap-1 text-xs text-[var(--kvis-text3)]">
+              <Heart className="h-3 w-3" /> {blog.likes}
             </span>
-            {(blog.likes ?? 0) > 0 && (
-              <span className="ml-auto flex items-center gap-1 text-[10px] text-[var(--kvis-text3)]">
-                <Heart className="h-3 w-3" /> {blog.likes}
-              </span>
-            )}
-          </div>
+          )}
+          <span className="text-xs tabular-nums text-[var(--kvis-text3)]">
+            {blog.published_at ? formatDate(blog.published_at) : "Draft"}
+          </span>
         </div>
       </div>
     </Link>
@@ -263,10 +257,10 @@ export default function BlogClient() {
                   </p>
                   <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                     <span className="font-light text-foreground">Share your </span>
-                    <span style={{ color: "var(--kvis-purple)" }}>Stories.</span>
+                    <span style={{ color: "var(--kvis-purple)" }}>Stories</span>
                   </h1>
                   <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
-                    Essays, discussions, updates, debates, and reflections from KVIS alumni — at home and abroad.
+                    Essays, discussions, updates, debates, and reflections from KVIS alumni - at home and abroad.
                   </p>
                 </div>
                 {user && (
@@ -280,7 +274,7 @@ export default function BlogClient() {
 
               {/* Tag pills + sort */}
               <div className="flex items-center justify-between gap-4 mt-5">
-                {/* Popular tags — top 5 only */}
+                {/* Popular tags - top 5 only */}
                 <div className="flex items-center flex-wrap gap-2">
                   <button
                     onClick={() => setActiveTag("")}
@@ -288,7 +282,7 @@ export default function BlogClient() {
                     style={{
                       background: !activeTag ? "var(--kvis-purple)" : "transparent",
                       color: !activeTag ? "white" : "var(--kvis-text3)",
-                      border: !activeTag ? "none" : "0.5px solid var(--kvis-rule)",
+                      border: !activeTag ? "none" : "0.5px solid var(--kvis-border)",
                     }}
                   >
                     All
@@ -301,7 +295,7 @@ export default function BlogClient() {
                       style={{
                         background: activeTag === t ? "var(--kvis-purple)" : "transparent",
                         color: activeTag === t ? "white" : "var(--kvis-text3)",
-                        border: activeTag === t ? "none" : "0.5px solid var(--kvis-rule)",
+                        border: activeTag === t ? "none" : "0.5px solid var(--kvis-border)",
                       }}
                     >
                       <span
@@ -315,7 +309,7 @@ export default function BlogClient() {
                   ))}
                 </div>
                 
-                {/* Sort — always purple, right side */}
+                {/* Sort - always purple, right side */}
                 <div className="relative shrink-0">
                   <button
                     type="button"
@@ -328,7 +322,7 @@ export default function BlogClient() {
                   </button>
                   {sortOpen && (
                     <div
-                      className="absolute top-full right-0 mt-1 z-50 bg-background border border-[var(--kvis-rule)] shadow-lg min-w-[140px]"
+                      className="absolute top-full right-0 mt-1 z-50 bg-background border border-[var(--kvis-border)] shadow-lg min-w-[140px]"
                       onMouseLeave={() => setSortOpen(false)}
                     >
                       {[
@@ -349,7 +343,7 @@ export default function BlogClient() {
               </div>
 
               {/* Search */}
-              <div className="flex items-center gap-3 px-3 py-2 mt-4 border border-[var(--kvis-rule)] rounded-sm">
+              <div className="flex items-center gap-3 px-3 py-2 mt-4 border border-[var(--kvis-border)] rounded-sm">
                 <Search className="h-4 w-4 text-muted-foreground shrink-0" />
                 <input
                   value={searchQ}
@@ -362,7 +356,7 @@ export default function BlogClient() {
 
               <div className="flex items-center gap-3 md:gap-4 mt-5 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
                 <span>{now.toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase()}</span>
-                <span aria-hidden>·</span>
+                <Dot className="h-3 w-3 text-[var(--kvis-text3)] shrink-0" />
                 <span>{blogs.length} {blogs.length === 1 ? "post" : "posts"}</span>
               </div>
             </header>
@@ -373,7 +367,7 @@ export default function BlogClient() {
               <Skeleton className="h-60 w-full rounded-2xl" />
               <div className="grid grid-cols-3 gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="rounded-2xl overflow-hidden border border-[var(--kvis-rule)]">
+                  <div key={i} className="rounded-2xl overflow-hidden border border-[var(--kvis-border)]">
                     <Skeleton className="h-24 w-full" />
                     <div className="p-4 space-y-2">
                       <Skeleton className="h-4 w-3/4" />
@@ -416,15 +410,11 @@ export default function BlogClient() {
                 <h2 className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-5">
                   More posts
                 </h2>
-                <StaggerList>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-stretch">
-                    {rest.map((b) => (
-                      <StaggerItem key={b.id} className="h-full">
-                        <StoryCard blog={b} />
-                      </StaggerItem>
-                    ))}
-                  </div>
-                </StaggerList>
+                <div className="divide-y divide-[var(--kvis-border)] border-t border-[var(--kvis-border)]">
+                  {rest.map((b, i) => (
+                    <StoryRow key={b.id} blog={b} index={i} />
+                  ))}
+                </div>
               </section>
             </FadeUp>
           )}
