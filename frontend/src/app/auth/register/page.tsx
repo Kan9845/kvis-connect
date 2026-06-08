@@ -4,13 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowRight, ArrowLeft, Mail } from "lucide-react";
+import { Loader2, ArrowRight, ArrowLeft, Mail, Dot } from "lucide-react";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
 import { AxiosError } from "axios";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
-const INPUT_BORDER = "oklch(35% 0.005 294)";
-const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
+const INPUT_BORDER = "var(--sep-input)";
+const INPUT_BORDER_FOCUS = "var(--sep-input-focus)";
 const RESEND_COOLDOWN = 60;
 
 export default function RegisterPage() {
@@ -114,7 +114,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
     return (
       <AuthShell
         numeral="02"
-        kicker="Verify · Check your inbox"
+        kicker={<span className="flex items-center gap-1">Verify <Dot className="h-3 w-3 shrink-0" aria-hidden /> Check your inbox</span>}
         title="Enter the code we sent."
         lede={`We emailed a 6-digit code to ${registeredEmail}. Enter it below to activate your account.`}
         footer={
@@ -140,7 +140,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
         }
       >
         <form onSubmit={handleVerify} className="space-y-6">
-          <div className="flex items-center gap-3 py-3 px-4 border" style={{ borderColor: "oklch(78% 0.01 294)" }}>
+          <div className="flex items-center gap-3 py-3 px-4 border border-[var(--kvis-border)]">
             <Mail className="h-4 w-4 shrink-0" style={{ color: P.purple }} />
             <span className="text-sm text-muted-foreground truncate">{registeredEmail}</span>
           </div>
@@ -150,7 +150,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
             <InputOTP maxLength={6} value={otp} onChange={setOtp} autoFocus>
               <InputOTPGroup className="w-full">
                 {[0,1,2,3,4,5].map((i) => (
-                  <InputOTPSlot key={i} index={i} className="flex-1 h-14 text-xl rounded-none border-foreground/20 focus-within:border-foreground/60" />
+                  <InputOTPSlot key={i} index={i} className="flex-1 h-14 text-xl rounded-none border-[var(--sep-input)] focus-within:border-[var(--sep-strong)]" />
                 ))}
               </InputOTPGroup>
             </InputOTP>
@@ -181,7 +181,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
   return (
     <AuthShell
       numeral="02"
-      kicker="Register · KVIS alumni only"
+      kicker={<span className="flex items-center gap-1">Register <Dot className="h-3 w-3 shrink-0" aria-hidden /> KVIS alumni only</span>}
       title="Add your alumni record."
       lede="Create an account to join the KVIS alumni network. We'll send a verification code to your email."
       footer={

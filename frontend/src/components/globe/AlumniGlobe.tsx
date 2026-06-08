@@ -3,6 +3,7 @@ import { memo, useRef, useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import type { GlobePin } from "@/lib/types";
+import { hasValidGlobeCoords } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
@@ -34,6 +35,7 @@ interface PinCluster {
 function clusterPins(pins: GlobePin[]): PinCluster[] {
   const map = new Map<string, PinCluster>();
   for (const p of pins) {
+    if (!hasValidGlobeCoords(p)) continue;
     // 4dp ≈ 11m - only merges true coincident points, not nearby cities.
     const key = `${p.latitude.toFixed(4)},${p.longitude.toFixed(4)}`;
     const existing = map.get(key);
@@ -681,9 +683,11 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
       globeRef.current.controls().autoRotate = true;
       return;
     }
-    const lat = filteredPins.reduce((s, p) => s + p.latitude, 0) / filteredPins.length;
-    const lng = filteredPins.reduce((s, p) => s + p.longitude, 0) / filteredPins.length;
-    const alt = filteredPins.length === 1 ? 1.2 : filteredPins.length < 5 ? 1.8 : 2.5;
+    const validPins = filteredPins.filter(hasValidGlobeCoords);
+    if (validPins.length === 0) return;
+    const lat = validPins.reduce((s, p) => s + p.latitude, 0) / validPins.length;
+    const lng = validPins.reduce((s, p) => s + p.longitude, 0) / validPins.length;
+    const alt = validPins.length === 1 ? 1.2 : validPins.length < 5 ? 1.8 : 2.5;
     globeRef.current.controls().autoRotate = false;
     globeRef.current.pointOfView({ lat, lng, altitude: alt }, 1200);
   }, [filteredPins]);

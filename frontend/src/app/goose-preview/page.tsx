@@ -1,18 +1,19 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Dot } from "lucide-react";
 
 // TODO(remove-soon): sprite signed off. This whole route is slated for deletion -
 // the live mascot now lives in `components/goose/PixelGoose.tsx`. The frame data
 // duplicated below is intentionally kept frozen until this file is removed.
 
 const KVIS = {
-  purple: "oklch(44% 0.26 294)",
-  green: "oklch(40% 0.16 148)",
-  ink: "oklch(20% 0.015 294)",
-  text2: "oklch(45% 0.008 294)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
+  purple: "var(--kvis-purple)",
+  green: "var(--kvis-green)",
+  ink: "var(--kvis-ink)",
+  text2: "var(--kvis-text2)",
+  text3: "var(--kvis-text3)",
+  rule: "var(--kvis-rule)",
   paper: "oklch(99% 0.003 90)",
 };
 
@@ -196,13 +197,13 @@ export default function GoosePreview() {
       <div className="mx-auto max-w-5xl px-6 lg:px-10 py-12">
         <header className="pb-6 border-b" style={{ borderColor: KVIS.rule }}>
           <p
-            className="text-xs font-bold uppercase tracking-[0.3em] mb-3"
+            className="text-xs font-bold uppercase tracking-[0.3em] mb-3 flex items-center gap-1"
             style={{ color: KVIS.purple }}
           >
-            KVIS Connect · Internal draft
+            KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Internal draft
           </p>
-          <h1 className="text-4xl md:text-5xl font-black tracking-[-0.025em] leading-[1.02]">
-            KVIS pixel mascot · take 3
+          <h1 className="text-4xl md:text-5xl font-black tracking-[-0.025em] leading-[1.02] flex items-center gap-1">
+            KVIS pixel mascot <Dot className="h-3 w-3 shrink-0" aria-hidden /> take 3
           </h1>
           <p
             className="mt-3 text-sm max-w-[60ch] leading-relaxed"
@@ -251,7 +252,7 @@ export default function GoosePreview() {
             className="text-xs uppercase tracking-[0.28em] font-bold mb-5"
             style={{ color: KVIS.text3 }}
           >
-            Scale comparison · idle frame
+            Scale comparison <Dot className="h-3 w-3 shrink-0" aria-hidden /> idle frame
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <Card label="1× - 32px (favicon)">
@@ -274,7 +275,7 @@ export default function GoosePreview() {
             className="text-xs uppercase tracking-[0.28em] font-bold mb-5"
             style={{ color: KVIS.text3 }}
           >
-            Frames · 7× zoom
+            Frames <Dot className="h-3 w-3 shrink-0" aria-hidden /> 7× zoom
           </p>
           <div className="grid grid-cols-2 gap-6">
             <Card label="Frame A - idle">
@@ -291,7 +292,7 @@ export default function GoosePreview() {
             className="text-xs uppercase tracking-[0.28em] font-bold mb-5"
             style={{ color: KVIS.text3 }}
           >
-            Animated · bob + blink, varied backgrounds
+            Animated <Dot className="h-3 w-3 shrink-0" aria-hidden /> bob + blink, varied backgrounds
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <Card label="Paper" bg={KVIS.paper}>
@@ -314,7 +315,7 @@ export default function GoosePreview() {
             className="text-xs uppercase tracking-[0.28em] font-bold mb-5"
             style={{ color: KVIS.text3 }}
           >
-            In context · stats masthead mock
+            In context <Dot className="h-3 w-3 shrink-0" aria-hidden /> stats masthead mock
           </p>
           <div
             className="px-6 lg:px-10 py-10"
@@ -327,7 +328,7 @@ export default function GoosePreview() {
                     className="text-xs font-bold uppercase tracking-[0.3em] mb-3"
                     style={{ color: KVIS.purple }}
                   >
-                    KVIS Connect · Stats
+                    KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Stats
                   </p>
                   <h1 className="text-5xl md:text-6xl font-black tracking-[-0.03em] leading-[0.95]">
                     By the Numbers
@@ -351,7 +352,7 @@ export default function GoosePreview() {
           className="mt-10 pt-6 border-t text-xs uppercase tracking-[0.22em]"
           style={{ borderColor: KVIS.ink, color: KVIS.text3 }}
         >
-          - Draft preview · delete this route after sign-off -
+          - Draft preview <Dot className="h-3 w-3 shrink-0" aria-hidden /> delete this route after sign-off -
         </footer>
       </div>
     </div>

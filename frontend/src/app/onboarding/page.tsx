@@ -25,7 +25,7 @@ const P = {
 };
 
 const inputCls =
-  "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:border-foreground transition-colors";
+  "w-full bg-transparent border-0 border-b border-[var(--sep-input)] rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus-visible:outline-none focus-visible:border-[var(--sep-input-focus)] transition-colors";
 
 type Role = "alumni" | "student" | "faculty";
 type Step = "role" | "details";
@@ -97,7 +97,7 @@ function PillToggle<T extends string | number>({
   onChange,
   cols = 3,
 }: {
-  options: { value: T; label: string; sub: string }[];
+  options: { value: T; label: string; sub?: string }[];
   value: T | null;
   onChange: (v: T) => void;
   cols?: number;

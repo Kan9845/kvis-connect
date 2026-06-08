@@ -5,6 +5,7 @@ import type {
   BlogRead, BlogDetail, Summary, SearchParams,
   Education, Career,
 } from "./types";
+import { filterGlobePins } from "./utils";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
@@ -101,7 +102,8 @@ export const userApi = {
     form.append("file", file);
     return api.post<{ url: string }>("/api/users/me/profile-pic", form).then((r) => r.data);
   },
-  getGlobePins: () => api.get<GlobePin[]>("/api/users/globe/pins").then((r) => r.data),
+  getGlobePins: () =>
+    api.get<GlobePin[]>("/api/users/globe/pins").then((r) => filterGlobePins(r.data)),
 };
 
 // Search

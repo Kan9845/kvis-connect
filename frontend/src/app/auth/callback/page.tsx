@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Dot } from "lucide-react";
 import { P } from "../AuthShell";
 
 export default function AuthCallbackPage() {
@@ -42,10 +43,10 @@ export default function AuthCallbackPage() {
             00
           </span>
           <span
-            className="text-[11px] uppercase tracking-[0.32em] font-bold"
+            className="text-[11px] uppercase tracking-[0.32em] font-bold flex items-center gap-1"
             style={{ color: P.text3 }}
           >
-            Handshake · OAuth callback
+            Handshake <Dot className="h-3 w-3 shrink-0" aria-hidden /> OAuth callback
           </span>
         </div>
 

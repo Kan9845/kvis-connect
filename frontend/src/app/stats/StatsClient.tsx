@@ -1,6 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useTheme } from "next-themes";
+import { ArrowRight, ArrowLeft, Dot } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Bar } from "react-chartjs-2";
 import {
@@ -22,6 +23,7 @@ import {
   StaggerList,
   StaggerItem,
 } from "@/components/ui/motion";
+import { Separator } from "@/components/ui/separator";
 import { cohortColor } from "@/lib/utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
@@ -357,7 +359,7 @@ function EmptyRow({ label }: { label: string }) {
 // ── Section divider label ─────────────────────────────────────────────────────
 function SubHead({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 pb-3 border-b border-foreground/20 mb-1">
+    <div className="flex items-center gap-3 pb-3 border-b border-[var(--kvis-rule)] mb-1">
       <p className="text-xs font-bold uppercase tracking-[0.22em] text-foreground">
         {children}
       </p>
@@ -366,8 +368,22 @@ function SubHead({ children }: { children: React.ReactNode }) {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
+function readCssVar(name: string, fallback: string) {
+  if (typeof document === "undefined") return fallback;
+  return (
+    getComputedStyle(document.documentElement).getPropertyValue(name).trim() ||
+    fallback
+  );
+}
+
 export default function StatsClient() {
   const [cohort, setCohort] = useState<number | null>(null);
+  const { resolvedTheme } = useTheme();
+  const [chartTickColor, setChartTickColor] = useState("oklch(60% 0.006 294)");
+
+  useEffect(() => {
+    setChartTickColor(readCssVar("--kvis-text3", "oklch(60% 0.006 294)"));
+  }, [resolvedTheme]);
 
   const { data: alumni = [], isLoading } = useQuery({
     queryKey: keys.stats.alumni(),
@@ -490,12 +506,12 @@ export default function StatsClient() {
   return (
     <PageEntrance>
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
+        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
           {/* ── Masthead ─────────────────────────────────────────────────── */}
           <FadeUp>
-            <header className="pb-7 border-b border-foreground/60">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)]">
-                KVIS Connect · Stats
+            <header className="pb-md border-b border-[var(--sep-strong)]">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
+                KVIS Connect <Dot /> Stats
               </p>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                 <span className="font-light text-foreground">By the </span>
@@ -508,9 +524,9 @@ export default function StatsClient() {
               </p>
               <div className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap mt-6 text-[var(--kvis-text3)]">
                 <span>{dateline}</span>
-                <span aria-hidden>·</span>
+                <Dot className="h-3 w-3 shrink-0" aria-hidden />
                 <span>{alumni.length} alumni</span>
-                <span aria-hidden>·</span>
+                <Dot className="h-3 w-3 shrink-0" aria-hidden />
                 <span>{cohorts.length} cohorts</span>
               </div>
             </header>
@@ -520,7 +536,7 @@ export default function StatsClient() {
           {cohorts.length > 0 && (
             <FadeUp delay={0.1}>
               <nav
-                className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4 border-b border-[var(--kvis-rule)]"
+                className="grid grid-cols-[72px_1fr] md:grid-cols-[100px_1fr] items-baseline gap-x-5 gap-y-2 py-4"
                 aria-label="Cohort filter"
               >
                 <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">
@@ -558,29 +574,31 @@ export default function StatsClient() {
                   value: totalAlumni,
                   label: "Alumni",
                   sub: cohortLabel,
-                  color: activeColor,
+                  color: "var(--kvis-purple)",
                 },
                 {
                   value: uniqueUnis,
                   label: "Universities",
                   sub: cohortLabel,
-                  color: "var(--kvis-purple-light)",
+                  color: "var(--kvis-green)",
                 },
                 {
                   value: `${stemPct}%`,
                   label: "In STEM",
                   sub: "of those with education data",
-                  color: "var(--kvis-green)",
+                  color: "var(--kvis-purple)",
                 },
                 {
                   value: uniqueCountries,
                   label: "Countries",
                   sub: "worldwide",
-                  color: "var(--kvis-green-light)",
+                  color: "var(--kvis-green)",
                 },
               ]}
             />
           </FadeUp>
+
+          <Separator className="bg-[var(--kvis-border)]" />
 
           {/* ── Loading skeleton ─────────────────────────────────────────── */}
           {isLoading ? (
@@ -609,7 +627,7 @@ export default function StatsClient() {
               </FadeUp>
 
               <FadeUp>
-                <div className="grid md:grid-cols-2 gap-x-10 gap-y-10 border-b border-[var(--kvis-rule)] pb-10">
+                <div className="grid md:grid-cols-2 gap-x-10 gap-y-10 pb-10">
                   {/* Countries */}
                   <div>
                     <SubHead>By country</SubHead>
@@ -619,7 +637,7 @@ export default function StatsClient() {
                       <RankedList
                         items={countryRanked}
                         showFlag
-                        barColor={activeColor}
+                        barColor="var(--kvis-purple)"
                       />
                     )}
                   </div>
@@ -632,11 +650,12 @@ export default function StatsClient() {
                     ) : (
                       <RankedList
                         items={uniRanked}
-                        barColor="var(--kvis-purple-light)"
+                        barColor="var(--kvis-green)"
                       />
                     )}
                   </div>
                 </div>
+                <Separator className="bg-[var(--kvis-border)]" />
               </FadeUp>
 
               {/* ── § 2: What they studied ───────────────────────────────── */}
@@ -651,7 +670,7 @@ export default function StatsClient() {
               </FadeUp>
 
               <FadeUp>
-                <div className="pb-10 border-b border-[var(--kvis-rule)]">
+                <div className="pb-10">
                   <SubHead>By field</SubHead>
                   {facultyRanked.length === 0 ? (
                     <EmptyRow label="fields" />
@@ -662,6 +681,7 @@ export default function StatsClient() {
                     />
                   )}
                 </div>
+                <Separator className="bg-[var(--kvis-border)]" />
               </FadeUp>
 
               {/* ── § 3: Field mix per cohort ────────────────────────────── */}
@@ -671,7 +691,7 @@ export default function StatsClient() {
                   kicker="Cohort breakdown"
                   title="Field mix by cohort"
                   lede="Each bar shows the proportional field distribution within a graduating class."
-                  accentColor="var(--kvis-purple-light)"
+                  accentColor="var(--kvis-green)"
                 />
               </FadeUp>
 
@@ -746,7 +766,7 @@ export default function StatsClient() {
                             grid: { display: false },
                             ticks: {
                               font: { size: 12, weight: "bold" as const },
-                              color: "oklch(60% 0.006 294)",
+                              color: chartTickColor,
                             },
                           },
                         },
@@ -756,9 +776,11 @@ export default function StatsClient() {
                 </div>
               </FadeUp>
 
+              <Separator className="bg-[var(--kvis-border)]" />
+
               {/* Footer note */}
               <FadeUp>
-                <p className="text-xs text-[var(--kvis-text3)] border-t border-[var(--kvis-rule)] pt-6 pb-10 max-w-[65ch] leading-relaxed">
+                <p className="text-xs text-[var(--kvis-text3)] pt-6 pb-10 max-w-[80ch] leading-relaxed">
                   Data covers registered KVIS Connect members only and may not
                   reflect the full alumni body. Field classification is based on
                   major name matching and may contain minor inaccuracies.

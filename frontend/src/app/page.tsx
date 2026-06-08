@@ -1,5 +1,6 @@
 import { LandingClient } from "./LandingClient";
 import type { GlobePin } from "@/lib/types";
+import { filterGlobePins } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -9,7 +10,7 @@ async function getPins(): Promise<GlobePin[]> {
   try {
     const res = await fetch(`${API}/api/users/globe/pins`, { next: { revalidate: 60 } });
     if (!res.ok) return [];
-    return res.json();
+    return filterGlobePins(await res.json());
   } catch {
     return [];
   }

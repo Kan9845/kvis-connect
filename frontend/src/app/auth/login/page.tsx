@@ -4,8 +4,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Dot } from "lucide-react";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
+import { Separator } from "@/components/ui/separator";
 
 export default function LoginPage() {
   return (
@@ -60,7 +61,7 @@ function LoginInner() {
   return (
     <AuthShell
       numeral="01"
-      kicker="Sign in · Returning member"
+      kicker={<span className="flex items-center gap-1">Sign in <Dot className="h-3 w-3 shrink-0" aria-hidden /> Returning member</span>}
       title="Welcome back to the network."
       lede="The alumni network for KVIS - profiles, maps, and a directory that follows you around the world."
       footer={
@@ -88,9 +89,9 @@ function LoginInner() {
             required
             autoComplete="email"
             className={editorialInputClass}
-            style={{ borderColor: "oklch(35% 0.005 294)" }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "oklch(78% 0.01 294)")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "oklch(35% 0.005 294)")}
+            style={{ borderColor: "var(--sep-input)" }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "var(--sep-input-focus)")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sep-input)")}
           />
         </div>
 
@@ -117,9 +118,9 @@ function LoginInner() {
             required
             autoComplete="current-password"
             className={editorialInputClass}
-            style={{ borderColor: "oklch(35% 0.005 294)" }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = "oklch(78% 0.01 294)")}
-            onBlur={(e) => (e.currentTarget.style.borderColor = "oklch(35% 0.005 294)")}
+            style={{ borderColor: "var(--sep-input)" }}
+            onFocus={(e) => (e.currentTarget.style.borderColor = "var(--sep-input-focus)")}
+            onBlur={(e) => (e.currentTarget.style.borderColor = "var(--sep-input)")}
           />
         </div>
 
@@ -146,21 +147,21 @@ function LoginInner() {
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px" style={{ background: P.rule }} />
+          <Separator className="flex-1 bg-[var(--kvis-rule)]" />
           <span
             className="text-[10px] font-bold uppercase tracking-[0.32em]"
             style={{ color: P.text3 }}
           >
             or
           </span>
-          <div className="flex-1 h-px" style={{ background: P.rule }} />
+          <Separator className="flex-1 bg-[var(--kvis-rule)]" />
         </div>
 
         <button
           type="button"
           onClick={() => authApi.googleLogin()}
           className="w-full h-12 inline-flex items-center justify-center gap-3 rounded-none border bg-transparent text-foreground hover:bg-foreground/[0.04] transition-colors text-xs uppercase tracking-[0.24em] font-bold"
-          style={{ borderColor: "oklch(40% 0.005 294)" }}
+          style={{ borderColor: "var(--kvis-border)" }}
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

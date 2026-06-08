@@ -1,9 +1,25 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LATEST_COHORT } from "@/lib/constants/options";
+import type { GlobePin } from "@/lib/types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
+}
+
+export function hasValidGlobeCoords(
+  pin: GlobePin,
+): pin is GlobePin & { latitude: number; longitude: number } {
+  return (
+    pin.latitude != null &&
+    pin.longitude != null &&
+    Number.isFinite(pin.latitude) &&
+    Number.isFinite(pin.longitude)
+  );
+}
+
+export function filterGlobePins(pins: GlobePin[]): GlobePin[] {
+  return pins.filter(hasValidGlobeCoords);
 }
 
 export function fullName(user: { first_name: string; last_name: string }) {

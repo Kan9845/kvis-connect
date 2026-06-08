@@ -159,7 +159,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
     return (
       <PageEntrance>
         <div className="min-h-full bg-background">
-          <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
+          <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
             <Skeleton className="h-4 w-48 mb-4" />
             <div className="grid grid-cols-[140px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 pb-7 border-b border-[var(--kvis-border)]">
               <Skeleton className="aspect-square w-full rounded-full" />
@@ -220,125 +220,102 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   return (
     <PageEntrance>
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-10 lg:py-14">
+        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
 
           <FadeUp>
             <header className="pb-8 border-b border-[var(--kvis-border)]">
-              {/* Hero banner */}
-              <div
-                className="relative overflow-hidden mb-6"
-                style={{ minHeight: 220, background: cohortColor(user.kvis_year) }}
-              >
-                {/* Stripe */}
-                <div style={{
-                  position: "absolute", inset: 0,
-                  backgroundImage: `repeating-linear-gradient(135deg, white 0, white 1px, transparent 0, transparent 50%)`,
-                  backgroundSize: "6px 6px",
-                  opacity: 0.1,
-                }} />
-                {/* Dark gradient overlay */}
-                <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(to right, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 100%)",
-                }} />
+              {/* Identity grid */}
+              <div className="grid items-start gap-md md:gap-xl mb-8"
+                style={{ gridTemplateColumns: "auto 1fr" }}>
 
-                {/* Content */}
-                <div className="relative flex items-end justify-between p-7 md:p-10" style={{ minHeight: 220 }}>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-3 flex-wrap">
-                    {isFaculty(user) ? (
-                        <>
-                          <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
-                            KVIS Connect · Faculty
-                          </p>
-                          <span className="text-xs font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
-                            style={{ background: "rgba(184,148,31,0.35)", color: "#FBF3D9" }}>
-                            Teacher · {facultyPeriodLabel(user)}
-                          </span>
-                        </>
-                      ) : user.current_grade ? (
-                        <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
-                          KVIS Connect · Student
-                        </p>
-                      ) : (
-                        <>
-                          <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/60">
-                            KVIS Connect · Alumni
-                          </p>
-                          {user.kvis_year && (
-                            <span className="text-xs font-bold uppercase tracking-[0.18em] px-2 py-0.5 rounded-full"
-                              style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
-                              {genLabel(user.kvis_year)}
-                            </span>
-                          )}
-                        </>
-                      )}
-                      {user.is_verified && (
-                        <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-white/80">
-                          <ShieldCheck className="h-3 w-3" /> Verified
-                        </span>
-                      )}
-                    </div>
-
-                    <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.9] text-white mb-3">
-                      {user.first_name}<br />{user.last_name}
-                    </h1>
-
-                    {currentRole && (
-                      <p className="text-sm text-white/75 mb-4">
-                        {currentRole.job_title}
-                        {currentRole.employer && ` @ ${currentRole.employer}`}
-                        {user.place && ` · ${user.place}`}
-                      </p>
-                    )}
-
-                    {/* Tags / interests */}
-                    {interests.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {user.mbti && (
-                          <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full"
-                            style={{ background: "rgba(255,255,255,0.15)", color: "white" }}>
-                            {user.mbti}
-                          </span>
-                        )}
-                        {interests.slice(0, 4).map(t => (
-                          <span key={t} className="text-xs font-semibold uppercase tracking-[0.1em] px-2.5 py-1 rounded-full"
-                            style={{ background: "rgba(255,255,255,0.12)", color: "white" }}>
-                            {t}
-                          </span>
-                        ))}
+                {/* Avatar */}
+                <div className="relative overflow-hidden shrink-0 w-20 sm:w-28 md:w-40">
+                  <div className="relative w-full" style={{ paddingBottom: "100%" }}>
+                    {user.profile_pic_url ? (
+                      <Image src={user.profile_pic_url} alt={`${user.first_name} ${user.last_name}`}
+                        fill sizes="(max-width: 640px) 80px, (max-width: 768px) 112px, 160px"
+                        className="object-cover" priority />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center font-black text-2xl sm:text-3xl md:text-4xl"
+                        style={{
+                          background: isFaculty(user) ? FACULTY_COLOR_HEX : cohortColorHex(user.kvis_year),
+                          color: "white",
+                        }}>
+                        {initials}
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {/* Avatar */}
-                  <div className="shrink-0 ml-6">
-                    <div
-                      className="relative overflow-hidden rounded-full"
-                      style={{
-                        width: 88, height: 88,
-                        outline: "3px solid white",
-                        outlineOffset: "2px",
-                      }}
-                    >
-                      {user.profile_pic_url ? (
-                        <Image src={user.profile_pic_url} alt={`${user.first_name} ${user.last_name}`}
-                          fill sizes="88px" className="object-cover" priority />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center font-black text-2xl"
-                          style={{
-                            background: `linear-gradient(135deg, ${cohortColorHex(user.kvis_year)} 0%, ${cohortColorSoftHex(user.kvis_year)} 100%)`,
-                            color: cohortTextColor(user.kvis_year),
-                          }}>
-                          {initials}
-                        </div>
-                      )}
-                    </div>
+                {/* Info */}
+                <div className="min-w-0 pt-1">
+                  {/* Badges */}
+                  <div className="flex items-center gap-sm mb-3 flex-wrap">
+                    {isFaculty(user) ? (
+                      <>
+                        <span className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--kvis-text3)] flex items-center gap-1">
+                          KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Faculty
+                        </span>
+                        <span className="text-xs font-bold uppercase tracking-[0.18em] px-2 py-0.5 flex items-center gap-1"
+                          style={{ background: FACULTY_COLOR_SOFT_HEX, color: FACULTY_COLOR_HEX }}>
+                          Teacher <Dot className="h-3 w-3 shrink-0" aria-hidden /> {facultyPeriodLabel(user)}
+                        </span>
+                      </>
+                    ) : user.current_grade ? (
+                      <span className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--kvis-text3)] flex items-center gap-1">
+                        KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Student
+                      </span>
+                    ) : (
+                      <>
+                        <span className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--kvis-text3)] flex items-center gap-1">
+                          KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Alumni
+                        </span>
+                        {user.kvis_year && (
+                          <span className="text-xs font-bold uppercase tracking-[0.18em] px-2 py-0.5"
+                            style={{ background: cohortColorSoftHex(user.kvis_year), color: cohortColorHex(user.kvis_year) }}>
+                            {genLabel(user.kvis_year)}
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {user.is_verified && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)]">
+                        <ShieldCheck className="h-3 w-3" /> Verified
+                      </span>
+                    )}
                   </div>
+
+                  <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.9] text-foreground mb-3">
+                    {user.first_name}<br />{user.last_name}
+                  </h1>
+
+                  {currentRole && (
+                    <p className="text-sm mb-4" style={{ color: "var(--kvis-text2)" }}>
+                      {currentRole.job_title}
+                      {currentRole.employer && ` @ ${currentRole.employer}`}
+                      {user.place && <> <Dot className="h-3 w-3 shrink-0" aria-hidden />{user.place}</>}
+                    </p>
+                  )}
+
+                  {/* Interest tags */}
+                  {(interests.length > 0 || user.mbti) && (
+                    <div className="flex items-center gap-sm flex-wrap">
+                      {user.mbti && (
+                        <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
+                          {user.mbti}
+                        </span>
+                      )}
+                      {interests.slice(0, 4).map(t => (
+                        <span key={t} className="text-xs font-semibold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Below card — meta + edit button */}
+              {/* Meta + edit button */}
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-3 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
                   <span>Joined {formatDate(user.created_at).toUpperCase()}</span>
@@ -360,6 +337,23 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
               </div>
             </header>
           </FadeUp>
+
+          {sections.length === 0 && (
+            <FadeUp>
+              <div className="py-16">
+                <p className="text-xs uppercase tracking-[0.28em] font-bold text-[var(--kvis-text3)] mb-3">No data yet</p>
+                <p className="text-lg text-foreground max-w-[42ch] leading-snug">
+                  This profile hasn't been filled in yet.
+                </p>
+                {isMe && (
+                  <Link href="/profile/edit"
+                    className="inline-block mt-6 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity">
+                    Fill in your profile
+                  </Link>
+                )}
+              </div>
+            </FadeUp>
+          )}
 
           {user.bio && (
             <FadeUp>
@@ -451,7 +445,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
           <FadeUp>
             <footer className="mt-20 pt-6 border-t border-[var(--kvis-border)] text-xs uppercase tracking-[0.22em] flex items-center justify-between" style={{ color: "var(--kvis-text2)" }}>
               <span>- end -</span>
-              <span className="tabular-nums">KVIS Connect · {new Date().getFullYear()}</span>
+              <span className="tabular-nums">KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> {new Date().getFullYear()}</span>
             </footer>
           </FadeUp>
 

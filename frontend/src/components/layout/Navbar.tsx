@@ -25,6 +25,7 @@ import {
   ShieldCheck,
   Menu,
   X,
+  Dot,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
@@ -34,7 +35,7 @@ import { userApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import type { GlobePin } from "@/lib/types";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
-import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex } from "@/lib/utils";
+import { cohortColor, cohortColorHex } from "@/lib/utils";
 import { NotificationBell } from "@/components/NotificationBell";
 
 function AlumniSearch({
@@ -130,8 +131,12 @@ function AlumniSearch({
                 <p className="text-sm font-medium text-foreground transition-colors truncate">
                   {p.first_name} {p.last_name}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {[p.current_job, p.country].filter(Boolean).join(" · ")}
+                <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                  {[p.current_job, p.country].filter(Boolean).map((item, i, arr) => (
+                    <span key={item}>
+                      {item}{i < arr.length - 1 && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
+                    </span>
+                  ))}
                 </p>
               </div>
             </button>
@@ -376,8 +381,8 @@ function MobileNavPanel({
               />
               <AvatarFallback
                 style={{
-                  background: `linear-gradient(135deg, ${cohortColorHex(user.kvis_year)} 0%, ${cohortColorSoftHex(user.kvis_year)} 100%)`,
-                  color: cohortTextColor(user.kvis_year),
+                  background: cohortColorHex(user.kvis_year),
+                  color: "white",
                 }}
               >
                 {`${user.first_name[0]}${user.last_name[0]}`.toUpperCase()}
@@ -491,8 +496,8 @@ export function Navbar() {
               />
               <AvatarFallback
                 style={{
-                  background: `linear-gradient(135deg, ${cohortColorHex(user.kvis_year)} 0%, ${cohortColorSoftHex(user.kvis_year)} 100%)`,
-                  color: cohortTextColor(user.kvis_year),
+                  background: cohortColorHex(user.kvis_year),
+                  color: "white",
                 }}
               >
                 {initials}

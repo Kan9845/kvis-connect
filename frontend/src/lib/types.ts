@@ -106,8 +106,8 @@ export interface GlobePin {
   slug: string;
   first_name: string;
   last_name: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number | null;
+  longitude?: number | null;
   place?: string;
   kvis_year?: number;
   profile_pic_url?: string;

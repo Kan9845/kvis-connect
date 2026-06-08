@@ -8,19 +8,19 @@ import { blogApi, userApi } from "@/lib/api";
 import { onBlogMutationSuccess } from "@/lib/cache/invalidate";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Dot } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 
 const P = {
-  purple: "oklch(44% 0.26 294)",
-  purpleSoft: "oklch(95% 0.035 294)",
-  green: "oklch(40% 0.16 148)",
-  text2: "oklch(45% 0.008 294)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
-  ruleHeavy: "oklch(78% 0.008 294)",
+  purple: "var(--kvis-purple)",
+  purpleSoft: "var(--kvis-purple-soft)",
+  green: "var(--kvis-green)",
+  text2: "var(--kvis-text2)",
+  text3: "var(--kvis-text3)",
+  rule: "var(--kvis-rule)",
+  ruleHeavy: "var(--kvis-border)",
 };
 
 const schema = z.object({
@@ -156,14 +156,14 @@ export default function NewBlogPage() {
 
   return (
     <div className="min-h-full bg-background">
-      <div className="mx-auto max-w-4xl px-6 lg:px-10 py-10 lg:py-14">
+      <div className="mx-auto max-w-4xl px-6 lg:px-10 py-xl lg:py-layout">
         {/* Masthead */}
-        <header className="pb-8 border-b-2 border-foreground/70">
+        <header className="pb-8 border-b-2 border-[var(--sep-strong)]">
           <p
-            className="text-xs font-bold uppercase tracking-[0.3em] mb-3"
+            className="text-xs font-bold uppercase tracking-[0.3em] mb-3 flex items-center gap-1"
             style={{ color: P.purple }}
           >
-            KVIS Connect · New post
+            KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> New post
           </p>
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
             Write a post
@@ -176,13 +176,13 @@ export default function NewBlogPage() {
             style={{ color: P.text3 }}
           >
             <span>By {user.first_name} {user.last_name}</span>
-            <span aria-hidden>·</span>
+            <Dot className="h-3 w-3 shrink-0" aria-hidden />
             <span>{dateLine}</span>
-            <span aria-hidden>·</span>
+            <Dot className="h-3 w-3 shrink-0" aria-hidden />
             <span>
               {wordCount} {wordCount === 1 ? "word" : "words"}
             </span>
-            <span aria-hidden>·</span>
+            <Dot className="h-3 w-3 shrink-0" aria-hidden />
             <span>~ {readMins} min read</span>
           </div>
         </header>
@@ -241,7 +241,7 @@ export default function NewBlogPage() {
                   type="button"
                   onClick={() => coverImageRef.current?.click()}
                   disabled={coverUploading}
-                  className="text-xs font-bold uppercase tracking-[0.26em] px-4 py-2 border border-foreground/60 hover:bg-foreground/5 transition-colors disabled:opacity-40 inline-flex items-center gap-2"
+                  className="text-xs font-bold uppercase tracking-[0.26em] px-4 py-2 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40 inline-flex items-center gap-2"
                 >
                   {coverUploading ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -346,9 +346,10 @@ export default function NewBlogPage() {
                 <span>
                   {tab === "write" ? "Markdown" : "Preview"}
                 </span>
-                <span>
-                  {wordCount.toLocaleString()} {wordCount === 1 ? "word" : "words"} ·{" "}
-                  {charCount.toLocaleString()} chars
+                <span className="flex items-center gap-2">
+                  <span>{wordCount.toLocaleString()} {wordCount === 1 ? "word" : "words"}</span>
+                  <Dot className="h-3 w-3 shrink-0" aria-hidden />
+                  <span>{charCount.toLocaleString()} chars</span>
                 </span>
               </div>
 
@@ -395,7 +396,7 @@ export default function NewBlogPage() {
           </section>
 
           {/* Actions */}
-          <footer className="mt-12 pt-7 border-t-2 border-foreground/70 flex items-center justify-between flex-wrap gap-4">
+          <footer className="mt-12 pt-7 border-t-2 border-[var(--sep-strong)] flex items-center justify-between flex-wrap gap-4">
             <p
               className="text-xs uppercase tracking-[0.22em] max-w-[40ch] leading-relaxed"
               style={{ color: P.text3 }}
@@ -407,7 +408,7 @@ export default function NewBlogPage() {
                 type="submit"
                 disabled={mutation.isPending || isSubmitting}
                 onClick={() => setValue("is_published", false)}
-                className="text-xs font-bold uppercase tracking-[0.26em] px-5 py-3 border border-foreground/60 hover:bg-foreground/5 transition-colors disabled:opacity-40"
+                className="text-xs font-bold uppercase tracking-[0.26em] px-5 py-3 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40"
               >
                 Save draft
               </button>

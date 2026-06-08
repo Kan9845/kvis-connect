@@ -1,18 +1,18 @@
 "use client";
 
 export const P = {
-  purple: "oklch(44% 0.26 294)",
-  purpleSoft: "oklch(95% 0.035 294)",
-  green: "oklch(40% 0.16 148)",
-  ink: "oklch(20% 0.015 294)",
-  text2: "oklch(45% 0.008 294)",
-  text3: "oklch(62% 0.005 294)",
-  rule: "oklch(90% 0.007 294)",
+  purple: "var(--kvis-purple)",
+  purpleSoft: "var(--kvis-purple-soft)",
+  green: "var(--kvis-green)",
+  ink: "var(--kvis-ink)",
+  text2: "var(--kvis-text2)",
+  text3: "var(--kvis-text3)",
+  rule: "var(--kvis-rule)",
 };
 
 interface AuthShellProps {
   numeral: string;
-  kicker: string;
+  kicker: React.ReactNode;
   title: string;
   lede: string;
   children: React.ReactNode;
@@ -26,8 +26,8 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
   });
   return (
     <div className="min-h-full bg-background">
-      <div className="mx-auto max-w-6xl px-6 lg:px-12 py-10 lg:py-16">
-        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-10 lg:gap-20 items-start">
+      <div className="mx-auto max-w-6xl px-6 lg:px-12 py-xl lg:py-2xl">
+        <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-xl lg:gap-20 items-start">
           <section
             className="lg:pr-10 lg:border-r lg:sticky lg:top-16 lg:self-start"
             style={{ borderColor: P.rule }}

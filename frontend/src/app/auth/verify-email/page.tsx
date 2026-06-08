@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { authApi } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight, Dot } from "lucide-react";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 import { AuthShell, P, FieldLabel, editorialInputClass } from "../AuthShell";
+import { Separator } from "@/components/ui/separator";
 
 const RESEND_COOLDOWN = 60;
-const INPUT_BORDER = "oklch(35% 0.005 294)";
-const INPUT_BORDER_FOCUS = "oklch(78% 0.01 294)";
+const INPUT_BORDER = "var(--sep-input)";
+const INPUT_BORDER_FOCUS = "var(--sep-input-focus)";
 
 export default function VerifyKvisPage() {
   const { user, loading, refetch } = useAuth();
@@ -90,7 +91,7 @@ export default function VerifyKvisPage() {
   return (
     <AuthShell
       numeral="03"
-      kicker="Verification · School credentials"
+      kicker={<span className="flex items-center gap-1">Verification <Dot className="h-3 w-3 shrink-0" aria-hidden /> School credentials</span>}
       title="Stamp your name with the KVIS seal."
       lede="Confirm ownership of your @kvis.ac.th address to earn the KVIS-Verified badge on your profile, blog posts, and directory card."
       footer={
@@ -110,7 +111,7 @@ export default function VerifyKvisPage() {
       {/* Step indicator */}
       <div className="mb-8 flex items-center gap-6">
         <StepDot index="01" label="Email" active={!otpSent} done={otpSent} />
-        <div className="flex-1 h-px" style={{ background: P.rule }} />
+        <Separator className="flex-1 bg-[var(--kvis-rule)]" />
         <StepDot index="02" label="Code" active={otpSent} done={false} />
       </div>
 
@@ -239,7 +240,7 @@ function StepDot({
   active: boolean;
   done: boolean;
 }) {
-  const color = active ? "oklch(75% 0.18 294)" : done ? P.green : P.text3;
+  const color = active ? "var(--kvis-purple-light)" : done ? P.green : P.text3;
   return (
     <div className="flex items-center gap-2 shrink-0">
       <span

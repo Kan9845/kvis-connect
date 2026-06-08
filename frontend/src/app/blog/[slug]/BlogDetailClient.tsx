@@ -353,7 +353,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
   return (
     <PageEntrance>
-      <div className="mx-auto max-w-3xl px-6 lg:px-8 py-10 lg:py-14">
+      <div className="mx-auto max-w-3xl px-6 lg:px-8 py-xl lg:py-layout">
 
         <FadeUp>
           <Link href="/blog"
@@ -364,7 +364,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
         </FadeUp>
 
         <FadeUp delay={0.05}>
-          <header className="mb-8 pb-8 border-b border-foreground/60">
+          <header className="mb-8 pb-8 border-b border-[var(--sep-strong)]">
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-5">
                 {tags.map(tag => (

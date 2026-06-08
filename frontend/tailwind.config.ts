@@ -47,6 +47,17 @@ const config: Config = {
           foreground: "hsl(var(--popover-foreground))",
         },
       },
+      spacing: {
+        xs: "4px",
+        sm: "8px",
+        md: "16px",
+        lg: "24px",
+        xl: "40px",
+        section: "48px",
+        layout: "56px",
+        "2xl": "64px",
+        "3xl": "96px",
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",

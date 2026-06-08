@@ -13,15 +13,17 @@ import { Search, X, ChevronDown, ArrowUpDown, Dot } from "lucide-react";
 import type { DirectoryCard } from "@/lib/types";
 import { PageEntrance, FadeUp } from "@/components/ui/motion";
 import {
-  cohortColor,
-  cohortColorHex,
   effectiveKvisYear,
   genLabel,
   isFaculty,
   facultyPeriodLabel,
   FACULTY_COLOR,
-  FACULTY_COLOR_HEX,
 } from "@/lib/utils";
+
+function kvisianAccentColor(kvis_year?: number | null): string {
+  if (!kvis_year) return "var(--kvis-purple)";
+  return kvis_year % 2 === 0 ? "var(--kvis-green)" : "var(--kvis-purple)";
+}
 import { motion } from "framer-motion";
 
 const staggerContainer = {
@@ -62,24 +64,44 @@ function initials(u: DirectoryCard) {
   return `${u.first_name?.[0] ?? ""}${u.last_name?.[0] ?? ""}`.toUpperCase();
 }
 
-function captionAlumni(u: any): string {
+function captionAlumni(u: any): React.ReactNode {
   if (u.job_title)
     return [u.job_title, u.employer && `@ ${u.employer}`]
       .filter(Boolean)
       .join(" ");
-  if (u.edu_major)
-    return [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean).join(" · ");
+  if (u.edu_major) {
+    const items = [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean);
+    return (
+      <>
+        {items.map((item, i) => (
+          <span key={i} className="flex items-center gap-1">
+            {i > 0 && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
+            {item}
+          </span>
+        ))}
+      </>
+    );
+  }
   return "Profile pending";
 }
 
-function captionStudent(u: DirectoryCard): string {
+function captionStudent(u: DirectoryCard): React.ReactNode {
   if (u.interests) {
-    return u.interests
+    const interests = u.interests
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean)
-      .slice(0, 2)
-      .join(" · ");
+      .slice(0, 2);
+    return (
+      <>
+        {interests.map((item, i) => (
+          <span key={i} className="flex items-center gap-1">
+            {i > 0 && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
+            {item}
+          </span>
+        ))}
+      </>
+    );
   }
   return "KVIS Student";
 }
@@ -91,7 +113,7 @@ function captionFaculty(u: DirectoryCard): string {
 // Portrait card
 function Portrait({ u }: { u: DirectoryCard }) {
   const faculty = isFaculty(u);
-  const color = faculty ? FACULTY_COLOR : cohortColor(effectiveKvisYear(u));
+  const color = faculty ? FACULTY_COLOR : kvisianAccentColor(effectiveKvisYear(u));
   const kvisYear = effectiveKvisYear(u);
   const placeholderBg = faculty
     ? "var(--kvis-purple)"
@@ -118,7 +140,7 @@ function Portrait({ u }: { u: DirectoryCard }) {
       {/* Photo - 1:1 square */}
       <div
         className="relative w-full overflow-hidden"
-        style={{ aspectRatio: "1 / 1", background: "oklch(92% 0.009 294)" }}
+        style={{ aspectRatio: "1 / 1", background: "var(--kvis-rule)" }}
       >
         {u.profile_pic_url ? (
           <Image
@@ -135,7 +157,7 @@ function Portrait({ u }: { u: DirectoryCard }) {
           >
             <span
               className="text-2xl font-black leading-none select-none tracking-[-0.02em]"
-              style={{ color: "oklch(97% 0.005 294)" }}
+              style={{ color: "white" }}
             >
               {initials(u)}
             </span>
@@ -191,7 +213,7 @@ function SectionHeader({
   kvis_year?: number;
   isFacultyHeader?: boolean;
 }) {
-  const color = isFacultyHeader ? FACULTY_COLOR : cohortColor(kvis_year);
+  const color = isFacultyHeader ? FACULTY_COLOR : kvisianAccentColor(kvis_year);
   return (
     <header className="flex items-baseline justify-between gap-6 pb-4 border-b border-[var(--kvis-border)] mb-6">
       <div className="flex items-baseline gap-5">
@@ -365,7 +387,9 @@ function DropFilter({
         style={{
           borderColor: active ? "var(--kvis-purple)" : "var(--kvis-border)",
           color: active ? "var(--kvis-purple)" : "var(--kvis-text3)",
-          background: active ? "var(--kvis-purple-soft)" : "transparent",
+          background: active
+            ? "color-mix(in oklch, var(--kvis-purple) 14%, transparent)"
+            : "transparent",
         }}
       >
         {sortIcon && <ArrowUpDown className="h-3 w-3" />}
@@ -618,7 +642,7 @@ function KvisianInner() {
   if (authLoading || !user) {
     return (
       <PageEntrance>
-        <div className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">
+        <div className="mx-auto max-w-6xl px-6 lg:px-10 py-xl lg:py-layout">
           <Skeleton className="h-32 w-full mb-8" />
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-x-4 gap-y-6">
             {Array.from({ length: 15 }).map((_, i) => (
@@ -639,11 +663,11 @@ function KvisianInner() {
   return (
     <PageEntrance>
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-6xl px-6 lg:px-10 py-10 lg:py-14">
+        <div className="mx-auto max-w-6xl px-6 lg:px-10 py-xl lg:py-layout">
           <FadeUp>
-            <header className="pb-7 border-b border-foreground/60">
-              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)]">
-                KVIS Connect · Directory
+            <header className="pb-7 border-b border-[var(--sep-strong)]">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
+                KVIS Connect <Dot /> Directory
               </p>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                 <span className="font-light text-foreground">Find your </span>
@@ -716,7 +740,7 @@ function KvisianInner() {
                             : "var(--kvis-text3)",
                         background:
                           personType === t
-                            ? "var(--kvis-purple-soft)"
+                            ? "color-mix(in oklch, var(--kvis-purple) 14%, transparent)"
                             : "transparent",
                       }}
                     >
