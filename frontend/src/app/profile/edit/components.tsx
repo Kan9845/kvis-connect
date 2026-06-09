@@ -136,5 +136,8 @@ export function TagPills({
 export const inputCls =
   "w-full bg-transparent border-0 border-b border-[var(--sep-input)] rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:border-[var(--sep-input-focus)] transition-colors";
 
+export const textareaCls =
+  "w-full bg-transparent border border-[var(--sep-input)] rounded-none px-3 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus-visible:ring-0 focus-visible:border-[var(--sep-input-focus)] transition-colors";
+
 export const selectTriggerCls =
-  "w-full bg-transparent border-0 border-b border-[var(--sep-input)] rounded-none px-0 py-2 text-sm md:text-base text-foreground focus:ring-0 focus:ring-offset-0";
+  "w-full bg-transparent border-0 border-b border-[var(--sep-input)] rounded-none px-0 py-2 text-sm md:text-base text-foreground data-[placeholder]:text-muted-foreground/50 focus:ring-0 focus:ring-offset-0 focus-visible:border-[var(--sep-input-focus)] transition-colors";

@@ -125,14 +125,7 @@ function LoginInner() {
         </div>
 
         {error && (
-          <p
-            className="text-xs font-medium uppercase tracking-[0.18em] py-2 px-3"
-            style={{
-              color: "oklch(70% 0.18 25)",
-              background: "oklch(20% 0.04 25)",
-              border: "1px solid oklch(40% 0.12 25)",
-            }}
-          >
+          <p className="text-destructive bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
             {error}
           </p>
         )}

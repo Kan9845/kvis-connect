@@ -11,7 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { degreeLabel, jobFieldLabel } from "@/lib/constants/options";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 import type { BlogRead } from "@/lib/types";
-import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, formatDate, genLabel, isFaculty, facultyPeriodLabel, FACULTY_COLOR, FACULTY_COLOR_HEX, FACULTY_COLOR_SOFT_HEX } from "@/lib/utils";
+import { cohortColor, cohortTextColor, cohortColorHex, cohortColorSoftHex, formatDate, cohortLabel, isFaculty, facultyPeriodLabel, FACULTY_COLOR, FACULTY_COLOR_HEX, FACULTY_COLOR_SOFT_HEX } from "@/lib/utils";
 
 function parseInterests(t?: string) {
   return (t ?? "").split(",").map((x) => x.trim()).filter(Boolean);
@@ -28,7 +28,7 @@ function parseTags(t?: string) {
 
 function SectionHead({ numeral, kicker }: { numeral: string; kicker: string }) {
   return (
-    <header className="pt-9 pb-4">
+    <header className="pt-xl pb-md">
       <div className="flex items-baseline gap-3">
         <span className="font-mono font-black text-xl tabular-nums text-[var(--kvis-green-light)]" style={{ letterSpacing: "-0.02em" }}>
           {numeral}
@@ -46,7 +46,7 @@ function EntryRow({ index, title, subtitle, meta, pill, years }: {
   meta?: string; pill?: { label: string; color: string }; years?: string;
 }) {
   return (
-    <div className="grid items-baseline py-6 border-b border-[var(--kvis-border)]"
+    <div className="grid items-baseline py-lg border-b border-[var(--kvis-border)]"
       style={{ gridTemplateColumns: "1.75rem minmax(0, 1fr) auto", columnGap: "1.25rem" }}>
       <span className="text-xs font-mono tabular-nums font-semibold pt-1 text-[var(--kvis-text3)]">
         {String(index + 1).padStart(2, "0")}
@@ -64,7 +64,7 @@ function EntryRow({ index, title, subtitle, meta, pill, years }: {
           )}
         </div>
         {subtitle && <p className="text-sm md:text-base mt-1.5 leading-snug" style={{ color: "var(--kvis-text2)" }}>{subtitle}</p>}
-        {meta && <p className="text-xs uppercase tracking-[0.22em] mt-2 tabular-nums text-[var(--kvis-text3)]">{meta}</p>}
+        {meta && <p className="text-xs uppercase tracking-[0.22em] mt-sm tabular-nums text-[var(--kvis-text3)]">{meta}</p>}
       </div>
       <span className="text-sm font-mono tabular-nums text-right whitespace-nowrap text-[var(--kvis-text3)]">
         {years ?? "-"}
@@ -77,7 +77,7 @@ function ContactRow({ label, display, href }: { label: string; display: string; 
   const external = /^https?:/.test(href);
   return (
     <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}
-      className="group grid items-center py-4 border-b border-[var(--kvis-border)]"
+      className="group grid items-center py-md border-b border-[var(--kvis-border)]"
       style={{ gridTemplateColumns: "100px minmax(0, 1fr) auto", columnGap: "1.25rem" }}>
       <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">{label}</span>
       <span className="text-sm md:text-base text-foreground truncate group-hover:underline decoration-2 underline-offset-[5px] decoration-[var(--kvis-purple)]">
@@ -161,7 +161,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
         <div className="min-h-full bg-background">
           <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
             <Skeleton className="h-4 w-48 mb-4" />
-            <div className="grid grid-cols-[140px_1fr] md:grid-cols-[200px_1fr] gap-6 md:gap-10 pb-7 border-b border-[var(--kvis-border)]">
+            <div className="grid grid-cols-[140px_1fr] md:grid-cols-[200px_1fr] gap-lg md:gap-xl pb-lg border-b border-[var(--kvis-border)]">
               <Skeleton className="aspect-square w-full rounded-full" />
               <div className="space-y-4">
                 <Skeleton className="h-16 w-3/4" />
@@ -223,7 +223,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
         <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
 
           <FadeUp>
-            <header className="pb-8 border-b border-[var(--kvis-border)]">
+            <header className="pb-lg border-b border-[var(--kvis-border)]">
               {/* Identity grid */}
               <div className="grid items-start gap-md md:gap-xl mb-8"
                 style={{ gridTemplateColumns: "auto 1fr" }}>
@@ -266,17 +266,9 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                         KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Student
                       </span>
                     ) : (
-                      <>
-                        <span className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--kvis-text3)] flex items-center gap-1">
-                          KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Alumni
-                        </span>
-                        {user.kvis_year && (
-                          <span className="text-xs font-bold uppercase tracking-[0.18em] px-2 py-0.5"
-                            style={{ background: cohortColorSoftHex(user.kvis_year), color: cohortColorHex(user.kvis_year) }}>
-                            {genLabel(user.kvis_year)}
-                          </span>
-                        )}
-                      </>
+                      <span className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--kvis-text3)] flex items-center gap-1">
+                        KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Alumni
+                      </span>
                     )}
                     {user.is_verified && (
                       <span className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)]">
@@ -285,21 +277,26 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     )}
                   </div>
 
-                  <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-[-0.035em] leading-[0.9] text-foreground mb-3">
-                    {user.first_name}<br />{user.last_name}
+                  <h1 className="font-display text-4xl sm:text-5xl font-black tracking-[-0.035em] leading-[0.9] text-foreground mb-3">
+                    {user.first_name} {user.last_name}
                   </h1>
 
                   {currentRole && (
-                    <p className="text-sm mb-4" style={{ color: "var(--kvis-text2)" }}>
-                      {currentRole.job_title}
-                      {currentRole.employer && ` @ ${currentRole.employer}`}
-                      {user.place && <> <Dot className="h-3 w-3 shrink-0" aria-hidden />{user.place}</>}
+                    <p className="text-sm mb-md flex items-center flex-wrap gap-1" style={{ color: "var(--kvis-text2)" }}>
+                      <span>{currentRole.job_title}{currentRole.employer && ` @ ${currentRole.employer}`}</span>
+                      {user.place && <><Dot className="h-3 w-3 shrink-0" aria-hidden /><span>{user.place}</span></>}
                     </p>
                   )}
 
-                  {/* Interest tags */}
-                  {(interests.length > 0 || user.mbti) && (
+                  {/* Interest tags + cohort badge */}
+                  {(interests.length > 0 || user.mbti || (!isFaculty(user) && !user.current_grade && user.kvis_year)) && (
                     <div className="flex items-center gap-sm flex-wrap">
+                      {!isFaculty(user) && !user.current_grade && user.kvis_year && (
+                        <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1"
+                          style={{ background: cohortColorSoftHex(user.kvis_year), color: cohortColorHex(user.kvis_year) }}>
+                          {cohortLabel(user.kvis_year)}
+                        </span>
+                      )}
                       {user.mbti && (
                         <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
                           {user.mbti}
@@ -316,7 +313,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
               </div>
 
               {/* Meta + edit button */}
-              <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center justify-between flex-wrap gap-md">
                 <div className="flex items-center gap-3 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
                   <span>Joined {formatDate(user.created_at).toUpperCase()}</span>
                   <Dot className="h-3 w-3 shrink-0" aria-hidden />
@@ -340,14 +337,14 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
           {sections.length === 0 && (
             <FadeUp>
-              <div className="py-16">
+              <div className="py-2xl">
                 <p className="text-xs uppercase tracking-[0.28em] font-bold text-[var(--kvis-text3)] mb-3">No data yet</p>
                 <p className="text-lg text-foreground max-w-[42ch] leading-snug">
                   This profile hasn't been filled in yet.
                 </p>
                 {isMe && (
                   <Link href="/profile/edit"
-                    className="inline-block mt-6 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity">
+                    className="inline-block mt-lg px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity">
                     Fill in your profile
                   </Link>
                 )}
@@ -443,9 +440,9 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
           )}
 
           <FadeUp>
-            <footer className="mt-20 pt-6 border-t border-[var(--kvis-border)] text-xs uppercase tracking-[0.22em] flex items-center justify-between" style={{ color: "var(--kvis-text2)" }}>
+            <footer className={`pt-lg ${sections.length === 0 ? "border-t border-[var(--kvis-border)]" : ""} text-xs uppercase tracking-[0.22em] flex items-center justify-between`} style={{ color: "var(--kvis-text2)" }}>
               <span>- end -</span>
-              <span className="tabular-nums">KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> {new Date().getFullYear()}</span>
+              <span className="tabular-nums flex items-center gap-1">KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> {new Date().getFullYear()}</span>
             </footer>
           </FadeUp>
 

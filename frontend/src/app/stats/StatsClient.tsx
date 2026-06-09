@@ -200,9 +200,8 @@ function StatFigures({
             {item.label}
           </p>
           <p
-            className="font-display font-black tabular-nums leading-none"
+            className="font-display font-black tabular-nums leading-none text-2xl"
             style={{
-              fontSize: "clamp(2rem, 4vw, 2.8rem)",
               letterSpacing: "-0.04em",
               color: item.color,
             }}
@@ -334,7 +333,7 @@ function SectionHead({
           {kicker}
         </span>
       </div>
-      <h2 className="text-2xl md:text-3xl lg:text-4xl font-black tracking-[-0.025em] leading-[1.02] text-foreground">
+      <h2 className="text-xl md:text-2xl font-black tracking-[-0.025em] leading-[1.02] text-foreground">
         {title}
       </h2>
       {lede && (
@@ -511,7 +510,7 @@ export default function StatsClient() {
           <FadeUp>
             <header className="pb-md border-b border-[var(--sep-strong)]">
               <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
-                KVIS Connect <Dot /> Stats
+                KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Stats
               </p>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                 <span className="font-light text-foreground">By the </span>

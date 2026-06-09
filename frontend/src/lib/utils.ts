@@ -30,6 +30,10 @@ export function genLabel(year: number) {
   return `K${year}`;
 }
 
+export function cohortLabel(year: number) {
+  return `KVIS ${year}`;
+}
+
 export function kvisYearLabel(year: number) {
   return `${year} (${genLabel(year)})`;
 }

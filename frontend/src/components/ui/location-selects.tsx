@@ -17,8 +17,12 @@ export const CITY_STATE_COUNTRIES = new Set([
   "Maldives", "Bahrain", "Luxembourg", "Malta", "Andorra",
 ]);
 
+// Countries that don't have states/provinces data from the API
+const NO_STATES_COUNTRIES = new Set<string>([]);
+
 let countriesCache: string[] | null = null;
-const citiesCache: Record<string, string[]> = {};
+const statesCache: Record<string, string[]> = {};
+const citiesCache: Record<string, Record<string, string[]>> = {};
 
 async function fetchCountries(): Promise<string[]> {
   if (countriesCache) return countriesCache;
@@ -30,18 +34,53 @@ async function fetchCountries(): Promise<string[]> {
   return countriesCache!;
 }
 
-async function fetchCities(country: string): Promise<string[]> {
-  if (citiesCache[country]) return citiesCache[country];
-  const apiCountry = country;
-  const res = await fetch(`${BASE}/countries/cities`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ country: apiCountry }),
-  });
-  const json = await res.json();
-  const cities: string[] = json.error ? [] : (json.data as string[]).sort();
-  citiesCache[country] = cities;
-  return cities;
+async function fetchStates(country: string): Promise<string[]> {
+  if (statesCache[country]) return statesCache[country];
+  try {
+    const res = await fetch(`${BASE}/countries/states/q?country=${encodeURIComponent(country)}`);
+    const json = await res.json();
+    if (json.error || !json.data?.states) {
+      statesCache[country] = [];
+      return [];
+    }
+    const states: string[] = (json.data.states as { name: string }[])
+      .map((s) => s.name)
+      .sort();
+    statesCache[country] = states;
+    return states;
+  } catch {
+    statesCache[country] = [];
+    return [];
+  }
+}
+
+async function fetchCities(country: string, state?: string): Promise<string[]> {
+  const cacheKey = state ? `${country}|${state}` : country;
+  if (citiesCache[country]?.[cacheKey]) return citiesCache[country][cacheKey];
+
+  try {
+    const res = state
+      ? await fetch(`${BASE}/countries/state/cities`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ country, state }),
+        })
+      : await fetch(`${BASE}/countries/cities`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ country }),
+        });
+    const json = await res.json();
+    const cities: string[] = json.error ? [] : (json.data as string[]).sort();
+
+    if (!citiesCache[country]) citiesCache[country] = {};
+    citiesCache[country][cacheKey] = cities;
+    return cities;
+  } catch {
+    if (!citiesCache[country]) citiesCache[country] = {};
+    citiesCache[country][cacheKey] = [];
+    return [];
+  }
 }
 
 // ── CountrySelect ─────────────────────────────────────────────────────────────
@@ -80,7 +119,7 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
           style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
           onClick={() => setOpen((o) => !o)}
         >
-          <span className={cn(value ? "text-foreground" : "text-foreground/25")}>
+          <span className={cn(value ? "text-foreground" : "text-muted-foreground/50")}>
             {value || "Select country..."}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
@@ -108,8 +147,8 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
   );
 }
 
-// ── CitySelect ────────────────────────────────────────────────────────────────
-interface CitySelectProps {
+// ── ProvinceSelect ───────────────────────────────────────────────────────────
+interface ProvinceSelectProps {
   country: string;
   value: string;
   onChange: (v: string) => void;
@@ -117,7 +156,144 @@ interface CitySelectProps {
   variant?: "bordered" | "underline";
 }
 
-export function CitySelect({ country, value, onChange, borderColor, variant = "bordered" }: CitySelectProps) {
+export function ProvinceSelect({ country, value, onChange, borderColor, variant = "bordered" }: ProvinceSelectProps) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [states, setStates] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualText, setManualText] = useState("");
+  const loadedFor = useRef("");
+
+  useEffect(() => {
+    if (!country || loadedFor.current === country) return;
+    loadedFor.current = country;
+    setStates([]);
+    setLoading(true);
+    fetchStates(country).then((s) => { setStates(s); setLoading(false); });
+  }, [country]);
+
+  // Reset manual mode when country changes
+  useEffect(() => {
+    setManualMode(false);
+    setManualText("");
+  }, [country]);
+
+  // Hide if city-state country or no states available
+  if (country && (CITY_STATE_COUNTRIES.has(country) || NO_STATES_COUNTRIES.has(country))) return null;
+
+  const disabled = !country;
+  const placeholder = !country
+    ? "Select country first"
+    : loading
+    ? "Loading provinces..."
+    : "Select province / state...";
+
+  const filtered = query.trim()
+    ? states.filter((s) => s.toLowerCase().includes(query.toLowerCase())).slice(0, 40)
+    : states.slice(0, 40);
+
+  function enterManual() {
+    setManualText(value && !states.includes(value) ? value : "");
+    setManualMode(true);
+    setOpen(false);
+  }
+
+  const triggerCls = variant === "underline"
+    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+
+  const manualInputCls = variant === "underline"
+    ? "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors"
+    : "w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none";
+
+  if (manualMode) {
+    return (
+      <div className="space-y-2">
+        <input
+          type="text"
+          placeholder="Enter province / state"
+          value={manualText}
+          onChange={(e) => { setManualText(e.target.value); onChange(e.target.value); }}
+          autoFocus
+          className={manualInputCls}
+          style={variant === "bordered" ? { borderColor } : undefined}
+          onFocus={variant === "bordered" ? (e) => (e.currentTarget.style.borderColor = "oklch(78% 0.01 294)") : undefined}
+          onBlur={variant === "bordered" ? (e) => (e.currentTarget.style.borderColor = borderColor ?? "") : undefined}
+        />
+        <button
+          type="button"
+          onClick={() => { setManualMode(false); setQuery(""); }}
+          className="text-xs text-muted-foreground underline underline-offset-2"
+        >
+          Search list instead
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={(v) => { if (!disabled) setOpen(v); }}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={open}
+          disabled={disabled}
+          className={triggerCls}
+          style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
+          onClick={() => { if (!disabled) setOpen((o) => !o); }}
+        >
+          <span className={cn(value ? "text-foreground" : "text-muted-foreground/50")}>
+            {value || placeholder}
+          </span>
+          <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput placeholder="Search province..." value={query} onValueChange={setQuery} />
+          <CommandList className="max-h-60">
+            {loading ? (
+              <div className="py-5 text-center text-xs text-muted-foreground">Loading provinces...</div>
+            ) : filtered.length === 0 ? (
+              <CommandEmpty>
+                No match -{" "}
+                <button type="button" className="underline" onClick={enterManual}>
+                  enter manually
+                </button>
+              </CommandEmpty>
+            ) : (
+              <CommandGroup>
+                {filtered.map((s) => (
+                  <CommandItem key={s} value={s} onSelect={() => { onChange(s); setOpen(false); setQuery(""); }}>
+                    <Check className={cn("mr-2 h-4 w-4 shrink-0", value === s ? "opacity-100" : "opacity-0")} />
+                    {s}
+                  </CommandItem>
+                ))}
+                <CommandItem value="__other__" onSelect={enterManual} className="italic text-muted-foreground">
+                  <span className="ml-6">Not listed - enter manually</span>
+                </CommandItem>
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ── CitySelect ────────────────────────────────────────────────────────────────
+interface CitySelectProps {
+  country: string;
+  province?: string;
+  value: string;
+  onChange: (v: string) => void;
+  borderColor?: string;
+  variant?: "bordered" | "underline";
+}
+
+export function CitySelect({ country, province, value, onChange, borderColor, variant = "bordered" }: CitySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [cities, setCities] = useState<string[]>([]);
@@ -127,27 +303,34 @@ export function CitySelect({ country, value, onChange, borderColor, variant = "b
   const loadedFor = useRef("");
 
   useEffect(() => {
-    if (!country || loadedFor.current === country) return;
-    loadedFor.current = country;
+    // Determine dependency: use province if available, otherwise country
+    const dependency = province || country;
+    if (!dependency || loadedFor.current === dependency) return;
+    loadedFor.current = dependency;
     setCities([]);
     setLoading(true);
-    fetchCities(country).then((c) => { setCities(c); setLoading(false); });
-  }, [country]);
+    fetchCities(country, province).then((c) => { setCities(c); setLoading(false); });
+  }, [country, province]);
 
-  // Reset manual mode when country changes
+  // Reset manual mode when country/province changes
   useEffect(() => {
     setManualMode(false);
     setManualText("");
-  }, [country]);
+  }, [country, province]);
 
   if (country && CITY_STATE_COUNTRIES.has(country)) return null;
 
-  const disabled = !country;
+  // Disable if no province selected (when provinces are available) or no country
+  const hasSeparateProvinces = country && !CITY_STATE_COUNTRIES.has(country) && !NO_STATES_COUNTRIES.has(country);
+  const disabled = hasSeparateProvinces ? !province : !country;
+
   const placeholder = !country
     ? "Select country first"
+    : hasSeparateProvinces && !province
+    ? "Select province first"
     : loading
     ? "Loading cities..."
-    : "Select city / province...";
+    : "Select city...";
 
   const filtered = query.trim()
     ? cities.filter((c) => c.toLowerCase().includes(query.toLowerCase())).slice(0, 40)
@@ -204,7 +387,7 @@ export function CitySelect({ country, value, onChange, borderColor, variant = "b
           style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
           onClick={() => { if (!disabled) setOpen((o) => !o); }}
         >
-          <span className={cn(value ? "text-foreground" : "text-foreground/25")}>
+          <span className={cn(value ? "text-foreground" : "text-muted-foreground/50")}>
             {value || placeholder}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
@@ -212,7 +395,7 @@ export function CitySelect({ country, value, onChange, borderColor, variant = "b
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none" align="start">
         <Command shouldFilter={false}>
-          <CommandInput placeholder="Search city..." value={query} onValueChange={setQuery} />
+          <CommandInput placeholder={hasSeparateProvinces && !province ? "Select province first" : "Search city..."} value={query} onValueChange={setQuery} disabled={hasSeparateProvinces && !province ? true : undefined} />
           <CommandList className="max-h-60">
             {loading ? (
               <div className="py-5 text-center text-xs text-muted-foreground">Loading cities...</div>

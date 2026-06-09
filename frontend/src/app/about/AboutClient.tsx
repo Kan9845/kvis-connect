@@ -93,7 +93,7 @@ export function AboutClient() {
             <header className="py-xl lg:py-layout flex items-start justify-between gap-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
-                  KVIS Connect <Dot /> About
+                  KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> About
                 </p>
                 <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                   <span className="font-light text-foreground">About </span>
@@ -117,7 +117,7 @@ export function AboutClient() {
               {STAT_STRIP.map(({ value, label, color }) => (
                 <div key={label}>
                   <p
-                    className="font-display text-3xl font-black tabular-nums leading-none mb-2"
+                    className="font-display text-2xl font-black tabular-nums leading-none mb-2"
                     style={{ color }}
                   >
                     {value}

@@ -15,6 +15,7 @@ import {
   FieldRow,
   TagPills,
   inputCls,
+  textareaCls,
   selectTriggerCls,
 } from "./components";
 import {
@@ -142,6 +143,7 @@ export function TabResearch({
           </div>
           <FieldRow label="Title" required>
             <Input
+              placeholder="e.g. Machine Learning Model for Climate Prediction"
               value={p.title}
               onChange={(e) =>
                 setProjects((prev) =>
@@ -183,6 +185,7 @@ export function TabResearch({
           </FieldRow>
           <FieldRow label="Description">
             <Textarea
+              placeholder="Brief overview of the project, objectives, and your role..."
               rows={3}
               value={p.description ?? ""}
               onChange={(e) =>
@@ -192,7 +195,7 @@ export function TabResearch({
                   ),
                 )
               }
-              className={`${inputCls} min-h-[80px]`}
+              className={`${textareaCls} min-h-[80px]`}
             />
           </FieldRow>
           <FieldRow label="Status">
@@ -269,6 +272,7 @@ export function TabResearch({
           </div>
           <FieldRow label="Citation" hint="Paste APA style.">
             <Textarea
+              placeholder="e.g. Smith, J., Johnson, A., & Lee, M. (2024). Title of research paper. Journal Name, 15(3), 123-145."
               rows={3}
               value={p.citation}
               onChange={(e) =>
@@ -278,7 +282,7 @@ export function TabResearch({
                   ),
                 )
               }
-              className={`${inputCls} min-h-[80px]`}
+              className={`${textareaCls} min-h-[80px]`}
             />
           </FieldRow>
           <FieldRow label="DOI / Link">
@@ -317,7 +321,7 @@ export function TabResearch({
       {portfolioLinks.map((l, i) => (
         <div
           key={i}
-          className="py-3 border-b border-[var(--kvis-border)]"
+          className="py-3"
         >
           <div className="flex items-center gap-3">
             <Select

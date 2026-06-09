@@ -157,10 +157,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
           </div>
 
           {error && (
-            <p
-              className="text-xs font-medium uppercase tracking-[0.18em] py-2 px-3"
-              style={{ color: "oklch(70% 0.18 25)", background: "oklch(20% 0.04 25)", border: "1px solid oklch(40% 0.12 25)" }}
-            >
+            <p className="text-destructive bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
               {error}
             </p>
           )}
@@ -243,7 +240,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
         </div>
 
         <div>
-          <FieldLabel hint={<span className="text-[10px] tabular-nums" style={{ color: P.text3 }}>min. 8 chars</span>}>
+          <FieldLabel hint={<span className="text-xs tabular-nums" style={{ color: P.text3 }}>min. 8 chars</span>}>
             Password
           </FieldLabel>
           <input
@@ -275,10 +272,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
         </div>
 
         {error && (
-          <p
-            className="text-xs font-medium uppercase tracking-[0.18em] py-2 px-3"
-            style={{ color: "oklch(70% 0.18 25)", background: "oklch(20% 0.04 25)", border: "1px solid oklch(40% 0.12 25)" }}
-          >
+          <p className="text-destructive bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
             {error}
           </p>
         )}

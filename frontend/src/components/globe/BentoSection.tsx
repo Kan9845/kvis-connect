@@ -224,7 +224,7 @@ function renderCalloutLabel(props: {
         x={tx}
         y={my - 3}
         textAnchor={anchor}
-        fontSize={12}
+        fontSize="0.75rem"
         fontWeight={700}
         fill={color}
         fontFamily="'Be Vietnam Pro',sans-serif"
@@ -235,7 +235,7 @@ function renderCalloutLabel(props: {
         x={tx}
         y={my + 12}
         textAnchor={anchor}
-        fontSize={11}
+        fontSize="0.75rem"
         fontWeight={600}
         fill={color}
         opacity={0.75}
@@ -659,7 +659,7 @@ export function BentoSection({ summary, posts }: Props) {
                   gap: 10,
                   paddingTop: 14,
                   marginTop: 16,
-                  borderTop: `1px solid ${P.border}`,
+                  borderTop: "1px solid var(--kvis-border)",
                 }}
               >
                 <AuthorAvatar post={post1} />

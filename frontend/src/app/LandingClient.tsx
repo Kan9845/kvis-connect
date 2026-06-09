@@ -52,9 +52,9 @@ export function LandingClient({ initialPins }: Props) {
 
   const resultCount = hasFilter ? (filteredPins?.length ?? 0) : pins.length;
 
-  const panelHeaderCls = `flex items-center justify-between px-4 pt-4 pb-2 border-b ${isDarkSky ? "border-white/30" : "border-slate-900/15"}`;
+  const panelHeaderCls = `flex items-center justify-between px-4 pt-4 pb-2 border-b ${isDarkSky ? "border-white/30" : "border-[var(--kvis-border)]"}`;
   const closeBtnCls = `h-7 w-7 rounded-lg ${isDarkSky ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"}`;
-  const filterBtnCls = `absolute z-20 h-auto gap-2 rounded-xl bg-transparent px-3 py-1.5 text-sm font-medium ${isDarkSky ? "border-white/50 text-white hover:bg-white/10 hover:text-white" : "border-slate-900/40 text-slate-900 hover:bg-slate-900/5 hover:text-slate-900"}`;
+  const filterBtnCls = `absolute z-20 h-auto gap-2 rounded-xl bg-transparent px-3 py-1.5 text-sm font-medium ${isDarkSky ? "border-white/50 text-white hover:bg-white/10 hover:text-white" : "border-[var(--sep-strong)] text-slate-900 hover:bg-slate-900/5 hover:text-slate-900"}`;
 
   const panelContent = (
     <>
@@ -115,9 +115,7 @@ export function LandingClient({ initialPins }: Props) {
               left: 20,
               maxHeight: "calc(100vh - 96px)",
               background: isDarkSky ? "rgba(2,6,18,0.55)" : "rgba(255,255,255,0.55)",
-              border: isDarkSky ? "1px solid rgba(255,255,255,0.6)" : "1px solid rgba(15,23,42,0.25)",
-              backdropFilter: "blur(6px)",
-              WebkitBackdropFilter: "blur(6px)",
+              border: isDarkSky ? "1px solid rgba(255,255,255,0.6)" : "1px solid var(--kvis-border)",
             }}
           >
             {panelContent}
@@ -129,10 +127,8 @@ export function LandingClient({ initialPins }: Props) {
             style={{
               maxHeight: "72dvh",
               background: isDarkSky ? "rgba(2,6,18,0.92)" : "rgba(255,255,255,0.92)",
-              border: isDarkSky ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(15,23,42,0.12)",
+              border: isDarkSky ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--kvis-rule)",
               borderBottom: "none",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
             }}
           >
             {/* Drag handle */}
@@ -163,7 +159,7 @@ export function LandingClient({ initialPins }: Props) {
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
           <div
             className="px-5 py-3 rounded-xl text-center text-sm text-white"
-            style={{ background: "rgba(4,10,30,0.9)", border: "1px solid rgba(239,68,68,0.3)", backdropFilter: "blur(12px)", boxShadow: "0 8px 24px rgba(0,0,0,0.6)" }}
+            style={{ background: "rgba(4,10,30,0.9)", border: "1px solid rgba(239,68,68,0.3)", boxShadow: "0 8px 24px rgba(0,0,0,0.6)" }}
           >
             No alumni matched your filters
           </div>

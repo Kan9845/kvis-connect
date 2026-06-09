@@ -383,7 +383,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
                 <Avatar className="h-8 w-8" style={{ outline: `2px solid ${ringColor}`, outlineOffset: "2px" }}>
                   <AvatarImage src={blog.author.profile_pic_url ?? ""} />
                   <AvatarFallback style={{
-                    background: `linear-gradient(135deg, ${cohortColorHex(blog.author.kvis_year)} 0%, ${cohortColorSoftHex(blog.author.kvis_year)} 100%)`,
+                    background: `oklch(44% 0.26 294)`,
                     color: cohortTextColor(blog.author.kvis_year),
                   }}>
                     {initials}

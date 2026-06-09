@@ -33,6 +33,9 @@ import {
 } from "@/lib/constants/options";
 import {
   CountrySelect,
+  ProvinceSelect,
+  CitySelect,
+  CITY_STATE_COUNTRIES,
 } from "@/components/ui/location-selects";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -49,6 +52,7 @@ import {
   FieldRow,
   PrivacyToggle,
   inputCls,
+  textareaCls,
   selectTriggerCls,
 } from "./components";
 import {
@@ -184,11 +188,9 @@ export function TabGeneral({
                   />
                 ) : (
                   <div
-                    className="absolute inset-0 flex items-center justify-center font-black"
+                    className="absolute inset-0 flex items-center justify-center font-black text-2xl text-white"
                     style={{
                       background: cohortColorHex(me.kvis_year),
-                      color: "white",
-                      fontSize: "clamp(2rem, 8vw, 4rem)",
                     }}
                   >
                     {initials}
@@ -204,15 +206,11 @@ export function TabGeneral({
                   key={mode}
                   type="button"
                   onClick={() => setProfileMode(mode)}
-                  className="text-xs font-bold uppercase tracking-[0.28em] pb-1 transition-colors"
-                  style={
+                  className={`text-xs font-bold uppercase tracking-[0.28em] pb-1 transition-colors ${
                     profileMode === mode
-                      ? {
-                          color: "var(--kvis-purple)",
-                          borderBottom: "2px solid var(--kvis-purple)",
-                        }
-                      : { color: "var(--kvis-text3)" }
-                  }
+                      ? "text-[var(--kvis-purple)] border-b-2 border-[var(--sep-input-focus)]"
+                      : "text-[var(--kvis-text3)]"
+                  }`}
                 >
                   {mode === "upload" ? "Upload Photo" : "Goose Profile"}
                 </button>
@@ -657,7 +655,7 @@ export function TabGeneral({
               rows={4}
               placeholder="Tell your fellow alumni about yourself..."
               {...register("bio")}
-              className={`${inputCls} min-h-[100px]`}
+              className={`${textareaCls} min-h-[100px]`}
             />
           </FieldRow>
           <FieldRow label="Tags" hint="Comma-separated interests.">
@@ -687,29 +685,40 @@ export function TabGeneral({
           <FieldRow label="Country">
             <CountrySelect
               variant="underline"
-              value={me.country ?? ""}
+              value={watch("country") ?? ""}
               onChange={(v) =>
                 setValue("country", v, { shouldDirty: true })
               }
             />
           </FieldRow>
-          <FieldRow
-            label="Province / State"
-            hint="Region within your country."
-          >
-            <Input
-              placeholder="e.g. Bangkok, California"
-              {...register("place_level2")}
-              className={inputCls}
-            />
-          </FieldRow>
-          <FieldRow label="City" hint="Optional finer location.">
-            <Input
-              placeholder="e.g. Bangkok"
-              {...register("place")}
-              className={inputCls}
-            />
-          </FieldRow>
+          {watch("country") && !CITY_STATE_COUNTRIES.has(watch("country")!) && (
+            <FieldRow
+              label="Province / State"
+              hint="Region within your country."
+            >
+              <ProvinceSelect
+                variant="underline"
+                country={watch("country") ?? ""}
+                value={watch("place_level2") ?? ""}
+                onChange={(v) =>
+                  setValue("place_level2", v, { shouldDirty: true })
+                }
+              />
+            </FieldRow>
+          )}
+          {watch("country") && !CITY_STATE_COUNTRIES.has(watch("country")!) && (
+            <FieldRow label="City" hint="Optional finer location.">
+              <CitySelect
+                variant="underline"
+                country={watch("country") ?? ""}
+                province={watch("place_level2") ?? ""}
+                value={watch("place") ?? ""}
+                onChange={(v) =>
+                  setValue("place", v, { shouldDirty: true })
+                }
+              />
+            </FieldRow>
+          )}
         </section>
 
         {/* Contacts */}

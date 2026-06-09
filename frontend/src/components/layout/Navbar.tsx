@@ -246,7 +246,7 @@ function PanelDivider({ dark }: { dark: boolean }) {
     <div
       style={{
         height: "1px",
-        background: dark ? "rgba(255,255,255,0.09)" : "oklch(88% 0.008 294)",
+        background: dark ? "rgba(255,255,255,0.09)" : "var(--kvis-rule)",
         margin: "4px 16px",
       }}
     />
@@ -276,11 +276,11 @@ function MobileNavPanel({
     <div
       className="pointer-events-auto"
       style={{
-        background: dark ? "rgba(5, 2, 16, 0.96)" : "rgba(254, 253, 255, 0.98)",
+        background: dark ? "var(--background)" : "rgba(254, 253, 255, 0.98)",
         backdropFilter: "blur(24px)",
         borderBottom: dark
           ? "1px solid rgba(255,255,255,0.05)"
-          : "1px solid oklch(90% 0.007 294)",
+          : `1px solid var(--kvis-rule)`,
       }}
     >
       {/* Panel header: Logo + X */}
@@ -314,7 +314,7 @@ function MobileNavPanel({
               : "oklch(95% 0.005 294)",
             border: dark
               ? "1px solid rgba(255,255,255,0.13)"
-              : "1px solid oklch(88% 0.008 294)",
+              : "1px solid var(--kvis-rule)",
           }}
         >
           <AlumniSearch dark={dark} />
@@ -329,7 +329,7 @@ function MobileNavPanel({
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors"
+              className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors ${active ? "font-semibold" : "font-medium"}`}
               style={{
                 color: active ? (dark ? "white" : "var(--kvis-purple)") : rowColor,
                 background: active
@@ -337,7 +337,6 @@ function MobileNavPanel({
                     ? "rgba(255,255,255,0.1)"
                     : "oklch(91% 0.02 294)"
                   : "transparent",
-                fontWeight: active ? 600 : 500,
               }}
             >
               <Icon className="h-4 w-4 shrink-0" />
@@ -353,8 +352,8 @@ function MobileNavPanel({
       <div className="px-4 py-1">
         <button
           onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm transition-colors hover:opacity-80"
-          style={{ color: rowColor, fontWeight: 500 }}
+          className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm transition-colors hover:opacity-80 font-medium"
+          style={{ color: rowColor }}
         >
           {mounted && resolvedTheme === "dark" ? (
             <Sun className="h-4 w-4 shrink-0" />
@@ -414,22 +413,22 @@ function MobileNavPanel({
           </div>
           <Link
             href={`/profile/${user.slug}`}
-            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors"
-            style={{ color: rowColor, fontWeight: 500 }}
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors font-medium"
+            style={{ color: rowColor }}
           >
             <User className="h-4 w-4 shrink-0" /> My Profile
           </Link>
           <Link
             href="/profile/edit"
-            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors"
-            style={{ color: rowColor, fontWeight: 500 }}
+            className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors font-medium"
+            style={{ color: rowColor }}
           >
             <Settings className="h-4 w-4 shrink-0" /> Edit Profile
           </Link>
           <button
             onClick={logout}
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm transition-colors"
-            style={{ color: "oklch(55% 0.2 25)", fontWeight: 500 }}
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm transition-colors font-medium"
+            style={{ color: "oklch(55% 0.2 25)" }}
           >
             <LogOut className="h-4 w-4 shrink-0" /> Log out
           </button>
@@ -573,7 +572,7 @@ export function Navbar() {
                 background: dark ? "transparent" : "oklch(95% 0.005 294)",
                 border: dark
                   ? "1px solid rgba(255,255,255,0.6)"
-                  : "1px solid oklch(88% 0.008 294)",
+                  : "1px solid var(--kvis-rule)",
               }}
             >
               <AlumniSearch dark={dark} />
@@ -584,7 +583,7 @@ export function Navbar() {
                 background: dark ? "transparent" : "oklch(95% 0.005 294)",
                 border: dark
                   ? "1px solid rgba(255,255,255,0.6)"
-                  : "1px solid oklch(88% 0.008 294)",
+                  : "1px solid var(--kvis-rule)",
               }}
             >
               <NavLink

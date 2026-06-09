@@ -240,7 +240,7 @@ function makeMemberRow(p: GlobePin, onNavigate: (slug: string) => void): HTMLEle
 
   const metaParts = [p.kvis_year ? `K${p.kvis_year}` : null, p.current_job]
     .filter(Boolean)
-    .join(" · ");
+    .join(" / ");
   if (metaParts) {
     const m = document.createElement("div");
     m.style.cssText = `
@@ -254,8 +254,8 @@ function makeMemberRow(p: GlobePin, onNavigate: (slug: string) => void): HTMLEle
   row.appendChild(text);
 
   const arrow = document.createElement("span");
-  arrow.textContent = "→";
-  arrow.style.cssText = `color:${P.text3};font-size:13px;flex-shrink:0;`;
+  arrow.style.cssText = `color:${P.text3};flex-shrink:0;display:flex;align-items:center;`;
+  arrow.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
   row.appendChild(arrow);
 
   return row;
@@ -351,7 +351,7 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
 
     const meta = [p.kvis_year ? `K${p.kvis_year}` : null, p.mbti]
       .filter(Boolean)
-      .join(" · ");
+      .join(" / ");
     if (meta) {
       const m = document.createElement("div");
       m.style.cssText = `
@@ -380,7 +380,10 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
       font-size:10px;font-weight:700;text-transform:uppercase;
       letter-spacing:0.24em;color:${P.purple};
     `;
-    link.textContent = "View profile →";
+    link.style.display = "flex";
+    link.style.alignItems = "center";
+    link.style.gap = "4px";
+    link.innerHTML = `View profile <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`;
     card.appendChild(link);
     return;
   }

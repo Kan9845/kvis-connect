@@ -175,6 +175,7 @@ def get_globe_pins(session: Session = Depends(get_session)):
             country=u.country,
         )
         for u in users
+        if u.latitude is not None and u.longitude is not None
     ]
 
 

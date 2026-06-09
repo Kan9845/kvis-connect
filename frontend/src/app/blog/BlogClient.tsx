@@ -305,7 +305,7 @@ export default function BlogClient() {
               <div className="flex items-start justify-between gap-6 flex-wrap">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.3em] mb-sm text-[var(--kvis-green-light)] flex items-center">
-                    KVIS Connect <Dot /> Stories
+                    KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Stories
                   </p>
                   <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                     <span className="font-light text-foreground">
@@ -539,7 +539,7 @@ export default function BlogClient() {
             <footer className="mt-auto pt-6 border-t border-[var(--sep-strong)] text-muted-foreground text-xs uppercase tracking-[0.22em] flex items-center justify-between">
               <span>- end -</span>
               <span className="tabular-nums flex items-center">
-                KVIS Connect <Dot /> {now.getFullYear()}
+                KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> {now.getFullYear()}
               </span>
             </footer>
           )}

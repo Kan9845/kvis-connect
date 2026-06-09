@@ -40,7 +40,7 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
                 {numeral}
               </span>
               <span
-                className="text-[11px] uppercase tracking-[0.32em] font-bold"
+                className="text-xs uppercase tracking-[0.32em] font-bold"
                 style={{ color: P.text3 }}
               >
                 {kicker}
@@ -49,11 +49,11 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.035em] leading-[0.9] text-foreground max-w-[12ch]">
               {title}
             </h1>
-            <p className="mt-6 text-base lg:text-[17px] text-muted-foreground max-w-[42ch] leading-relaxed">
+            <p className="mt-6 text-base lg:text-base text-muted-foreground max-w-[42ch] leading-relaxed">
               {lede}
             </p>
             <div
-              className="mt-12 pt-6 border-t flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.3em]"
+              className="mt-12 pt-6 border-t flex items-center justify-between text-xs font-bold uppercase tracking-[0.3em]"
               style={{ borderColor: P.rule, color: P.text3 }}
             >
               <span>KVIS Connect</span>
@@ -86,7 +86,7 @@ export function FieldLabel({ children, hint }: { children: React.ReactNode; hint
   return (
     <div className="flex items-baseline justify-between mb-2">
       <span
-        className="text-[10px] font-bold uppercase tracking-[0.28em] text-foreground/70"
+        className="text-xs font-bold uppercase tracking-[0.28em] text-foreground/70"
       >
         {children}
       </span>

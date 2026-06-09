@@ -372,7 +372,7 @@ export default function EditPageInner() {
           <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
             {isSetup ? "Set up your profile." : "Edit profile"}
           </h1>
-          <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[55ch] leading-relaxed">
+          <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[80ch] leading-relaxed">
             {isSetup
               ? "Fill in as much or as little as you like across the tabs below - you can always update everything later."
               : "Update your dossier - the page other Kvisians see when they look you up."}
@@ -394,7 +394,7 @@ export default function EditPageInner() {
           onValueChange={(v) => setTab(v as Tab)}
           className="w-full"
         >
-          <TabsList className="h-auto w-full justify-start gap-7 rounded-none bg-transparent p-0 pt-5 pb-1 overflow-x-auto">
+          <TabsList className="h-auto w-full justify-start gap-7 rounded-none bg-transparent p-0 pt-5 pb-0 border-b border-[var(--sep-strong)] overflow-x-auto">
             {(isStudent
               ? ["general", "research", "personal"]
               : ["general", "education", "career", "research", "personal"]
@@ -402,7 +402,7 @@ export default function EditPageInner() {
               <TabsTrigger
                 key={t}
                 value={t}
-                className="rounded-none bg-transparent px-0 py-1 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-[var(--kvis-purple)] data-[state=active]:shadow-none data-[state=active]:underline data-[state=active]:underline-offset-8 data-[state=active]:decoration-2 whitespace-nowrap"
+                className="rounded-none bg-transparent px-0 py-2 text-xs font-bold uppercase tracking-[0.28em] text-muted-foreground shadow-none transition-colors hover:text-foreground border-b-2 border-transparent data-[state=active]:bg-transparent data-[state=active]:text-[var(--kvis-purple)] data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-[var(--kvis-purple)] whitespace-nowrap"
               >
                 {t.charAt(0).toUpperCase() + t.slice(1)}
               </TabsTrigger>

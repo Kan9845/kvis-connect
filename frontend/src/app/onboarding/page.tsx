@@ -509,7 +509,7 @@ export default function OnboardingPage() {
                       disabled={submitting}
                       className="flex items-center gap-2 px-8 py-3.5 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 disabled:opacity-40 transition-opacity"
                     >
-                      {submitting ? "Saving…" : "Set up my profile →"}
+                      {submitting ? "Saving…" : <><span>Set up my profile</span><ArrowRight size={14} /></>}
                     </button>
                   </div>
                 </motion.div>

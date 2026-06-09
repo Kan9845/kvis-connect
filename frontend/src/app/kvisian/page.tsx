@@ -70,17 +70,9 @@ function captionAlumni(u: any): React.ReactNode {
       .filter(Boolean)
       .join(" ");
   if (u.edu_major) {
-    const items = [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean);
-    return (
-      <>
-        {items.map((item, i) => (
-          <span key={i} className="flex items-center gap-1">
-            {i > 0 && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
-            {item}
-          </span>
-        ))}
-      </>
-    );
+    const degree = u.edu_major || u.edu_degree;
+    const uni = u.edu_uni;
+    return [degree, uni].filter(Boolean).join(" • ");
   }
   return "Profile pending";
 }
@@ -667,7 +659,7 @@ function KvisianInner() {
           <FadeUp>
             <header className="pb-7 border-b border-[var(--sep-strong)]">
               <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
-                KVIS Connect <Dot /> Directory
+                KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Directory
               </p>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                 <span className="font-light text-foreground">Find your </span>

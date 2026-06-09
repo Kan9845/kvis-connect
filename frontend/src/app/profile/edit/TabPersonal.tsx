@@ -171,7 +171,7 @@ export function TabPersonal({
             onClick={() =>
               setLanguages((prev) => [...prev, { lang: "Thai" }])
             }
-            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
+            className="mt-md flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
           >
             <Plus className="h-3 w-3" /> Add language
           </button>
