@@ -281,10 +281,15 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     {user.first_name} {user.last_name}
                   </h1>
 
-                  {currentRole && (
+                  {(currentRole || user.place || user.place_level2 || user.country) && (
                     <p className="text-sm mb-md flex items-center flex-wrap gap-1" style={{ color: "var(--kvis-text2)" }}>
-                      <span>{currentRole.job_title}{currentRole.employer && ` @ ${currentRole.employer}`}</span>
-                      {user.place && <><Dot className="h-3 w-3 shrink-0" aria-hidden /><span>{user.place}</span></>}
+                      {currentRole && <span>{currentRole.job_title}{currentRole.employer && ` @ ${currentRole.employer}`}</span>}
+                      {(user.place || user.place_level2 || user.country) && (
+                        <>
+                          {currentRole && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
+                          <span>{[user.place, user.place_level2, user.country].filter(Boolean).join(", ")}</span>
+                        </>
+                      )}
                     </p>
                   )}
 

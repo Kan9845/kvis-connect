@@ -32,7 +32,7 @@ export function LandingClient({ initialPins }: Props) {
   const { data: pins = initialPins } = useQuery({
     queryKey: keys.globe.pins(),
     queryFn: userApi.getGlobePins,
-    initialData: initialPins,
+    placeholderData: initialPins,
     staleTime: 5 * 60 * 1000,
   });
 

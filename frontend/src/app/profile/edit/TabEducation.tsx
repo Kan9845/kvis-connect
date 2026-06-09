@@ -250,22 +250,24 @@ export function TabEducation({
                       />
                     </FieldRow>
                   )}
-                  <FieldRow label="Second field">
-                    <Input
-                      placeholder="e.g. Biomedical Engineering"
-                      value={edu.med_dual_field ?? ""}
-                      onChange={(e) =>
-                        setEducation((prev) =>
-                          prev.map((x, j) =>
-                            j === i
-                              ? { ...x, med_dual_field: e.target.value }
-                              : x,
-                          ),
-                        )
-                      }
-                      className={inputCls}
-                    />
-                  </FieldRow>
+                  {edu.med_dual_type && edu.med_dual_type !== "Other" && (
+                    <FieldRow label="Second field">
+                      <Input
+                        placeholder="e.g. Biomedical Engineering"
+                        value={edu.med_dual_field ?? ""}
+                        onChange={(e) =>
+                          setEducation((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? { ...x, med_dual_field: e.target.value }
+                                : x,
+                            ),
+                          )
+                        }
+                        className={inputCls}
+                      />
+                    </FieldRow>
+                  )}
                 </>
               )}
 

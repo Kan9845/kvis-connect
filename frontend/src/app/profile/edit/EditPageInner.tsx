@@ -36,7 +36,7 @@ import { TabPersonal } from "./TabPersonal";
 
 export default function EditPageInner() {
   const searchParams = useSearchParams();
-  const isSetup = searchParams.get("setup") === "1";
+  const isSetup = searchParams.has("setup");
   const notify = {
     success: (msg: string) => {
       if (!isSetup) toast.success(msg);
@@ -99,6 +99,7 @@ export default function EditPageInner() {
 
   useEffect(() => {
     if (me) {
+      setExtraContacts((me.extra_contacts as { type: string; value: string; public: boolean }[]) ?? []);
       setResearchInterests(me.research_interests ?? []);
       setResearchKeywords(me.research_keywords ?? "");
       setProjects(me.projects ?? []);
@@ -139,6 +140,14 @@ export default function EditPageInner() {
           teach_start_year: me.teach_start_year ?? undefined,
           teach_end_year: me.teach_end_year ?? undefined,
           is_current_teacher_str: me.is_current_teacher ? "true" : "false",
+          nickname: me.nickname ?? "",
+          nickname_public: me.nickname_public ?? true,
+          current_status: me.current_status ?? "",
+          place_level2: me.place_level2 ?? "",
+          contact_email: me.contact_email ?? "",
+          contact_email_public: me.contact_email_public ?? true,
+          instagram_url: me.instagram_url ?? "",
+          interests_public: me.interests_public ?? true,
         }
       : undefined,
   });
@@ -171,7 +180,11 @@ export default function EditPageInner() {
     }
     const updated = await userApi.updateMe({
       ...(picUrl ? { ...data, profile_pic_url: picUrl } : data),
+      is_current_teacher: data.is_current_teacher_str === "true",
     });
+    await userApi.updateExtraContacts(
+      extraContacts.map((c) => ({ type: c.type, value: c.value, is_public: c.public }))
+    );
     onMeUpdateSuccess(qc, updated);
     await refetch();
     notify.success("Profile updated");
@@ -191,13 +204,13 @@ export default function EditPageInner() {
 
   const saveResearch = async () => {
     try {
-      await userApi.updateMe({
-        research_interests: researchInterests,
-        research_keywords: researchKeywords,
-        projects,
-        publications,
-        portfolio_links: portfolioLinks,
-      });
+      await Promise.all([
+        userApi.updateMe({ research_keywords: researchKeywords }),
+        userApi.updateResearchInterests(researchInterests),
+        userApi.updateProjects(projects),
+        userApi.updatePublications(publications),
+        userApi.updatePortfolioLinks(portfolioLinks),
+      ]);
       await refetch();
       notify.success("Research saved");
     } catch {
@@ -207,13 +220,15 @@ export default function EditPageInner() {
 
   const savePersonal = async () => {
     try {
-      await userApi.updateMe({
-        languages,
-        hobbies,
-        kvis_fav_menu: kvisFavMenu,
-        kvis_fav_event: kvisFavEvent,
-        kvis_fav_area: kvisFavArea,
-      });
+      await Promise.all([
+        userApi.updateMe({
+          hobbies,
+          kvis_fav_menu: kvisFavMenu,
+          kvis_fav_event: kvisFavEvent,
+          kvis_fav_area: kvisFavArea,
+        }),
+        userApi.updateLanguages(languages),
+      ]);
       await refetch();
       notify.success("Personal info saved");
     } catch {
@@ -516,7 +531,7 @@ export default function EditPageInner() {
         )}
       </div>
       {isSetup && (
-        <div className="sticky bottom-0 left-0 right-0 z-50 border-t border-[var(--kvis-border)] bg-background/95 backdrop-blur px-6 py-4 flex items-center justify-between gap-4">
+        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--kvis-border)] bg-background/95 backdrop-blur px-6 py-4 flex items-center justify-between gap-4">
           {/* Step indicator */}
           {(() => {
             const tabs = isStudent

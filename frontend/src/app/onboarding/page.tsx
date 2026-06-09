@@ -215,7 +215,7 @@ export default function OnboardingPage() {
         });
       }
       await refetch();
-      router.push("/profile/edit?setup=1");
+      router.push("/profile/edit?setup");
     } catch (err: any) {
       setError(
         err?.response?.data?.detail ??

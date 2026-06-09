@@ -8,7 +8,7 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function getPins(): Promise<GlobePin[]> {
   try {
-    const res = await fetch(`${API}/api/users/globe/pins`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API}/api/users/globe/pins`, { cache: "no-store" });
     if (!res.ok) return [];
     return filterGlobePins(await res.json());
   } catch {

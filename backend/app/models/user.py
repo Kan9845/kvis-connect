@@ -58,6 +58,68 @@ class Career(SQLModel, table=True):
     user: Optional["User"] = Relationship(back_populates="career")
 
 
+class Project(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    title: str
+    advisor: Optional[str] = None
+    advisor2: Optional[str] = None
+    description: Optional[str] = None
+    status: str = "ongoing"
+    link: Optional[str] = None
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="projects")
+
+
+class Publication(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    citation: str
+    doi: Optional[str] = None
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="publications")
+
+
+class PortfolioLink(SQLModel, table=True):
+    __tablename__ = "portfolio_link"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    type: str
+    url: str
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="portfolio_links")
+
+
+class ExtraContact(SQLModel, table=True):
+    __tablename__ = "extra_contact"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    type: str
+    value: str
+    is_public: bool = True
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="extra_contacts")
+
+
+class UserLanguage(SQLModel, table=True):
+    __tablename__ = "user_language"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    lang: str
+    proficiency: Optional[str] = None
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="languages")
+
+
+class ResearchInterest(SQLModel, table=True):
+    __tablename__ = "research_interest"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    interest: str
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="research_interests")
+
+
 class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
@@ -96,6 +158,7 @@ class User(SQLModel, table=True):
     instagram_url: Optional[str] = None
     line_id: Optional[str] = None
     website_url: Optional[str] = None
+    extra_contacts: Optional[str] = None   # JSON list stored as text
     contact_email: Optional[str] = None
     contact_email_public: bool = True
 
@@ -116,14 +179,9 @@ class User(SQLModel, table=True):
     interests_public: bool = True
 
     # Research (JSON stored as text)
-    research_interests: Optional[str] = None
     research_keywords: Optional[str] = None
-    projects: Optional[str] = None
-    publications: Optional[str] = None
-    portfolio_links: Optional[str] = None
 
     # Personal / KVIS-only (JSON stored as text)
-    languages: Optional[str] = None
     hobbies: Optional[str] = None
     kvis_fav_menu: Optional[str] = None
     kvis_fav_event: Optional[str] = None
@@ -136,3 +194,9 @@ class User(SQLModel, table=True):
     education: List[Education] = Relationship(back_populates="user")
     career: List[Career] = Relationship(back_populates="user")
     blogs: List["Blog"] = Relationship(back_populates="author")
+    projects: List["Project"] = Relationship(back_populates="user")
+    publications: List["Publication"] = Relationship(back_populates="user")
+    portfolio_links: List["PortfolioLink"] = Relationship(back_populates="user")
+    extra_contacts: List["ExtraContact"] = Relationship(back_populates="user")
+    languages: List["UserLanguage"] = Relationship(back_populates="user")
+    research_interests: List["ResearchInterest"] = Relationship(back_populates="user")

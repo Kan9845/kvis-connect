@@ -89,16 +89,17 @@ export interface UserMe extends UserPublic {
   contact_email?: string;
   contact_email_public?: boolean;
   interests_public?: boolean;
-  research_interests?: string[];
+  research_interests: string[];
   research_keywords?: string;
-  projects?: any[];
-  publications?: any[];
-  portfolio_links?: any[];
-  languages?: { lang: string; proficiency?: string }[];
+  projects: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
+  publications: { citation: string; doi?: string }[];
+  portfolio_links: { type: string; url: string }[];
+  languages: { lang: string; proficiency?: string }[];
   hobbies?: Record<string, string[]>;
   kvis_fav_menu?: string;
   kvis_fav_event?: string;
   kvis_fav_area?: string;
+  extra_contacts: { type: string; value: string; public: boolean }[];
 }
 
 export interface GlobePin {

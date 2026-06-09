@@ -92,6 +92,52 @@ class CareerWrite(BaseModel):
     role_type: Optional[str] = None
 
 
+# ─── Project ──────────────────────────────────────────────────────────────────
+
+class ProjectWrite(BaseModel):
+    title: str
+    advisor: Optional[str] = None
+    advisor2: Optional[str] = None
+    description: Optional[str] = None
+    status: str = "ongoing"
+    link: Optional[str] = None
+
+
+# ─── Publication ──────────────────────────────────────────────────────────────
+
+class PublicationWrite(BaseModel):
+    citation: str
+    doi: Optional[str] = None
+
+
+# ─── Portfolio Link ───────────────────────────────────────────────────────────
+
+class PortfolioLinkWrite(BaseModel):
+    type: str
+    url: str
+
+
+# ─── Extra Contact ───────────────────────────────────────────────────────────
+
+class ExtraContactWrite(BaseModel):
+    type: str
+    value: str
+    is_public: bool = True
+
+
+# ─── User Language ───────────────────────────────────────────────────────────
+
+class UserLanguageWrite(BaseModel):
+    lang: str
+    proficiency: Optional[str] = None
+
+
+# ─── Research Interest ────────────────────────────────────────────────────────
+
+class ResearchInterestBulkWrite(BaseModel):
+    interests: List[str]
+
+
 # ─── User ─────────────────────────────────────────────────────────────────────
 
 class UserPublic(BaseModel):
@@ -129,11 +175,11 @@ class UserPublic(BaseModel):
     instagram_url: Optional[str] = None
     website_url: Optional[str] = None
     # Research (JSON-serialized lists/objects stored as text in DB)
-    research_interests: Optional[List[str]] = None
+    research_interests: List[str] = []
     research_keywords: Optional[str] = None
-    projects: Optional[List[Any]] = None
-    publications: Optional[List[Any]] = None
-    portfolio_links: Optional[List[Any]] = None
+    projects: List[Any] = []
+    publications: List[Any] = []
+    portfolio_links: List[Any] = []
     is_verified: bool = False
     education: List[EducationRead] = []
     career: List[CareerRead] = []
@@ -145,12 +191,13 @@ class UserMe(UserPublic):
     line_id: Optional[str] = None
     contact_email: Optional[str] = None
     contact_email_public: bool = True
+    extra_contacts: List[Any] = []
     email_verified: bool
     is_verified: bool
     kvis_email: Optional[str] = None
     profile_setup_done: bool
     # Personal / KVIS-only (not shown publicly)
-    languages: Optional[List[Any]] = None
+    languages: List[Any] = []
     hobbies: Optional[Any] = None
     kvis_fav_menu: Optional[str] = None
     kvis_fav_event: Optional[str] = None
@@ -192,13 +239,8 @@ class UserUpdate(BaseModel):
     contact_email: Optional[str] = None
     contact_email_public: Optional[bool] = None
     # Research
-    research_interests: Optional[List[str]] = None
     research_keywords: Optional[str] = None
-    projects: Optional[List[Any]] = None
-    publications: Optional[List[Any]] = None
-    portfolio_links: Optional[List[Any]] = None
     # Personal
-    languages: Optional[List[Any]] = None
     hobbies: Optional[Any] = None
     kvis_fav_menu: Optional[str] = None
     kvis_fav_event: Optional[str] = None

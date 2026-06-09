@@ -1,19 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlmodel import Session, select
+from sqlalchemy.orm import selectinload
 from datetime import datetime
 import boto3
 import uuid
 import httpx
+import json
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, get_optional_user
 from app.core.config import settings
 from app.core.cache import cached, invalidate_tags
 from app.core.slug import unique_user_slug
-from app.models.user import User, Education, Career
+from app.models.user import User, Education, Career, Project, Publication, PortfolioLink, ExtraContact, UserLanguage, ResearchInterest
 from app.schemas.user import (
     UserMe, UserPublic, UserUpdate, UserCard,
     EducationWrite, CareerWrite, GlobePin,
+    ProjectWrite, PublicationWrite, PortfolioLinkWrite,
+    ExtraContactWrite, UserLanguageWrite, ResearchInterestBulkWrite,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -35,9 +39,26 @@ async def _geocode(query: str) -> tuple[float, float] | None:
     return None
 
 
+def _load_me(session: Session, user_id) -> User:
+    return session.exec(
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.education),
+            selectinload(User.career),
+            selectinload(User.projects),
+            selectinload(User.publications),
+            selectinload(User.portfolio_links),
+            selectinload(User.extra_contacts),
+            selectinload(User.languages),
+            selectinload(User.research_interests),
+        )
+    ).first()
+
+
 @router.get("/me", response_model=UserMe)
 def get_me(current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
-    user = session.get(User, current_user.id)
+    user = _load_me(session, current_user.id)
     return _user_to_me(user)
 
 
@@ -52,21 +73,30 @@ async def update_me(
     data = body.model_dump(exclude_unset=True)
     name_changed = ("first_name" in data and data["first_name"] != user.first_name) or \
                    ("last_name" in data and data["last_name"] != user.last_name)
+    import json as _json
     for k, v in data.items():
-        setattr(user, k, v)
+        if k == "hobbies" and isinstance(v, (dict, list)):
+            setattr(user, k, _json.dumps(v))
+        else:
+            setattr(user, k, v)
     if name_changed:
         user.slug = unique_user_slug(session, user.first_name, user.last_name, exclude_id=user.id)
-    # Geocode whenever place is explicitly provided
-    if "place" in data and data["place"]:
-        coords = await _geocode(data["place"])
-        if coords:
-            user.latitude, user.longitude = coords
+    # Geocode when any location field changes — use most specific available
+    if any(k in data for k in ("place", "place_level2", "country")):
+        geo_query = (
+            user.place
+            or user.place_level2
+            or user.country
+        )
+        if geo_query:
+            coords = await _geocode(geo_query)
+            if coords:
+                user.latitude, user.longitude = coords
     user.updated_at = datetime.utcnow()
     session.add(user)
     session.commit()
-    session.refresh(user)
     await invalidate_tags("users", f"user:{old_slug}", f"user:{user.slug}")
-    return _user_to_me(user)
+    return _user_to_me(_load_me(session, user.id))
 
 
 @router.post("/me/profile-pic")
@@ -151,6 +181,108 @@ async def replace_career(
     return {"message": "Career updated"}
 
 
+# Projects
+@router.put("/me/projects")
+async def replace_projects(
+    items: list[ProjectWrite],
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    existing = session.exec(select(Project).where(Project.user_id == current_user.id)).all()
+    for e in existing:
+        session.delete(e)
+    for i, item in enumerate(items):
+        session.add(Project(user_id=current_user.id, order_index=i, **item.model_dump()))
+    session.commit()
+    await invalidate_tags("users", f"user:{current_user.slug}")
+    return {"message": "Projects updated"}
+
+
+# Publications
+@router.put("/me/publications")
+async def replace_publications(
+    items: list[PublicationWrite],
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    existing = session.exec(select(Publication).where(Publication.user_id == current_user.id)).all()
+    for e in existing:
+        session.delete(e)
+    for i, item in enumerate(items):
+        session.add(Publication(user_id=current_user.id, order_index=i, **item.model_dump()))
+    session.commit()
+    await invalidate_tags("users", f"user:{current_user.slug}")
+    return {"message": "Publications updated"}
+
+
+# Portfolio Links
+@router.put("/me/portfolio-links")
+async def replace_portfolio_links(
+    items: list[PortfolioLinkWrite],
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    existing = session.exec(select(PortfolioLink).where(PortfolioLink.user_id == current_user.id)).all()
+    for e in existing:
+        session.delete(e)
+    for i, item in enumerate(items):
+        session.add(PortfolioLink(user_id=current_user.id, order_index=i, **item.model_dump()))
+    session.commit()
+    await invalidate_tags("users", f"user:{current_user.slug}")
+    return {"message": "Portfolio links updated"}
+
+
+# Extra Contacts
+@router.put("/me/extra-contacts")
+async def replace_extra_contacts(
+    items: list[ExtraContactWrite],
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    existing = session.exec(select(ExtraContact).where(ExtraContact.user_id == current_user.id)).all()
+    for e in existing:
+        session.delete(e)
+    for i, item in enumerate(items):
+        session.add(ExtraContact(user_id=current_user.id, order_index=i, **item.model_dump()))
+    session.commit()
+    await invalidate_tags("users", f"user:{current_user.slug}")
+    return {"message": "Extra contacts updated"}
+
+
+# Languages
+@router.put("/me/languages")
+async def replace_languages(
+    items: list[UserLanguageWrite],
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    existing = session.exec(select(UserLanguage).where(UserLanguage.user_id == current_user.id)).all()
+    for e in existing:
+        session.delete(e)
+    for i, item in enumerate(items):
+        session.add(UserLanguage(user_id=current_user.id, order_index=i, **item.model_dump()))
+    session.commit()
+    await invalidate_tags("users", f"user:{current_user.slug}")
+    return {"message": "Languages updated"}
+
+
+# Research Interests
+@router.put("/me/research-interests")
+async def replace_research_interests(
+    body: ResearchInterestBulkWrite,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    existing = session.exec(select(ResearchInterest).where(ResearchInterest.user_id == current_user.id)).all()
+    for e in existing:
+        session.delete(e)
+    for i, interest in enumerate(body.interests):
+        session.add(ResearchInterest(user_id=current_user.id, interest=interest, order_index=i))
+    session.commit()
+    await invalidate_tags("users", f"user:{current_user.slug}")
+    return {"message": "Research interests updated"}
+
+
 @router.get("/globe/pins", response_model=list[GlobePin])
 @cached(key="globe", tags=["users"], ttl=settings.CACHE_TTL_LONG)
 def get_globe_pins(session: Session = Depends(get_session)):
@@ -220,6 +352,50 @@ def _user_to_public(user: User) -> dict:
 
 
 def _user_to_me(user: User) -> dict:
-    return {**_user_to_public(user), "email": user.email, "line_id": user.line_id,
-            "email_verified": user.email_verified, "is_verified": user.is_verified,
-            "kvis_email": user.kvis_email, "profile_setup_done": user.profile_setup_done}
+    import json as _json
+    hobbies = user.hobbies
+    if isinstance(hobbies, str):
+        try:
+            hobbies = _json.loads(hobbies)
+        except Exception:
+            hobbies = {}
+    return {
+        **_user_to_public(user),
+        "email": user.email,
+        "line_id": user.line_id,
+        "email_verified": user.email_verified,
+        "is_verified": user.is_verified,
+        "kvis_email": user.kvis_email,
+        "profile_setup_done": user.profile_setup_done,
+        "contact_email": user.contact_email,
+        "contact_email_public": user.contact_email_public,
+        "hobbies": hobbies,
+        "kvis_fav_menu": user.kvis_fav_menu,
+        "kvis_fav_event": user.kvis_fav_event,
+        "kvis_fav_area": user.kvis_fav_area,
+        "projects": [
+            {"title": p.title, "advisor": p.advisor, "advisor2": p.advisor2,
+             "description": p.description, "status": p.status, "link": p.link}
+            for p in sorted(user.projects, key=lambda x: x.order_index)
+        ],
+        "publications": [
+            {"citation": p.citation, "doi": p.doi}
+            for p in sorted(user.publications, key=lambda x: x.order_index)
+        ],
+        "portfolio_links": [
+            {"type": p.type, "url": p.url}
+            for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
+        ],
+        "extra_contacts": [
+            {"type": c.type, "value": c.value, "public": c.is_public}
+            for c in sorted(user.extra_contacts, key=lambda x: x.order_index)
+        ],
+        "languages": [
+            {"lang": l.lang, "proficiency": l.proficiency}
+            for l in sorted(user.languages, key=lambda x: x.order_index)
+        ],
+        "research_interests": [
+            r.interest
+            for r in sorted(user.research_interests, key=lambda x: x.order_index)
+        ],
+    }

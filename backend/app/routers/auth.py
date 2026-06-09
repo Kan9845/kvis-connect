@@ -313,6 +313,8 @@ async def google_login(request: Request):
 
 @router.get("/google/callback")
 async def google_callback(request: Request, session: Session = Depends(get_session)):
+    if request.query_params.get("error"):
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/login?error=cancelled")
     token = await oauth.google.authorize_access_token(request)
     userinfo = token.get("userinfo") or await oauth.google.userinfo(token=token)
 
