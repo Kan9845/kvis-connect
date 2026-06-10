@@ -13,6 +13,7 @@ class Education(SQLModel, table=True):
     major: str
     country: str
     state: Optional[str] = None
+    city: Optional[str] = None
     scholarship: Optional[str] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
@@ -45,6 +46,7 @@ class Career(SQLModel, table=True):
     job_field: str
     country: str
     state: Optional[str] = None
+    city: Optional[str] = None
     is_current: bool = False
     start_year: Optional[int] = None
     end_year: Optional[int] = None

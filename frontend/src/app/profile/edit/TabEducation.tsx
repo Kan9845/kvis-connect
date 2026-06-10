@@ -12,6 +12,7 @@ import { Plus, Trash2, Check } from "lucide-react";
 import { DEGREES } from "@/lib/constants/options";
 import {
   CountrySelect,
+  ProvinceSelect,
   CitySelect,
   CITY_STATE_COUNTRIES,
 } from "@/components/ui/location-selects";
@@ -38,6 +39,7 @@ import {
 
 interface TabEducationProps {
   isSetup: boolean;
+  isDirty: boolean;
   education: Omit<Education, "id">[];
   setEducation: React.Dispatch<React.SetStateAction<Omit<Education, "id">[]>>;
   saveEducation: () => Promise<void>;
@@ -45,6 +47,7 @@ interface TabEducationProps {
 
 export function TabEducation({
   isSetup,
+  isDirty,
   education,
   setEducation,
   saveEducation,
@@ -358,31 +361,29 @@ export function TabEducation({
                 />
               </FieldRow>
               <FieldRow label="Major (2)" hint="Optional.">
-                <Input
-                  placeholder="Second major"
+                <MajorCombobox
+                  variant="underline"
                   value={edu.major2 ?? ""}
-                  onChange={(e) =>
+                  onChange={(v) =>
                     setEducation((prev) =>
                       prev.map((x, j) =>
-                        j === i ? { ...x, major2: e.target.value } : x,
+                        j === i ? { ...x, major2: v } : x,
                       ),
                     )
                   }
-                  className={inputCls}
                 />
               </FieldRow>
-              <FieldRow label="Minors" hint="Optional, comma-separated.">
-                <Input
-                  placeholder="e.g. Statistics, Philosophy"
+              <FieldRow label="Minor" hint="Optional.">
+                <MajorCombobox
+                  variant="underline"
                   value={edu.minor1 ?? ""}
-                  onChange={(e) =>
+                  onChange={(v) =>
                     setEducation((prev) =>
                       prev.map((x, j) =>
-                        j === i ? { ...x, minor1: e.target.value } : x,
+                        j === i ? { ...x, minor1: v } : x,
                       ),
                     )
                   }
-                  className={inputCls}
                 />
               </FieldRow>
             </>
@@ -394,28 +395,39 @@ export function TabEducation({
               onChange={(v) =>
                 setEducation((prev) =>
                   prev.map((x, j) =>
-                    j === i
-                      ? {
-                          ...x,
-                          country: v,
-                          state: CITY_STATE_COUNTRIES.has(v) ? v : "",
-                        }
-                      : x,
+                    j === i ? { ...x, country: v, state: "", city: "" } : x,
                   ),
                 )
               }
             />
           </FieldRow>
-          {!CITY_STATE_COUNTRIES.has(edu.country) && (
-            <FieldRow label="City">
-              <CitySelect
+          {edu.country && !CITY_STATE_COUNTRIES.has(edu.country) && (
+            <FieldRow label="Province / State">
+              <ProvinceSelect
                 variant="underline"
                 country={edu.country}
                 value={edu.state ?? ""}
                 onChange={(v) =>
                   setEducation((prev) =>
                     prev.map((x, j) =>
-                      j === i ? { ...x, state: v } : x,
+                      j === i ? { ...x, state: v, city: "" } : x,
+                    ),
+                  )
+                }
+              />
+            </FieldRow>
+          )}
+          {edu.country && !CITY_STATE_COUNTRIES.has(edu.country) && (
+            <FieldRow label="City">
+              <CitySelect
+                variant="underline"
+                country={edu.country}
+                province={edu.state ?? ""}
+                value={edu.city ?? ""}
+                onChange={(v) =>
+                  setEducation((prev) =>
+                    prev.map((x, j) =>
+                      j === i ? { ...x, city: v } : x,
                     ),
                   )
                 }
@@ -548,7 +560,8 @@ export function TabEducation({
           <Button
             type="button"
             onClick={saveEducation}
-            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2"
+            disabled={!isDirty}
+            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Check className="h-3.5 w-3.5" /> Save education
           </Button>

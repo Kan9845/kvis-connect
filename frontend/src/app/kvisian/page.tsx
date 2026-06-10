@@ -21,8 +21,8 @@ import {
 } from "@/lib/utils";
 
 function kvisianAccentColor(kvis_year?: number | null): string {
-  if (!kvis_year) return "var(--kvis-purple)";
-  return kvis_year % 2 === 0 ? "var(--kvis-green)" : "var(--kvis-purple)";
+  if (!kvis_year) return "var(--kvis-purple-light)";
+  return kvis_year % 2 === 0 ? "var(--kvis-green-light)" : "var(--kvis-purple-light)";
 }
 import { motion } from "framer-motion";
 
@@ -127,12 +127,17 @@ function Portrait({ u }: { u: DirectoryCard }) {
         ? genLabel(u.kvis_year)
         : null;
 
+  const isGoose = u.profile_pic_url?.includes("goose") ?? false;
+
   return (
     <Link href={`/profile/${u.slug ?? u.id}`} className="group block">
-      {/* Photo - 1:1 square */}
+      {/* Photo - 1:1 square, circle for goose profiles */}
       <div
-        className="relative w-full overflow-hidden"
-        style={{ aspectRatio: "1 / 1", background: "var(--kvis-rule)" }}
+        className={`relative w-full overflow-hidden ${isGoose ? "rounded-full" : ""}`}
+        style={{
+          aspectRatio: "1 / 1",
+          background: isGoose ? "transparent" : "var(--kvis-rule)",
+        }}
       >
         {u.profile_pic_url ? (
           <Image
@@ -377,10 +382,10 @@ function DropFilter({
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] border transition-colors rounded-sm"
         style={{
-          borderColor: active ? "var(--kvis-purple)" : "var(--kvis-border)",
-          color: active ? "var(--kvis-purple)" : "var(--kvis-text3)",
+          borderColor: active ? "var(--kvis-purple-light)" : "var(--kvis-border)",
+          color: active ? "var(--kvis-purple-light)" : "var(--kvis-text3)",
           background: active
-            ? "color-mix(in oklch, var(--kvis-purple) 14%, transparent)"
+            ? "color-mix(in oklch, var(--kvis-purple-light) 14%, transparent)"
             : "transparent",
         }}
       >
@@ -404,7 +409,7 @@ function DropFilter({
                 style={{
                   color:
                     o.value === value
-                      ? "var(--kvis-purple)"
+                      ? "var(--kvis-purple-light)"
                       : "var(--kvis-text3)",
                 }}
               >
@@ -659,7 +664,7 @@ function KvisianInner() {
           <FadeUp>
             <header className="pb-7 border-b border-[var(--sep-strong)]">
               <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
-                KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Directory
+                KVIS Connect <Dot className="h-6 w-6 shrink-0" aria-hidden /> Directory
               </p>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                 <span className="font-light text-foreground">Find your </span>
@@ -724,15 +729,15 @@ function KvisianInner() {
                       style={{
                         borderColor:
                           personType === t
-                            ? "var(--kvis-purple)"
+                            ? "var(--kvis-purple-light)"
                             : "var(--kvis-border)",
                         color:
                           personType === t
-                            ? "var(--kvis-purple)"
+                            ? "var(--kvis-purple-light)"
                             : "var(--kvis-text3)",
                         background:
                           personType === t
-                            ? "color-mix(in oklch, var(--kvis-purple) 14%, transparent)"
+                            ? "color-mix(in oklch, var(--kvis-purple-light) 14%, transparent)"
                             : "transparent",
                       }}
                     >

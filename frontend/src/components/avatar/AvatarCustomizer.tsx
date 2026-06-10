@@ -81,7 +81,7 @@ export function AvatarCustomizer({ value, onChange }: Props) {
             type="button"
             onClick={() => onChange({ ...value, [category]: null })}
             className={`
-              w-24 h-24 rounded-2xl border flex items-center justify-center
+              w-20 h-20 rounded-2xl border flex items-center justify-center
               transition-all duration-200
               ${currentValue === null
                 ? "border-black scale-105 shadow-xl"

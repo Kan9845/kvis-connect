@@ -13,6 +13,7 @@ class EducationRead(BaseModel):
     major: str
     country: str
     state: Optional[str] = None
+    city: Optional[str] = None
     scholarship: Optional[str] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
@@ -38,6 +39,7 @@ class EducationWrite(BaseModel):
     major: str
     country: str
     state: Optional[str] = None
+    city: Optional[str] = None
     scholarship: Optional[str] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
@@ -66,6 +68,7 @@ class CareerRead(BaseModel):
     job_field: str
     country: str
     state: Optional[str] = None
+    city: Optional[str] = None
     is_current: bool
     start_year: Optional[int] = None
     end_year: Optional[int] = None
@@ -82,6 +85,7 @@ class CareerWrite(BaseModel):
     job_field: str
     country: str
     state: Optional[str] = None
+    city: Optional[str] = None
     is_current: bool = False
     start_year: Optional[int] = None
     end_year: Optional[int] = None
@@ -188,6 +192,7 @@ class UserPublic(BaseModel):
 
 class UserMe(UserPublic):
     email: str
+    expected_grad_year: Optional[int] = None
     line_id: Optional[str] = None
     contact_email: Optional[str] = None
     contact_email_public: bool = True
@@ -211,6 +216,7 @@ class UserUpdate(BaseModel):
     nickname_public: Optional[bool] = None
     kvis_year: Optional[int] = None
     current_grade: Optional[int] = None
+    expected_grad_year: Optional[int] = None
     current_status: Optional[str] = None
     # Faculty
     teach_start_year: Optional[int] = None

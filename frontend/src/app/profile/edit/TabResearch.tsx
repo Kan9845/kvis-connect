@@ -27,10 +27,9 @@ import {
 interface TabResearchProps {
   isSetup: boolean;
   isStudent: boolean;
+  isDirty: boolean;
   researchInterests: string[];
   setResearchInterests: React.Dispatch<React.SetStateAction<string[]>>;
-  researchKeywords: string;
-  setResearchKeywords: React.Dispatch<React.SetStateAction<string>>;
   projects: {
     title: string;
     advisor?: string;
@@ -57,10 +56,9 @@ interface TabResearchProps {
 export function TabResearch({
   isSetup,
   isStudent,
+  isDirty,
   researchInterests,
   setResearchInterests,
-  researchKeywords,
-  setResearchKeywords,
   projects,
   setProjects,
   publications,
@@ -108,20 +106,7 @@ export function TabResearch({
         ))}
       </div>
 
-      <SectionHead numeral="II." kicker="Research" title="Keywords" />
-      <FieldRow
-        label="Keywords"
-        hint="Specific topics, techniques, or terms."
-      >
-        <Input
-          placeholder="e.g. CRISPR, Perovskites, NLP, Smart Grids"
-          value={researchKeywords}
-          onChange={(e) => setResearchKeywords(e.target.value)}
-          className={inputCls}
-        />
-      </FieldRow>
-
-      <SectionHead numeral="III." kicker="Research" title="Projects" />
+      <SectionHead numeral="II." kicker="Research" title="Projects" />
       {projects.map((p, i) => (
         <div
           key={i}
@@ -250,7 +235,7 @@ export function TabResearch({
         </button>
       )}
 
-      <SectionHead numeral="IV." kicker="Research" title="Publications" />
+      <SectionHead numeral="III." kicker="Research" title="Publications" />
       {publications.map((p, i) => (
         <div
           key={i}
@@ -314,7 +299,7 @@ export function TabResearch({
       )}
 
       <SectionHead
-        numeral="V."
+        numeral="IV."
         kicker="Research"
         title="Portfolio links"
       />
@@ -389,7 +374,8 @@ export function TabResearch({
           <Button
             type="button"
             onClick={saveResearch}
-            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2"
+            disabled={!isDirty}
+            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Check className="h-3.5 w-3.5" /> Save research
           </Button>

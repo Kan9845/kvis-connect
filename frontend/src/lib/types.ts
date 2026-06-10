@@ -5,6 +5,7 @@ export interface Education {
   major: string;
   country: string;
   state?: string;
+  city?: string;
   scholarship?: string;
   start_year?: number;
   end_year?: number;
@@ -29,6 +30,7 @@ export interface Career {
   job_field: string;
   country: string;
   state?: string;
+  city?: string;
   is_current: boolean;
   start_year?: number;
   end_year?: number;
@@ -72,6 +74,14 @@ export interface UserPublic extends UserCard {
   website_url?: string;
   is_verified: boolean;
   created_at: string;
+  interests_public?: boolean;
+  zodiac?: string;
+  chronotype?: string;
+  research_keywords?: string;
+  research_interests?: string[];
+  projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
+  publications?: { citation: string; doi?: string }[];
+  portfolio_links?: { type: string; url: string }[];
 }
 
 export interface UserMe extends UserPublic {

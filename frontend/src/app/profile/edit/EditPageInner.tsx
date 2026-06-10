@@ -66,7 +66,6 @@ export default function EditPageInner() {
 
   // Research state
   const [researchInterests, setResearchInterests] = useState<string[]>([]);
-  const [researchKeywords, setResearchKeywords] = useState("");
   const [projects, setProjects] = useState<
     {
       title: string;
@@ -101,7 +100,6 @@ export default function EditPageInner() {
     if (me) {
       setExtraContacts((me.extra_contacts as { type: string; value: string; public: boolean }[]) ?? []);
       setResearchInterests(me.research_interests ?? []);
-      setResearchKeywords(me.research_keywords ?? "");
       setProjects(me.projects ?? []);
       setPublications(me.publications ?? []);
       setPortfolioLinks(me.portfolio_links ?? []);
@@ -205,7 +203,6 @@ export default function EditPageInner() {
   const saveResearch = async () => {
     try {
       await Promise.all([
-        userApi.updateMe({ research_keywords: researchKeywords }),
         userApi.updateResearchInterests(researchInterests),
         userApi.updateProjects(projects),
         userApi.updatePublications(publications),
@@ -440,7 +437,7 @@ export default function EditPageInner() {
             setValue={setValue}
             errors={errors}
             isSubmitting={isSubmitting}
-            isDirty={isDirty}
+            isDirty={isDirty || JSON.stringify(extraContacts) !== JSON.stringify((me.extra_contacts as { type: string; value: string; public: boolean }[]) ?? [])}
             handleSubmit={handleSubmit}
             saveGeneral={saveGeneral}
             cropSrc={cropSrc}
@@ -475,6 +472,7 @@ export default function EditPageInner() {
         {tab === "education" && !isStudent && (
           <TabEducation
             isSetup={isSetup}
+            isDirty={JSON.stringify(education) !== JSON.stringify(me.education.map(({ id: _id, ...rest }) => rest))}
             education={education}
             setEducation={setEducation}
             saveEducation={saveEducation}
@@ -485,6 +483,7 @@ export default function EditPageInner() {
         {tab === "career" && !isStudent && (
           <TabCareer
             isSetup={isSetup}
+            isDirty={JSON.stringify(career) !== JSON.stringify(me.career.map(({ id: _id, ...rest }) => rest))}
             career={career}
             setCareer={setCareer}
             saveCareer={saveCareer}
@@ -496,10 +495,14 @@ export default function EditPageInner() {
           <TabResearch
             isSetup={isSetup}
             isStudent={isStudent}
+            isDirty={
+              JSON.stringify(researchInterests) !== JSON.stringify(me.research_interests ?? []) ||
+              JSON.stringify(projects) !== JSON.stringify(me.projects ?? []) ||
+              JSON.stringify(publications) !== JSON.stringify(me.publications ?? []) ||
+              JSON.stringify(portfolioLinks) !== JSON.stringify(me.portfolio_links ?? [])
+            }
             researchInterests={researchInterests}
             setResearchInterests={setResearchInterests}
-            researchKeywords={researchKeywords}
-            setResearchKeywords={setResearchKeywords}
             projects={projects}
             setProjects={setProjects}
             publications={publications}
@@ -514,6 +517,13 @@ export default function EditPageInner() {
         {tab === "personal" && (
           <TabPersonal
             isSetup={isSetup}
+            isDirty={
+              JSON.stringify(languages) !== JSON.stringify(me.languages ?? []) ||
+              JSON.stringify(hobbies) !== JSON.stringify(me.hobbies ?? {}) ||
+              kvisFavMenu !== (me.kvis_fav_menu ?? "") ||
+              kvisFavEvent !== (me.kvis_fav_event ?? "") ||
+              kvisFavArea !== (me.kvis_fav_area ?? "")
+            }
             me={me}
             refetch={refetch}
             languages={languages}
@@ -580,13 +590,7 @@ export default function EditPageInner() {
                 onClick={() => {
                   const tabs = isStudent
                     ? ["general", "research", "personal"]
-                    : [
-                        "general",
-                        "education",
-                        "career",
-                        "research",
-                        "personal",
-                      ];
+                    : ["general", "education", "career", "research", "personal"];
                   const idx = tabs.indexOf(tab);
                   if (idx > 0) setTab(tabs[idx - 1] as Tab);
                 }}

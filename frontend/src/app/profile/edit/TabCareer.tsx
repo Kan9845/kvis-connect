@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -7,6 +8,7 @@ import {
   SelectItem,
   SelectGroup,
   SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -14,6 +16,7 @@ import { Plus, Trash2, Check } from "lucide-react";
 import { JOB_FIELDS } from "@/lib/constants/options";
 import {
   CountrySelect,
+  ProvinceSelect,
   CitySelect,
   CITY_STATE_COUNTRIES,
 } from "@/components/ui/location-selects";
@@ -29,6 +32,7 @@ import { COMPANY_TYPES, INDUSTRY_SECTORS, ROLE_TYPES } from "./constants";
 
 interface TabCareerProps {
   isSetup: boolean;
+  isDirty: boolean;
   career: Omit<Career, "id">[];
   setCareer: React.Dispatch<React.SetStateAction<Omit<Career, "id">[]>>;
   saveCareer: () => Promise<void>;
@@ -36,6 +40,7 @@ interface TabCareerProps {
 
 export function TabCareer({
   isSetup,
+  isDirty,
   career,
   setCareer,
   saveCareer,
@@ -158,15 +163,18 @@ export function TabCareer({
                 <SelectValue placeholder="Select industry" />
               </SelectTrigger>
               <SelectContent>
-                {INDUSTRY_SECTORS.map((g) => (
-                  <SelectGroup key={g.group}>
-                    <SelectLabel>{g.group}</SelectLabel>
-                    {g.options.map((o) => (
-                      <SelectItem key={o} value={o}>
-                        {o}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
+                {INDUSTRY_SECTORS.map((g, index) => (
+                  <React.Fragment key={g.group}>
+                    {index > 0 && <SelectSeparator />}
+                    <SelectGroup>
+                      <SelectLabel>{g.group}</SelectLabel>
+                      {g.options.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          {o}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </React.Fragment>
                 ))}
               </SelectContent>
             </Select>
@@ -224,28 +232,39 @@ export function TabCareer({
               onChange={(v) =>
                 setCareer((prev) =>
                   prev.map((x, j) =>
-                    j === i
-                      ? {
-                          ...x,
-                          country: v,
-                          state: CITY_STATE_COUNTRIES.has(v) ? v : "",
-                        }
-                      : x,
+                    j === i ? { ...x, country: v, state: "", city: "" } : x,
                   ),
                 )
               }
             />
           </FieldRow>
-          {!CITY_STATE_COUNTRIES.has(job.country) && (
-            <FieldRow label="City">
-              <CitySelect
+          {job.country && !CITY_STATE_COUNTRIES.has(job.country) && (
+            <FieldRow label="Province / State">
+              <ProvinceSelect
                 variant="underline"
                 country={job.country}
                 value={job.state ?? ""}
                 onChange={(v) =>
                   setCareer((prev) =>
                     prev.map((x, j) =>
-                      j === i ? { ...x, state: v } : x,
+                      j === i ? { ...x, state: v, city: "" } : x,
+                    ),
+                  )
+                }
+              />
+            </FieldRow>
+          )}
+          {job.country && !CITY_STATE_COUNTRIES.has(job.country) && (
+            <FieldRow label="City">
+              <CitySelect
+                variant="underline"
+                country={job.country}
+                province={job.state ?? ""}
+                value={job.city ?? ""}
+                onChange={(v) =>
+                  setCareer((prev) =>
+                    prev.map((x, j) =>
+                      j === i ? { ...x, city: v } : x,
                     ),
                   )
                 }
@@ -330,7 +349,8 @@ export function TabCareer({
           <Button
             type="button"
             onClick={saveCareer}
-            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2"
+            disabled={!isDirty}
+            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Check className="h-3.5 w-3.5" /> Save career
           </Button>

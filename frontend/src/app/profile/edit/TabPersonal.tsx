@@ -27,6 +27,7 @@ import {
 
 interface TabPersonalProps {
   isSetup: boolean;
+  isDirty: boolean;
   me: {
     zodiac?: string | null;
     chronotype?: string | null;
@@ -47,6 +48,7 @@ interface TabPersonalProps {
 
 export function TabPersonal({
   isSetup,
+  isDirty,
   me,
   refetch,
   languages,
@@ -245,7 +247,8 @@ export function TabPersonal({
           <Button
             type="button"
             onClick={savePersonal}
-            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2"
+            disabled={!isDirty}
+            className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Check className="h-3.5 w-3.5" /> Save personal
           </Button>

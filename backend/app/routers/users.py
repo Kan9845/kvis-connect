@@ -157,8 +157,12 @@ async def replace_education(
     existing = session.exec(select(Education).where(Education.user_id == current_user.id)).all()
     for e in existing:
         session.delete(e)
+    import json as _json
     for item in items:
-        session.add(Education(user_id=current_user.id, **item.model_dump()))
+        data = item.model_dump()
+        if data.get("med_specialties") is not None:
+            data["med_specialties"] = _json.dumps(data["med_specialties"])
+        session.add(Education(user_id=current_user.id, **data))
     session.commit()
     await invalidate_tags("users", f"user:{current_user.slug}")
     return {"message": "Education updated"}
@@ -313,41 +317,81 @@ def get_globe_pins(session: Session = Depends(get_session)):
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
-def _edu_list(user: User):
+def _edu_list(user: User, public_only: bool = False):
+    import json as _json
+    entries = [e for e in user.education if not public_only or e.is_public is not False]
     return [
         {
             "id": e.id, "uni_name": e.uni_name, "degree": e.degree,
-            "major": e.major, "country": e.country, "state": e.state,
-            "scholarship": e.scholarship, "start_year": e.start_year, "end_year": e.end_year,
+            "major": e.major, "major2": e.major2, "minor1": e.minor1,
+            "country": e.country, "state": e.state, "city": e.city,
+            "scholarship": e.scholarship, "scholarship_type": e.scholarship_type,
+            "scholarship_bond": e.scholarship_bond,
+            "start_year": e.start_year, "end_year": e.end_year,
+            "is_public": e.is_public,
+            "med_school": e.med_school, "med_dual_degree": e.med_dual_degree,
+            "med_dual_type": e.med_dual_type, "med_dual_field": e.med_dual_field,
+            "med_hospital": e.med_hospital,
+            "med_specialties": _json.loads(e.med_specialties) if isinstance(e.med_specialties, str) else (e.med_specialties or []),
+            "med_subspecialty": e.med_subspecialty,
         }
-        for e in user.education
+        for e in entries
     ]
 
 
-def _career_list(user: User):
+def _career_list(user: User, public_only: bool = False):
+    entries = [c for c in user.career if not public_only or c.is_public is not False]
     return [
         {
             "id": c.id, "job_title": c.job_title, "employer": c.employer,
             "job_field": c.job_field, "country": c.country, "state": c.state,
-            "is_current": c.is_current, "start_year": c.start_year, "end_year": c.end_year,
+            "city": c.city, "is_current": c.is_current,
+            "start_year": c.start_year, "end_year": c.end_year,
+            "is_public": c.is_public,
+            "company_type": c.company_type, "industry_sector": c.industry_sector,
+            "role_type": c.role_type,
         }
-        for c in user.career
+        for c in entries
     ]
 
 
 def _user_to_public(user: User) -> dict:
     return {
         "id": user.id, "slug": user.slug, "first_name": user.first_name, "last_name": user.last_name,
+        "nickname": user.nickname, "nickname_public": user.nickname_public,
         "kvis_year": user.kvis_year,
         "current_grade": user.current_grade,
-        "place": user.place, "latitude": user.latitude,
-        "longitude": user.longitude, "country": user.country,
+        "current_status": user.current_status,
+        "teach_start_year": user.teach_start_year,
+        "teach_end_year": user.teach_end_year,
+        "is_current_teacher": user.is_current_teacher,
+        "teach_department": user.teach_department,
+        "place": user.place, "place_level2": user.place_level2,
+        "latitude": user.latitude, "longitude": user.longitude, "country": user.country,
         "profile_pic_url": user.profile_pic_url, "bio": user.bio,
-        "mbti": user.mbti, "interests": user.interests,
+        "mbti": user.mbti, "zodiac": user.zodiac, "chronotype": user.chronotype,
+        "interests": user.interests if user.interests_public is not False else None,
+        "interests_public": user.interests_public,
         "facebook_url": user.facebook_url, "linkedin_url": user.linkedin_url,
+        "instagram_url": user.instagram_url,
         "website_url": user.website_url, "is_verified": user.is_verified,
+        "research_keywords": user.research_keywords,
+        "research_interests": [r.interest for r in sorted(user.research_interests, key=lambda x: x.order_index)],
+        "projects": [
+            {"title": p.title, "advisor": p.advisor, "advisor2": p.advisor2,
+             "description": p.description, "status": p.status, "link": p.link}
+            for p in sorted(user.projects, key=lambda x: x.order_index)
+        ],
+        "publications": [
+            {"citation": p.citation, "doi": p.doi}
+            for p in sorted(user.publications, key=lambda x: x.order_index)
+        ],
+        "portfolio_links": [
+            {"type": p.type, "url": p.url}
+            for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
+        ],
         "created_at": user.created_at,
-        "education": _edu_list(user), "career": _career_list(user),
+        "education": _edu_list(user, public_only=True), "career": _career_list(user, public_only=True),
     }
 
 
@@ -362,6 +406,7 @@ def _user_to_me(user: User) -> dict:
     return {
         **_user_to_public(user),
         "email": user.email,
+        "expected_grad_year": user.expected_grad_year,
         "line_id": user.line_id,
         "email_verified": user.email_verified,
         "is_verified": user.is_verified,
@@ -386,6 +431,9 @@ def _user_to_me(user: User) -> dict:
             {"type": p.type, "url": p.url}
             for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
         ],
+        "education": _edu_list(user),
+        "career": _career_list(user),
+        "interests": user.interests,
         "extra_contacts": [
             {"type": c.type, "value": c.value, "public": c.is_public}
             for c in sorted(user.extra_contacts, key=lambda x: x.order_index)

@@ -1,7 +1,6 @@
 "use client";
-import Cropper from "react-easy-crop";
+import React from "react";
 import type { Area } from "react-easy-crop";
-import { useRef } from "react";
 import type { UseFormRegister, UseFormWatch, UseFormSetValue, FieldErrors } from "react-hook-form";
 import type { UserMe } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -13,13 +12,13 @@ import {
   SelectItem,
   SelectGroup,
   SelectLabel,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import {
   Plus,
   Trash2,
-  Upload,
   Loader2,
   Check,
   ShieldCheck,
@@ -38,14 +37,8 @@ import {
   CITY_STATE_COUNTRIES,
 } from "@/components/ui/location-selects";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { AvatarCustomizer } from "@/components/avatar/AvatarCustomizer";
-import { AvatarPreview } from "@/components/avatar/AvatarPreview";
-import { AvatarConfig } from "@/lib/avatarTypes";
-import { cohortColorHex, isFaculty } from "@/lib/utils";
-import { userApi } from "@/lib/api";
-import { useQueryClient } from "@tanstack/react-query";
-import { onMeUpdateSuccess } from "@/lib/cache/invalidate";
+import { isFaculty } from "@/lib/utils";
+import type { AvatarConfig } from "@/lib/avatarTypes";
 import type { GeneralForm } from "./schema";
 import {
   SectionHead,
@@ -59,6 +52,7 @@ import {
   CURRENT_STATUS_OPTIONS,
   CONTACT_TYPES,
 } from "./constants";
+import { TabPhoto } from "./TabPhoto";
 
 interface TabGeneralProps {
   me: UserMe;
@@ -68,7 +62,6 @@ interface TabGeneralProps {
   isFacultyUser: boolean;
   isAlumni: boolean;
   notify: { success: (msg: string) => void; error: (msg: string) => void };
-  // form
   register: UseFormRegister<GeneralForm>;
   watch: UseFormWatch<GeneralForm>;
   setValue: UseFormSetValue<GeneralForm>;
@@ -77,7 +70,6 @@ interface TabGeneralProps {
   isDirty: boolean;
   handleSubmit: (fn: (data: GeneralForm) => Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
   saveGeneral: (data: GeneralForm) => Promise<void>;
-  // pic / crop
   cropSrc: string | null;
   setCropSrc: React.Dispatch<React.SetStateAction<string | null>>;
   crop: { x: number; y: number };
@@ -148,213 +140,35 @@ export function TabGeneral({
   watchContactEmailPublic,
 }: TabGeneralProps) {
   const router = useRouter();
-  const qc = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const initials =
-    `${me.first_name[0] ?? ""}${me.last_name[0] ?? ""}`.toUpperCase();
-  const previewUrl = picPreview ?? me.profile_pic_url ?? "";
 
   return (
     <>
-      {/* Portrait section */}
-      <section>
-        <SectionHead
-          numeral="I."
-          kicker="Portrait"
-          title="Profile picture"
-        />
-        <div className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-section py-lg border-b border-[var(--kvis-border)] items-start">
-          <div className="space-y-lg self-start">
-            <div className="relative w-full max-w-[320px]">
-              <div
-                key={profileMode}
-                ref={profileMode === "goose" ? avatarRef : undefined}
-                className="relative aspect-square overflow-hidden"
-                style={{ background: cohortColorHex(me.kvis_year) }}
-              >
-                {profileMode === "goose" ? (
-                  <div className="absolute inset-0 scale-[1.26] origin-center pointer-events-none">
-                    <AvatarPreview
-                      config={gooseConfig}
-                      backgroundColor={cohortColorHex(me.kvis_year)}
-                    />
-                  </div>
-                ) : previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt={`${me.first_name} ${me.last_name}`}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                ) : (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center font-black text-2xl text-white"
-                    style={{
-                      background: cohortColorHex(me.kvis_year),
-                    }}
-                  >
-                    {initials}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="w-full max-w-2xl space-y-xl">
-            <div className="flex items-center gap-lg border-b border-[var(--kvis-border)] pb-md">
-              {(["upload", "goose"] as const).map((mode) => (
-                <button
-                  key={mode}
-                  type="button"
-                  onClick={() => setProfileMode(mode)}
-                  className={`text-xs font-bold uppercase tracking-[0.28em] pb-1 transition-colors ${
-                    profileMode === mode
-                      ? "text-[var(--kvis-purple)] border-b-2 border-[var(--sep-input-focus)]"
-                      : "text-[var(--kvis-text3)]"
-                  }`}
-                >
-                  {mode === "upload" ? "Upload Photo" : "Goose Profile"}
-                </button>
-              ))}
-            </div>
-            {profileMode === "upload" && (
-              <div className="space-y-lg">
-                <div>
-                  <h3 className="text-xl font-black tracking-tight mb-2">
-                    Upload a profile photo
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
-                    JPG or PNG. Square images work best.
-                  </p>
-                </div>
-                {cropSrc ? (
-                  <div className="space-y-4">
-                    <div className="relative w-full max-w-md h-64 bg-muted overflow-hidden rounded-lg">
-                      <Cropper
-                        image={cropSrc}
-                        crop={crop}
-                        zoom={zoom}
-                        aspect={1}
-                        cropShape="round"
-                        showGrid={false}
-                        onCropChange={setCrop}
-                        onZoomChange={setZoom}
-                        onCropComplete={(_, areaPixels) =>
-                          setCroppedAreaPixels(areaPixels)
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center gap-3 max-w-md">
-                      <span className="text-xs uppercase tracking-[0.22em] text-[var(--kvis-text3)]">
-                        Zoom
-                      </span>
-                      <input
-                        type="range"
-                        min={1}
-                        max={3}
-                        step={0.01}
-                        value={zoom}
-                        onChange={(e) => setZoom(Number(e.target.value))}
-                        className="flex-1 accent-foreground"
-                      />
-                    </div>
-                    <div className="flex gap-3">
-                      <Button
-                        type="button"
-                        className="h-auto rounded-none bg-foreground px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2"
-                        onClick={async () => {
-                          try {
-                            const file = await getCroppedFile();
-                            setPendingFile(file);
-                            setPicPreview(URL.createObjectURL(file));
-                            setCropSrc(null);
-                          } catch {
-                            notify.error("Crop failed");
-                          }
-                        }}
-                      >
-                        <Check className="h-3.5 w-3.5" /> Apply crop
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="h-auto rounded-none border-foreground/30 px-5 py-2.5 text-xs font-bold uppercase tracking-[0.28em] gap-2"
-                        onClick={() => setCropSrc(null)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="flex h-40 w-full max-w-md cursor-pointer items-center justify-center border border-dashed border-foreground/20 transition-colors hover:border-foreground/50">
-                    <input
-                      ref={fileRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handlePicChange}
-                    />
-                    <div className="text-center">
-                      <Upload className="mx-auto mb-3 h-6 w-6" />
-                      <p className="text-sm font-medium">
-                        Click to upload
-                      </p>
-                    </div>
-                  </label>
-                )}
-              </div>
-            )}
-            {profileMode === "goose" && (
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-xl font-black tracking-tight mb-2">
-                    Customize your goose
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
-                    Create a playful illustrated profile avatar.
-                  </p>
-                </div>
-                <div className="max-w-xl">
-                  <AvatarCustomizer
-                    value={gooseConfig}
-                    onChange={setGooseConfig}
-                  />
-                </div>
-              </div>
-            )}
-            <div>
-              <Button
-                type="button"
-                className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 disabled:opacity-40 gap-2"
-                onClick={async () => {
-                  if (profileMode === "goose") {
-                    await handleUseGooseProfile();
-                  } else if (pendingFile) {
-                    try {
-                      const { url } =
-                        await userApi.uploadProfilePic(pendingFile);
-                      const updated = await userApi.updateMe({
-                        profile_pic_url: url,
-                      });
-                      onMeUpdateSuccess(qc, updated);
-                      await refetch();
-                      setPicPreview(url);
-                      setPendingFile(null);
-                      notify.success("Profile picture updated");
-                    } catch {
-                      notify.error("Upload failed");
-                    }
-                  }
-                }}
-                disabled={profileMode === "upload" && !pendingFile}
-              >
-                {profileMode === "goose"
-                  ? "Save goose profile"
-                  : "Save photo"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Portrait */}
+      <TabPhoto
+        me={me}
+        refetch={refetch}
+        notify={notify}
+        cropSrc={cropSrc}
+        setCropSrc={setCropSrc}
+        crop={crop}
+        setCrop={setCrop}
+        zoom={zoom}
+        setZoom={setZoom}
+        croppedAreaPixels={croppedAreaPixels}
+        setCroppedAreaPixels={setCroppedAreaPixels}
+        picPreview={picPreview}
+        setPicPreview={setPicPreview}
+        pendingFile={pendingFile}
+        setPendingFile={setPendingFile}
+        profileMode={profileMode}
+        setProfileMode={setProfileMode}
+        gooseConfig={gooseConfig}
+        setGooseConfig={setGooseConfig}
+        avatarRef={avatarRef}
+        getCroppedFile={getCroppedFile}
+        handleUseGooseProfile={handleUseGooseProfile}
+        handlePicChange={handlePicChange}
+      />
 
       {/* Credential */}
       <section>
@@ -372,36 +186,6 @@ export function TabGeneral({
                 : "var(--kvis-rule)",
             }}
           >
-            <div
-              className="flex items-center justify-between gap-3 px-5 py-2.5 border-b"
-              style={{
-                borderColor: me.is_verified
-                  ? "var(--kvis-green-light)"
-                  : "var(--kvis-rule)",
-              }}
-            >
-              <span
-                className="text-xs font-bold uppercase tracking-[0.3em] flex items-center gap-1"
-                style={{
-                  color: me.is_verified
-                    ? "var(--kvis-green-light)"
-                    : "var(--kvis-text3)",
-                }}
-              >
-                {me.is_verified ? (
-                  <>
-                    Issued{" "}
-                    <Dot className="h-3 w-3 shrink-0" aria-hidden />{" "}
-                    Automatic
-                  </>
-                ) : (
-                  "No credential on file"
-                )}
-              </span>
-              <span className="text-xs font-mono tabular-nums tracking-[0.2em] text-[var(--kvis-text3)] flex items-center gap-1">
-                KVIS <Dot className="h-3 w-3 shrink-0" aria-hidden /> V01
-              </span>
-            </div>
             <div className="px-5 py-6 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-5 md:items-center">
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5 mb-2">
@@ -594,15 +378,18 @@ export function TabGeneral({
                 <SelectValue placeholder="What are you up to?" />
               </SelectTrigger>
               <SelectContent>
-                {CURRENT_STATUS_OPTIONS.map((g) => (
-                  <SelectGroup key={g.group}>
-                    <SelectLabel>{g.group}</SelectLabel>
-                    {g.options.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
+                {CURRENT_STATUS_OPTIONS.map((g, index) => (
+                  <React.Fragment key={g.group}>
+                    {index > 0 && <SelectSeparator />}
+                    <SelectGroup>
+                      <SelectLabel>{g.group}</SelectLabel>
+                      {g.options.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </React.Fragment>
                 ))}
               </SelectContent>
             </Select>

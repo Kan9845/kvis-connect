@@ -93,7 +93,7 @@ export function AboutClient() {
             <header className="py-xl lg:py-layout flex items-start justify-between gap-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
-                  KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> About
+                  KVIS Connect <Dot className="h-6 w-6 shrink-0" aria-hidden /> About
                 </p>
                 <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                   <span className="font-light text-foreground">About </span>

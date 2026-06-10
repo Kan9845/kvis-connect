@@ -480,7 +480,7 @@ export function Navbar() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
-            className={`rounded-full outline-none ring-offset-2 ${ringClass}`}
+            className={`rounded-full outline-none ring-offset-2 pointer-events-auto ${ringClass}`}
             style={{
               outline: `3px solid ${cohortColor(user.kvis_year)}`,
               outlineOffset: "2px",
@@ -543,7 +543,7 @@ export function Navbar() {
   if (isGlobe) {
     return (
       <header
-        className="absolute top-0 left-0 right-0 z-50 pointer-events-none w-full"
+        className="absolute top-0 left-0 right-0 z-50 w-full"
         style={{
           background: "transparent",
           backdropFilter: "none",
@@ -551,7 +551,7 @@ export function Navbar() {
       >
         {/* Top bar - hidden on mobile when panel is open */}
         <div
-          className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-6 h-16`}
+          className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-6 h-16 pointer-events-auto`}
         >
           <Link
             href="/"
@@ -627,7 +627,7 @@ export function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
             <ThemeToggle dark={dark} />
             {user && <NotificationBell />}
             {user && <div className="w-2" />}

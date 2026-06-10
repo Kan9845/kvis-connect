@@ -219,7 +219,7 @@ function StatFigures({
 function RankedList({
   items,
   showFlag = false,
-  barColor = "var(--kvis-purple)",
+  barColor = "var(--kvis-purple-light)",
 }: {
   items: Row[];
   showFlag?: boolean;
@@ -283,9 +283,9 @@ function RankedList({
         <Button
           variant="link"
           onClick={() => setShowAll(true)}
-          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline text-[var(--kvis-purple)]"
+          className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline text-[var(--kvis-purple-light)]"
           style={{
-            textDecorationColor: "var(--kvis-purple)",
+            textDecorationColor: "var(--kvis-purple-light)",
             textUnderlineOffset: 4,
           }}
         >
@@ -312,7 +312,7 @@ function SectionHead({
   kicker,
   title,
   lede,
-  accentColor = "var(--kvis-green)",
+  accentColor = "var(--kvis-green-light)",
 }: {
   numeral: string;
   kicker: string;
@@ -510,7 +510,7 @@ export default function StatsClient() {
           <FadeUp>
             <header className="pb-md border-b border-[var(--sep-strong)]">
               <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
-                KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> Stats
+                KVIS Connect <Dot className="h-6 w-6 shrink-0" aria-hidden /> Stats
               </p>
               <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
                 <span className="font-light text-foreground">By the </span>
@@ -573,25 +573,25 @@ export default function StatsClient() {
                   value: totalAlumni,
                   label: "Alumni",
                   sub: cohortLabel,
-                  color: "var(--kvis-purple)",
+                  color: "var(--kvis-purple-light)",
                 },
                 {
                   value: uniqueUnis,
                   label: "Universities",
                   sub: cohortLabel,
-                  color: "var(--kvis-green)",
+                  color: "var(--kvis-green-light)",
                 },
                 {
                   value: `${stemPct}%`,
                   label: "In STEM",
                   sub: "of those with education data",
-                  color: "var(--kvis-purple)",
+                  color: "var(--kvis-purple-light)",
                 },
                 {
                   value: uniqueCountries,
                   label: "Countries",
                   sub: "worldwide",
-                  color: "var(--kvis-green)",
+                  color: "var(--kvis-green-light)",
                 },
               ]}
             />
@@ -621,7 +621,7 @@ export default function StatsClient() {
                   kicker="Geography"
                   title="Where they went"
                   lede="Countries and universities represented among registered alumni. Based on primary degree only."
-                  accentColor="var(--kvis-green)"
+                  accentColor="var(--kvis-green-light)"
                 />
               </FadeUp>
 
@@ -636,7 +636,7 @@ export default function StatsClient() {
                       <RankedList
                         items={countryRanked}
                         showFlag
-                        barColor="var(--kvis-purple)"
+                        barColor="var(--kvis-purple-light)"
                       />
                     )}
                   </div>
@@ -649,7 +649,7 @@ export default function StatsClient() {
                     ) : (
                       <RankedList
                         items={uniRanked}
-                        barColor="var(--kvis-green)"
+                        barColor="var(--kvis-green-light)"
                       />
                     )}
                   </div>
@@ -664,7 +664,7 @@ export default function StatsClient() {
                   kicker="Fields of study"
                   title="What they studied"
                   lede="Field distribution by primary degree. STEM-classified fields are highlighted."
-                  accentColor="var(--kvis-purple)"
+                  accentColor="var(--kvis-purple-light)"
                 />
               </FadeUp>
 
@@ -676,7 +676,7 @@ export default function StatsClient() {
                   ) : (
                     <RankedList
                       items={facultyRanked}
-                      barColor="var(--kvis-purple)"
+                      barColor="var(--kvis-purple-light)"
                     />
                   )}
                 </div>
@@ -690,7 +690,7 @@ export default function StatsClient() {
                   kicker="Cohort breakdown"
                   title="Field mix by cohort"
                   lede="Each bar shows the proportional field distribution within a graduating class."
-                  accentColor="var(--kvis-green)"
+                  accentColor="var(--kvis-green-light)"
                 />
               </FadeUp>
 
