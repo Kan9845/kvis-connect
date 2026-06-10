@@ -236,7 +236,7 @@ export default function OnboardingPage() {
       <div className="mx-auto max-w-6xl px-6 lg:px-12 py-12 lg:py-20">
         <div className="grid lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24 items-start">
           {/* Left - static hero */}
-          <div className="lg:sticky lg:top-20">
+          <div className="lg:sticky lg:top-20 lg:border-r lg:pr-10" style={{ borderColor: P.border }}>
             <div className="flex items-baseline gap-4 mb-6">
               <span
                 className="font-mono font-black text-2xl tabular-nums"
@@ -280,7 +280,7 @@ export default function OnboardingPage() {
 
             <div
               className="mt-12 pt-6 border-t flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.3em]"
-              style={{ borderColor: P.rule, color: P.text3 }}
+              style={{ borderColor: P.border, color: P.text3 }}
             >
               <span>KVIS Connect</span>
               <span className="tabular-nums">{issueDate}</span>

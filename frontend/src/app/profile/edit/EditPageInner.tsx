@@ -286,10 +286,7 @@ export default function EditPageInner() {
       ctx.beginPath();
       ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
       ctx.clip();
-      const grad = ctx.createLinearGradient(0, 0, size, size);
-      grad.addColorStop(0, cohortColorHex(me.kvis_year));
-      grad.addColorStop(1, cohortColorSoftHex(me.kvis_year));
-      ctx.fillStyle = grad;
+      ctx.fillStyle = cohortColorHex(me.kvis_year);
       ctx.fillRect(0, 0, size, size);
       const drawLayer = (src: string, scale = 1.26) =>
         new Promise<void>((res, rej) => {
