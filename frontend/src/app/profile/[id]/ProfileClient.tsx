@@ -370,7 +370,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
               <div className="py-2xl">
                 <p className="text-xs uppercase tracking-[0.28em] font-bold text-[var(--kvis-text3)] mb-3">No data yet</p>
                 <p className="text-lg text-foreground max-w-[42ch] leading-snug">
-                  This profile hasn't been filled in yet.
+                  This profile hasn&apos;t been filled in yet.
                 </p>
                 {isMe && (
                   <Link href="/profile/edit"

@@ -382,7 +382,7 @@ export default function OnboardingPage() {
                         ))}
                       </div>
                       <p className="text-xs text-muted-foreground mt-3">
-                        Don't see yours? You can update this on your profile
+                        Don&apos;t see yours? You can update this on your profile
                         later.
                       </p>
                     </div>

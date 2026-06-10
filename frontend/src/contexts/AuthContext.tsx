@@ -28,6 +28,12 @@ const DEV_MOCK_USER: UserMe = {
   profile_setup_done: true,
   education: [],
   career: [],
+  research_interests: [],
+  projects: [],
+  publications: [],
+  portfolio_links: [],
+  languages: [],
+  extra_contacts: [],
   created_at: new Date().toISOString(),
 };
 

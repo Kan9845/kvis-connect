@@ -75,6 +75,8 @@ export interface UserPublic extends UserCard {
   is_verified: boolean;
   created_at: string;
   interests_public?: boolean;
+  nickname_public?: boolean;
+  place_level2?: string;
   zodiac?: string;
   chronotype?: string;
   research_keywords?: string;
@@ -92,8 +94,6 @@ export interface UserMe extends UserPublic {
   email_verified: boolean;
   kvis_email?: string;
   profile_setup_done: boolean;
-  nickname_public?: boolean;
-  place_level2?: string;
   zodiac?: string;
   chronotype?: string;
   contact_email?: string;
