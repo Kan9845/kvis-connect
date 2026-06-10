@@ -89,9 +89,10 @@ interface CountrySelectProps {
   onChange: (v: string) => void;
   borderColor?: string;
   variant?: "bordered" | "underline";
+  className?: string;
 }
 
-export function CountrySelect({ value, onChange, borderColor, variant = "bordered" }: CountrySelectProps) {
+export function CountrySelect({ value, onChange, borderColor, variant = "bordered", className }: CountrySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [countries, setCountries] = useState<string[]>([]);
@@ -104,9 +105,12 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
     ? countries.filter((c) => c.toLowerCase().includes(query.toLowerCase())).slice(0, 40)
     : countries.slice(0, 40);
 
-  const triggerCls = variant === "underline"
-    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent"
-    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors";
+  const triggerCls = cn(
+    variant === "underline"
+      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors bg-transparent"
+      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors bg-transparent",
+    className
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -116,16 +120,16 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
           role="combobox"
           aria-expanded={open}
           className={triggerCls}
-          style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
+          style={{ borderColor: variant === "bordered" ? (borderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
           onClick={() => setOpen((o) => !o)}
         >
-          <span className={cn(value ? "text-foreground" : "text-muted-foreground/50")}>
+          <span className={cn(value ? "text-foreground" : "text-foreground/40")}>
             {value || "Select country..."}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-md" align="start">
         <Command shouldFilter={false}>
           <CommandInput placeholder="Search country..." value={query} onValueChange={setQuery} />
           <CommandList className="max-h-60">
@@ -154,9 +158,10 @@ interface ProvinceSelectProps {
   onChange: (v: string) => void;
   borderColor?: string;
   variant?: "bordered" | "underline";
+  className?: string;
 }
 
-export function ProvinceSelect({ country, value, onChange, borderColor, variant = "bordered" }: ProvinceSelectProps) {
+export function ProvinceSelect({ country, value, onChange, borderColor, variant = "bordered", className }: ProvinceSelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [states, setStates] = useState<string[]>([]);
@@ -199,12 +204,15 @@ export function ProvinceSelect({ country, value, onChange, borderColor, variant 
     setOpen(false);
   }
 
-  const triggerCls = variant === "underline"
-    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+  const triggerCls = cn(
+    variant === "underline"
+      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors bg-transparent disabled:opacity-50 disabled:cursor-not-allowed",
+    className
+  );
 
   const manualInputCls = variant === "underline"
-    ? "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors"
+    ? "w-full bg-transparent border-0 border-b rounded-none px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-colors"
     : "w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none";
 
   if (manualMode) {
@@ -241,16 +249,16 @@ export function ProvinceSelect({ country, value, onChange, borderColor, variant 
           aria-expanded={open}
           disabled={disabled}
           className={triggerCls}
-          style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
+          style={{ borderColor: variant === "bordered" ? (borderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
           onClick={() => { if (!disabled) setOpen((o) => !o); }}
         >
-          <span className={cn(value ? "text-foreground" : "text-muted-foreground/50")}>
+          <span className={cn(value ? "text-foreground" : "text-foreground/40")}>
             {value || placeholder}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-md" align="start">
         <Command shouldFilter={false}>
           <CommandInput placeholder="Search province..." value={query} onValueChange={setQuery} />
           <CommandList className="max-h-60">
@@ -291,9 +299,10 @@ interface CitySelectProps {
   onChange: (v: string) => void;
   borderColor?: string;
   variant?: "bordered" | "underline";
+  className?: string;
 }
 
-export function CitySelect({ country, province, value, onChange, borderColor, variant = "bordered" }: CitySelectProps) {
+export function CitySelect({ country, province, value, onChange, borderColor, variant = "bordered", className }: CitySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [cities, setCities] = useState<string[]>([]);
@@ -342,12 +351,15 @@ export function CitySelect({ country, province, value, onChange, borderColor, va
     setOpen(false);
   }
 
-  const triggerCls = variant === "underline"
-    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
-    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+  const triggerCls = cn(
+    variant === "underline"
+      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors bg-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors bg-transparent disabled:opacity-50 disabled:cursor-not-allowed",
+    className
+  );
 
   const manualInputCls = variant === "underline"
-    ? "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors"
+    ? "w-full bg-transparent border-0 border-b rounded-none px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-colors"
     : "w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none";
 
   if (manualMode) {
@@ -384,16 +396,16 @@ export function CitySelect({ country, province, value, onChange, borderColor, va
           aria-expanded={open}
           disabled={disabled}
           className={triggerCls}
-          style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
+          style={{ borderColor: variant === "bordered" ? (borderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
           onClick={() => { if (!disabled) setOpen((o) => !o); }}
         >
-          <span className={cn(value ? "text-foreground" : "text-muted-foreground/50")}>
+          <span className={cn(value ? "text-foreground" : "text-foreground/40")}>
             {value || placeholder}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-md" align="start">
         <Command shouldFilter={false}>
           <CommandInput placeholder={hasSeparateProvinces && !province ? "Select province first" : "Search city..."} value={query} onValueChange={setQuery} disabled={hasSeparateProvinces && !province ? true : undefined} />
           <CommandList className="max-h-60">

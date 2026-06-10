@@ -140,14 +140,14 @@ function LoginInner() {
         </button>
 
         <div className="flex items-center gap-3">
-          <Separator className="flex-1 bg-[var(--kvis-rule)]" />
+          <Separator className="flex-1 bg-[var(--kvis-border)]" />
           <span
             className="text-[10px] font-bold uppercase tracking-[0.32em]"
             style={{ color: P.text3 }}
           >
             or
           </span>
-          <Separator className="flex-1 bg-[var(--kvis-rule)]" />
+          <Separator className="flex-1 bg-[var(--kvis-border)]" />
         </div>
 
         <button

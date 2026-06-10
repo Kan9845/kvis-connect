@@ -30,7 +30,7 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
         <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-xl lg:gap-20 items-start">
           <section
             className="lg:pr-10 lg:border-r lg:sticky lg:top-16 lg:self-start"
-            style={{ borderColor: P.rule }}
+            style={{ borderColor: "var(--kvis-border)" }}
           >
             <div className="flex items-baseline gap-4 mb-5">
               <span
@@ -54,7 +54,7 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
             </p>
             <div
               className="mt-12 pt-6 border-t flex items-center justify-between text-xs font-bold uppercase tracking-[0.3em]"
-              style={{ borderColor: P.rule, color: P.text3 }}
+              style={{ borderColor: "var(--kvis-border)", color: P.text3 }}
             >
               <span>KVIS Connect</span>
               <span className="tabular-nums">{issueLabel}</span>
@@ -66,7 +66,7 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
               {footer && (
                 <div
                   className="mt-12 pt-6 border-t text-xs"
-                  style={{ borderColor: P.rule, color: P.text3 }}
+                  style={{ borderColor: "var(--kvis-border)", color: P.text3 }}
                 >
                   {footer}
                 </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -41,9 +42,10 @@ interface Props {
   placeholder?: string;
   inputBorderColor?: string;
   variant?: "bordered" | "underline";
+  className?: string;
 }
 
-export function UniversityCombobox({ value, onChange, onCountryChange, placeholder = "Search university…", inputBorderColor, variant = "bordered" }: Props) {
+export function UniversityCombobox({ value, onChange, onCountryChange, placeholder = "Search university…", inputBorderColor, variant = "bordered", className }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UniEntry[]>([]);
@@ -70,13 +72,16 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
     setOpen(false);
   }
 
-  const triggerCls = variant === "underline"
-    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent"
-    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors";
+  const triggerCls = cn(
+    variant === "underline"
+      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors bg-transparent"
+      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors bg-transparent",
+    className
+  );
 
   const manualInputCls = variant === "underline"
-    ? "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors"
-    : "w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none";
+    ? "w-full bg-transparent border-0 border-b rounded-none px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-colors"
+    : "w-full h-9 border rounded-md px-3 text-sm bg-transparent outline-none focus:outline-none";
 
   if (otherMode) {
     return (
@@ -114,15 +119,15 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
         <button
           type="button"
           className={triggerCls}
-          style={variant === "bordered" ? { borderColor: inputBorderColor, background: "transparent" } : undefined}
+          style={{ borderColor: variant === "bordered" ? (inputBorderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
         >
-          <span className={cn(displayValue ? "text-foreground" : "text-foreground/25")}>
+          <span className={cn(displayValue ? "text-foreground" : "text-foreground/40")}>
             {displayValue || placeholder}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-md" align="start">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Type at least 2 characters…"

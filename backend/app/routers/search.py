@@ -51,6 +51,8 @@ def search_users(
     name: Optional[str] = Query(default=None),
     kvis_year: Optional[int] = Query(default=None),
     country: Optional[str] = Query(default=None),
+    place_level2: Optional[str] = Query(default=None),
+    place: Optional[str] = Query(default=None),
     uni_name: Optional[str] = Query(default=None),
     degree: Optional[str] = Query(default=None),
     major: Optional[str] = Query(default=None),
@@ -76,6 +78,10 @@ def search_users(
         query = query.where(User.kvis_year == kvis_year)
     if country:
         query = query.where(User.country.ilike(f"%{country}%"))
+    if place_level2:
+        query = query.where(User.place_level2.ilike(f"%{place_level2}%"))
+    if place:
+        query = query.where(User.place.ilike(f"%{place}%"))
 
     users = session.exec(query).all()
 

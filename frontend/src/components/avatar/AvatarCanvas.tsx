@@ -28,9 +28,7 @@ export function AvatarCanvas({ config, backgroundColor }: Props) {
       <div
         className="absolute inset-0"
         style={{
-          background: backgroundColor
-            ? `linear-gradient(135deg, ${backgroundColor} 0%, white 100%)`
-            : "#6d28d9"
+          background: backgroundColor ?? "#6d28d9"
         }}
       />
 

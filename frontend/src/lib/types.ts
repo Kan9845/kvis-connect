@@ -167,6 +167,8 @@ export interface SearchParams {
   name?: string;
   kvis_year?: number;
   country?: string;
+  place_level2?: string;
+  place?: string;
   uni_name?: string;
   degree?: string;
   major?: string;

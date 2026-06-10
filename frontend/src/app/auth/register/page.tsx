@@ -140,7 +140,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
         }
       >
         <form onSubmit={handleVerify} className="space-y-6">
-          <div className="flex items-center gap-3 py-3 px-4 border border-[var(--kvis-border)]">
+          <div className="flex items-center gap-3 py-3 px-4 border" style={{ borderColor: "var(--kvis-border)" }}>
             <Mail className="h-4 w-4 shrink-0" style={{ color: P.purple }} />
             <span className="text-sm text-muted-foreground truncate">{registeredEmail}</span>
           </div>
@@ -156,11 +156,11 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
             </InputOTP>
           </div>
 
-          {error && (
-            <p className="text-destructive bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
-              {error}
-            </p>
-          )}
+        {error && (
+          <p className="text-destructive border border-destructive/30 rounded-none p-3 text-sm">
+            {error}
+          </p>
+        )}
 
           <button
             type="submit"
@@ -272,7 +272,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
         </div>
 
         {error && (
-          <p className="text-destructive bg-destructive/10 border border-destructive/30 rounded p-3 text-sm">
+          <p className="text-destructive border border-destructive/30 rounded-none p-3 text-sm">
             {error}
           </p>
         )}

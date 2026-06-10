@@ -58,9 +58,10 @@ interface Props {
   onChange: (v: string) => void;
   borderColor?: string;
   variant?: "bordered" | "underline";
+  className?: string;
 }
 
-export function MajorCombobox({ value, onChange, borderColor, variant = "bordered" }: Props) {
+export function MajorCombobox({ value, onChange, borderColor, variant = "bordered", className }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [manualMode, setManualMode] = useState(false);
@@ -76,13 +77,16 @@ export function MajorCombobox({ value, onChange, borderColor, variant = "bordere
     setOpen(false);
   }
 
-  const triggerCls = variant === "underline"
-    ? "w-full border-0 border-b border-foreground/20 px-0 py-2 flex items-center justify-between text-sm md:text-base transition-colors bg-transparent"
-    : "w-full h-12 border px-4 flex items-center justify-between text-[15px] transition-colors";
+  const triggerCls = cn(
+    variant === "underline"
+      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors bg-transparent"
+      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors bg-transparent",
+    className
+  );
 
   const manualInputCls = variant === "underline"
-    ? "w-full bg-transparent border-0 border-b border-foreground/20 rounded-none px-0 py-2 text-sm md:text-base text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground transition-colors"
-    : "w-full h-12 border px-4 text-[15px] bg-transparent outline-none focus:outline-none";
+    ? "w-full bg-transparent border-0 border-b rounded-none px-0 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none transition-colors"
+    : "w-full h-9 border rounded-md px-3 text-sm bg-transparent outline-none focus:outline-none";
 
   if (manualMode) {
     return (
@@ -117,16 +121,16 @@ export function MajorCombobox({ value, onChange, borderColor, variant = "bordere
           role="combobox"
           aria-expanded={open}
           className={triggerCls}
-          style={variant === "bordered" ? { borderColor, background: "transparent" } : undefined}
+          style={{ borderColor: variant === "bordered" ? (borderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
           onClick={() => setOpen((o) => !o)}
         >
-          <span className={cn(value ? "text-foreground" : "text-foreground/25")}>
+          <span className={cn(value ? "text-foreground" : "text-foreground/40")}>
             {value || "Select major..."}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-none" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-md" align="start">
         <Command shouldFilter={false}>
           <CommandInput placeholder="Search major..." value={query} onValueChange={setQuery} />
           <CommandList className="max-h-60">
