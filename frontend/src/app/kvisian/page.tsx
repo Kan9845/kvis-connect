@@ -63,17 +63,11 @@ function initials(u: DirectoryCard) {
 }
 
 function captionAlumni(u: any): React.ReactNode {
-  // Current education takes priority if flagged
-  if (u.edu_major && !u.job_title) {
-    return [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean).join(" • ");
-  }
-  // Current job
-  if (u.job_title) {
-    return [u.job_title, u.employer && `@ ${u.employer}`].filter(Boolean).join(" ");
-  }
-  // Fallback to education
   if (u.edu_major) {
     return [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean).join(" • ");
+  }
+  if (u.job_title) {
+    return [u.job_title, u.employer && `@ ${u.employer}`].filter(Boolean).join(" ");
   }
   return "Profile pending";
 }
