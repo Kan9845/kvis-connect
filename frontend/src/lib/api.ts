@@ -8,7 +8,9 @@ import type {
 import { filterGlobePins } from "./utils";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
+  // Relative base: requests hit the frontend's own origin and are proxied to the
+  // backend via next.config rewrites. Keeps auth cookies first-party.
+  baseURL: "",
   withCredentials: true,
 });
 
@@ -70,7 +72,7 @@ export const authApi = {
     api.post("/api/auth/login", data),
   logout: () => api.post("/api/auth/logout"),
   googleLogin: () => {
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`;
+    window.location.href = `/api/auth/google`;
   },
   requestPasswordReset: (email: string) =>
     api.post("/api/auth/password-reset/request", { email }),

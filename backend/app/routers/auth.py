@@ -32,9 +32,12 @@ oauth.register(
 
 KVIS_DOMAIN = "kvis.ac.th"
 
+# Cookies are first-party: the frontend proxies /api/* through its own origin
+# (see frontend next.config rewrites), so SameSite=Lax is enough and avoids
+# third-party-cookie blocking in browsers.
 COOKIE_OPTS = dict(
     httponly=True,
-    samesite="none" if settings.is_production else "lax",
+    samesite="lax",
     secure=settings.is_production,
 )
 
@@ -186,8 +189,10 @@ def login(body: LoginRequest, response: Response, session: Session = Depends(get
 
 @router.post("/logout")
 def logout(response: Response):
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
+    # Match the attributes used when setting, or the browser won't clear them.
+    delete_opts = {k: v for k, v in COOKIE_OPTS.items() if k != "httponly"}
+    response.delete_cookie("access_token", **delete_opts)
+    response.delete_cookie("refresh_token", **delete_opts)
     return {"message": "Logged out"}
 
 
@@ -307,7 +312,9 @@ async def verify_kvis_email(
 # Google OAuth
 @router.get("/google")
 async def google_login(request: Request):
-    redirect_uri = f"{request.base_url}api/auth/google/callback"
+    # Callback must return through the frontend origin (proxied to /api/*) so the
+    # auth cookies set on the callback are first-party.
+    redirect_uri = f"{settings.FRONTEND_URL}/api/auth/google/callback"
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 

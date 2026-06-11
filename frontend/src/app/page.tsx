@@ -4,7 +4,8 @@ import { filterGlobePins } from "@/lib/utils";
 
 export const revalidate = 60;
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Server-side fetch (runs on the server): needs an absolute URL to the backend.
+const API = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 async function getPins(): Promise<GlobePin[]> {
   try {
