@@ -523,6 +523,25 @@ export function TabEducation({
               />
             </div>
           </FieldRow>
+          <FieldRow label="Status">
+            <label className="inline-flex items-center gap-2.5 text-sm text-foreground cursor-pointer pt-1.5">
+              <input
+                type="checkbox"
+                checked={edu.is_current ?? false}
+                onChange={(e) =>
+                  setEducation((prev) =>
+                    prev.map((x, j) =>
+                      j === i
+                        ? { ...x, is_current: e.target.checked }
+                        : x,
+                    ),
+                  )
+                }
+                className="h-4 w-4 accent-foreground"
+              />
+              <span>I am currently studying here</span>
+            </label>
+          </FieldRow>
           {/* Scholarship */}
           <FieldRow label="Scholarship">
             <Select
@@ -616,7 +635,7 @@ export function TabEducation({
           onClick={() =>
             setEducation((prev) => [
               ...prev,
-              { uni_name: "", degree: "", major: "", country: "", is_public: true },
+              { uni_name: "", degree: "", major: "", country: "", is_public: true, is_current: false },
             ])
           }
           className="h-auto rounded-none border-foreground bg-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-1.5"

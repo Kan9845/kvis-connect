@@ -419,13 +419,14 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     if (isMed && (e.med_specialties ?? []).length > 0) metaParts.push((e.med_specialties ?? []).join(", "));
                     if (isMed && e.med_hospital) metaParts.push(e.med_hospital);
                     if (e.scholarship) metaParts.push(`${e.scholarship} Scholar`);
-                    const years = e.start_year || e.end_year
-                      ? `${e.start_year ?? "?"} - ${e.end_year ?? "Present"}`
+                    const years = e.start_year || e.end_year || e.is_current
+                      ? `${e.start_year ?? "?"} - ${e.is_current ? "Present" : e.end_year ?? "?"}`
                       : undefined;
                     return (
                       <StaggerItem key={e.id}>
                         <EntryRow index={i} title={e.uni_name} subtitle={subtitle}
-                          meta={metaParts.join("  /  ") || undefined} years={years} />
+                          meta={metaParts.join("  /  ") || undefined} years={years}
+                          pill={e.is_current ? { label: "Current", color: "var(--kvis-green-light)" } : undefined}/>
                       </StaggerItem>
                     );
                   })}

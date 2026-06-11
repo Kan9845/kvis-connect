@@ -17,6 +17,7 @@ class EducationRead(BaseModel):
     scholarship: Optional[str] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
+    is_current: bool = False
     # Extended
     is_public: bool = True
     major2: Optional[str] = None
@@ -44,6 +45,7 @@ class EducationWrite(BaseModel):
     scholarship: Optional[str] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
+    is_current: bool = False
     # Extended
     is_public: bool = True
     major2: Optional[str] = None

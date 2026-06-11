@@ -17,6 +17,7 @@ class Education(SQLModel, table=True):
     scholarship: Optional[str] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
+    is_current: bool = False
 
     # Extended
     is_public: bool = True

@@ -9,6 +9,7 @@ export interface Education {
   scholarship?: string;
   start_year?: number;
   end_year?: number;
+  is_current?: boolean;
   is_public?: boolean;
   major2?: string;
   minor1?: string;

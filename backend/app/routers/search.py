@@ -27,17 +27,21 @@ def directory_list(session: Session = Depends(get_session)):
             u.profile_pic_url, u.goose_config, u.country, u.place, u.mbti, u.interests,
             u.is_verified,
             (SELECT job_title FROM career
-             WHERE user_id = u.id ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_title,
+             WHERE user_id = u.id AND is_current = true LIMIT 1) AS job_title,
             (SELECT employer FROM career
-             WHERE user_id = u.id ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS employer,
+             WHERE user_id = u.id AND is_current = true LIMIT 1) AS employer,
             (SELECT job_field FROM career
-             WHERE user_id = u.id ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_field,
+             WHERE user_id = u.id AND is_current = true LIMIT 1) AS job_field,
+            (SELECT start_year FROM career
+             WHERE user_id = u.id AND is_current = true LIMIT 1) AS job_start_year,
+            (SELECT end_year FROM education
+             WHERE user_id = u.id ORDER BY end_year DESC NULLS FIRST LIMIT 1) AS edu_end_year,
             (SELECT major FROM education
-             WHERE user_id = u.id ORDER BY end_year DESC NULLS FIRST LIMIT 1) AS edu_major,
+             WHERE user_id = u.id AND is_current = true LIMIT 1) AS edu_major,
             (SELECT degree FROM education
-             WHERE user_id = u.id ORDER BY end_year DESC NULLS FIRST LIMIT 1) AS edu_degree,
+             WHERE user_id = u.id AND is_current = true LIMIT 1) AS edu_degree,
             (SELECT uni_name FROM education
-             WHERE user_id = u.id ORDER BY end_year DESC NULLS FIRST LIMIT 1) AS edu_uni
+             WHERE user_id = u.id AND is_current = true LIMIT 1) AS edu_uni
         FROM "user" u
         ORDER BY u.kvis_year ASC NULLS LAST, u.first_name ASC
     """)).mappings().all()

@@ -331,6 +331,7 @@ def _edu_list(user: User, public_only: bool = False):
             "scholarship": e.scholarship, "scholarship_type": e.scholarship_type,
             "scholarship_bond": e.scholarship_bond,
             "start_year": e.start_year, "end_year": e.end_year,
+            "is_current": getattr(e, "is_current", False),
             "is_public": e.is_public,
             "med_school": e.med_school, "med_dual_degree": e.med_dual_degree,
             "med_dual_type": e.med_dual_type, "med_dual_field": e.med_dual_field,
