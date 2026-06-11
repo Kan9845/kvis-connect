@@ -164,13 +164,9 @@ function Portrait({ u }: { u: DirectoryCard }) {
       </div>
 
       {/* Info - text flows beneath photo */}
-      <div className="pt-2">
-        <p
-          className="text-sm font-bold leading-tight group-hover:underline decoration-2 underline-offset-[3px]"
-          style={{
-            color: "var(--kvis-ink)",
-            textDecorationColor: accentColor,
-          }}
+      <div className="pt-2 min-w-0">
+        <p className="text-sm font-bold leading-tight group-hover:underline decoration-2 underline-offset-[3px] truncate"
+          style={{ color: "var(--kvis-ink)", textDecorationColor: accentColor }}
         >
           {u.first_name} {u.last_name}
         </p>
