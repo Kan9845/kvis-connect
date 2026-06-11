@@ -68,7 +68,13 @@ function RegisterInner() {
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-if (password !== confirm) { setError("Passwords do not match."); return; }
+
+    if (!email.endsWith("@kvis.ac.th")) {
+      setError("Only @kvis.ac.th email addresses can register.");
+      return;
+    }
+
+    if (password !== confirm) { setError("Passwords do not match."); return; }
     if (password.length < 8) { setError("Password must be at least 8 characters."); return; }
     setSubmitting(true);
     try {
@@ -233,6 +239,7 @@ if (password !== confirm) { setError("Passwords do not match."); return; }
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            pattern=".*@kvis\.ac\.th"
             className={editorialInputClass}
             style={{ borderColor: INPUT_BORDER }}
             {...focusable}

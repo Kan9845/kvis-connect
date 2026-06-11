@@ -96,7 +96,11 @@ def _set_auth_cookies(response: Response, user_id: int):
 
 @router.post("/register")
 async def register(body: RegisterRequest, session: Session = Depends(get_session)):
+    if not body.email.endswith("@kvis.ac.th"):
+        raise HTTPException(400, detail="Registration is restricted to @kvis.ac.th email addresses.")
+    
     existing = session.exec(select(User).where(User.email == body.email)).first()
+
     if existing and existing.email_verified:
         raise HTTPException(400, detail="Email already registered")
 
