@@ -45,6 +45,7 @@ const CONTRIBUTORS: {
   initials: string;
   image?: string;
   instagram?: string;
+  slug: string;
 }[] = [
   {
     name: "Surapa Panjaphakdee",
@@ -53,6 +54,7 @@ const CONTRIBUTORS: {
     initials: "SP",
     image: "/bio.jpeg",
     instagram: "bio_surapa",
+    slug: "surapa-panjaphakdee",
   },
   {
     name: "Chayada Pakpoomkamonlert",
@@ -61,6 +63,7 @@ const CONTRIBUTORS: {
     initials: "CP",
     image: "/chp.jpeg",
     instagram: "cchayadap",
+    slug: "chayada-pakpoomkamonlert",
   },
   {
     name: "Naruesorn Prabpon",
@@ -69,6 +72,7 @@ const CONTRIBUTORS: {
     initials: "NP",
     image: "/narue.png",
     instagram: "l2h0_lv4l2u",
+    slug: "naruesorn-prabpon",
   },
   {
     name: "Popsuk Sumetchoengprachya",
@@ -77,6 +81,7 @@ const CONTRIBUTORS: {
     initials: "PS",
     image: "/pop.jpg",
     instagram: "p____p.x",
+    slug: "popsuk-sumetchoengprachya",
   },
 ];
 
@@ -269,7 +274,7 @@ export function AboutClient() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-lg">
                   {CONTRIBUTORS.map((c, i) => (
                     <StaggerItem key={i}>
-                      <div>
+                      <Link href={`/profile/${c.slug}`} className="group block">
                         <div
                           className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
                           style={{ aspectRatio: "1 / 1" }}
@@ -289,7 +294,7 @@ export function AboutClient() {
                         </div>
 
                         <div className="flex flex-col gap-0.5">
-                          <p className="text-xs font-semibold text-[var(--kvis-ink)]">
+                          <p className="text-xs font-semibold text-[var(--kvis-ink)] group-hover:underline underline-offset-2">
                             {c.name}
                           </p>
                           <p className="text-xs font-medium text-[var(--kvis-purple)]">
@@ -310,7 +315,7 @@ export function AboutClient() {
                             </a>
                           )}
                         </div>
-                      </div>
+                      </Link>
                     </StaggerItem>
                   ))}
                 </div>
