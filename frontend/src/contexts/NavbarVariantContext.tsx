@@ -9,7 +9,7 @@ const Ctx = createContext<{ variant: Variant; setVariant: (v: Variant) => void }
 });
 
 export function NavbarVariantProvider({ children }: { children: React.ReactNode }) {
-  const [variant, setVariant] = useState<Variant>("dark");
+  const [variant, setVariant] = useState<Variant>("light");
   return <Ctx.Provider value={{ variant, setVariant }}>{children}</Ctx.Provider>;
 }
 
