@@ -18,13 +18,11 @@ import {
   isFaculty,
   facultyPeriodLabel,
   FACULTY_COLOR,
+  cohortColor,
 } from "@/lib/utils";
-
-function kvisianAccentColor(kvis_year?: number | null): string {
-  if (!kvis_year) return "var(--kvis-purple-light)";
-  return kvis_year % 2 === 0 ? "var(--kvis-green-light)" : "var(--kvis-purple-light)";
-}
 import { motion } from "framer-motion";
+import { AvatarCanvas } from "@/components/avatar/AvatarCanvas";
+import type { AvatarConfig } from "@/lib/avatarTypes";
 
 const staggerContainer = {
   animate: { transition: { staggerChildren: 0.04 } },
@@ -105,10 +103,10 @@ function captionFaculty(u: DirectoryCard): string {
 // Portrait card
 function Portrait({ u }: { u: DirectoryCard }) {
   const faculty = isFaculty(u);
-  const color = faculty ? FACULTY_COLOR : kvisianAccentColor(effectiveKvisYear(u));
   const kvisYear = effectiveKvisYear(u);
+  const accentColor = faculty ? FACULTY_COLOR : cohortColor(kvisYear);
   const placeholderBg = faculty
-    ? "var(--kvis-purple)"
+    ? FACULTY_COLOR
     : kvisYear && kvisYear % 2 === 0
       ? "var(--kvis-green)"
       : "var(--kvis-purple)";
@@ -119,15 +117,16 @@ function Portrait({ u }: { u: DirectoryCard }) {
       ? captionStudent(u)
       : captionAlumni(u);
 
-  const badge = faculty
-    ? "Faculty"
+  const classOfLabel = faculty
+    ? null
     : u.current_grade
-      ? gradeBadgeLabel(u.current_grade)
+      ? gradeMetaLabel(u.current_grade)
       : u.kvis_year
-        ? genLabel(u.kvis_year)
+        ? `Class of ${cohortGradYear(u.kvis_year)}`
         : null;
 
-  const isGoose = u.profile_pic_url?.includes("goose") ?? false;
+  const isGoose = !!u.goose_config;
+  const gooseConfig = isGoose ? (() => { try { return JSON.parse(u.goose_config!); } catch { return null; } })() as AvatarConfig | null : null;
 
   return (
     <Link href={`/profile/${u.slug ?? u.id}`} className="group block">
@@ -136,10 +135,12 @@ function Portrait({ u }: { u: DirectoryCard }) {
         className={`relative w-full overflow-hidden ${isGoose ? "rounded-full" : ""}`}
         style={{
           aspectRatio: "1 / 1",
-          background: isGoose ? "transparent" : "var(--kvis-rule)",
+          background: isGoose ? "var(--kvis-green)" : "var(--kvis-rule)",
         }}
       >
-        {u.profile_pic_url ? (
+        {isGoose && gooseConfig ? (
+          <AvatarCanvas config={gooseConfig} backgroundColor="var(--kvis-green)" />
+        ) : u.profile_pic_url ? (
           <Image
             src={u.profile_pic_url}
             alt={`${u.first_name} ${u.last_name}`}
@@ -162,17 +163,25 @@ function Portrait({ u }: { u: DirectoryCard }) {
         )}
       </div>
 
-      {/* Info - no padding box, text flows beneath photo */}
+      {/* Info - text flows beneath photo */}
       <div className="pt-2">
         <p
           className="text-sm font-bold leading-tight group-hover:underline decoration-2 underline-offset-[3px]"
           style={{
             color: "var(--kvis-ink)",
-            textDecorationColor: color,
+            textDecorationColor: accentColor,
           }}
         >
           {u.first_name} {u.last_name}
         </p>
+        {classOfLabel && (
+          <p
+            className="text-[10px] font-bold uppercase tracking-[0.16em] mt-0.5"
+            style={{ color: accentColor }}
+          >
+            {classOfLabel}
+          </p>
+        )}
         {caption && (
           <p
             className="text-xs leading-snug mt-0.5"
@@ -210,7 +219,7 @@ function SectionHeader({
   kvis_year?: number;
   isFacultyHeader?: boolean;
 }) {
-  const color = isFacultyHeader ? FACULTY_COLOR : kvisianAccentColor(kvis_year);
+  const color = isFacultyHeader ? FACULTY_COLOR : cohortColor(kvis_year);
   return (
     <header className="flex items-baseline justify-between gap-6 pb-4 border-b border-[var(--kvis-border)] mb-6">
       <div className="flex items-baseline gap-5">

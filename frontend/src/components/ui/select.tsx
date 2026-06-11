@@ -6,7 +6,34 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Select = SelectPrimitive.Root
+const SelectDeselectCtx = React.createContext<{
+  value?: string;
+  onValueChange?: (v: string) => void;
+  setOpen?: (open: boolean) => void;
+}>({});
+
+const Select: React.FC<React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>> = ({
+  value,
+  onValueChange,
+  open: openProp,
+  onOpenChange,
+  children,
+  ...props
+}) => {
+  const [openState, setOpenState] = React.useState(false);
+  const open = openProp ?? openState;
+  const handleOpenChange = (o: boolean) => {
+    setOpenState(o);
+    onOpenChange?.(o);
+  };
+  return (
+    <SelectDeselectCtx.Provider value={{ value, onValueChange, setOpen: handleOpenChange }}>
+      <SelectPrimitive.Root value={value} onValueChange={onValueChange} open={open} onOpenChange={handleOpenChange} {...props}>
+        {children}
+      </SelectPrimitive.Root>
+    </SelectDeselectCtx.Provider>
+  );
+};
 
 const SelectGroup = SelectPrimitive.Group
 
@@ -114,24 +141,54 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName
 const SelectItem = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Item
-    ref={ref}
-    className={cn(
-      "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      className
-    )}
-    {...props}
-  >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
+>(({ className, children, value, onPointerUp, onClick, onKeyDown, ...props }, ref) => {
+  const { value: currentValue, onValueChange, setOpen } = React.useContext(SelectDeselectCtx);
+  const isSelected = currentValue === value && currentValue !== undefined && currentValue !== "";
 
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
-  </SelectPrimitive.Item>
-))
+  // Radix Select.Item has no onSelect, and useControllableState skips onChange
+  // when re-selecting the same value. So intercept the activation events
+  // (pointer-up for mouse, click for touch/pen, keydown for keyboard),
+  // preventDefault to stop Radix re-selecting, then clear + close ourselves.
+  const handleDeselect = (e: { preventDefault: () => void }) => {
+    if (isSelected && onValueChange) {
+      e.preventDefault();
+      onValueChange("");
+      setOpen?.(false);
+    }
+  };
+
+  return (
+    <SelectPrimitive.Item
+      ref={ref}
+      value={value}
+      className={cn(
+        "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        className
+      )}
+      onPointerUp={(e) => {
+        handleDeselect(e);
+        onPointerUp?.(e);
+      }}
+      onClick={(e) => {
+        handleDeselect(e);
+        onClick?.(e);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") handleDeselect(e);
+        onKeyDown?.(e);
+      }}
+      {...props}
+    >
+      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+        <SelectPrimitive.ItemIndicator>
+          <Check className="h-4 w-4" />
+        </SelectPrimitive.ItemIndicator>
+      </span>
+
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  );
+})
 SelectItem.displayName = SelectPrimitive.Item.displayName
 
 const SelectSeparator = React.forwardRef<

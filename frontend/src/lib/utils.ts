@@ -45,17 +45,17 @@ export function formatDate(iso: string) {
 }
 
 const PURPLE_SHADES = [
-  { color: 'var(--cohort-p1)', hex: '#6d28d9', soft: '#ede9fe' },
-  { color: 'var(--cohort-p2)', hex: '#7c3aed', soft: '#f0ebff' },
-  { color: 'var(--cohort-p3)', hex: '#8b5cf6', soft: '#f3f0ff' },
-  { color: 'var(--cohort-p4)', hex: '#5b21b6', soft: '#ede9fe' },
+  { color: 'var(--cohort-p1)', hex: '#6d28d9', dark: '#4c1d95', soft: '#ede9fe' },
+  { color: 'var(--cohort-p2)', hex: '#7c3aed', dark: '#5b21b6', soft: '#f0ebff' },
+  { color: 'var(--cohort-p3)', hex: '#8b5cf6', dark: '#6d28d9', soft: '#f3f0ff' },
+  { color: 'var(--cohort-p4)', hex: '#5b21b6', dark: '#3b0764', soft: '#ede9fe' },
 ];
 
 const GREEN_SHADES = [
-  { color: 'var(--cohort-g1)', hex: '#15803d', soft: '#dcfce7' },
-  { color: 'var(--cohort-g2)', hex: '#16a34a', soft: '#dcfce7' },
-  { color: 'var(--cohort-g3)', hex: '#166534', soft: '#f0fdf4' },
-  { color: 'var(--cohort-g4)', hex: '#15803d', soft: '#f0fdf4' },
+  { color: 'var(--cohort-g1)', hex: '#15803d', dark: '#14532d', soft: '#dcfce7' },
+  { color: 'var(--cohort-g2)', hex: '#16a34a', dark: '#166534', soft: '#dcfce7' },
+  { color: 'var(--cohort-g3)', hex: '#166534', dark: '#14532d', soft: '#f0fdf4' },
+  { color: 'var(--cohort-g4)', hex: '#15803d', dark: '#052e16', soft: '#f0fdf4' },
 ];
 
 function cohortShade(kvis_year: number) {
@@ -87,6 +87,11 @@ export function cohortColorHex(kvis_year: number | null | undefined): string {
 export function cohortColorSoftHex(kvis_year: number | null | undefined): string {
   if (!kvis_year) return '#ede9fe';
   return cohortShade(kvis_year).soft;
+}
+
+export function cohortColorDarkHex(kvis_year: number | null | undefined): string {
+  if (!kvis_year) return '#4c1d95';
+  return cohortShade(kvis_year).dark;
 }
 
 export function effectiveKvisYear(user: { kvis_year?: number | null; current_grade?: number | null }): number | null {

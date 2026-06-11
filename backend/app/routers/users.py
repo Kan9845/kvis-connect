@@ -162,6 +162,8 @@ async def replace_education(
         data = item.model_dump()
         if data.get("med_specialties") is not None:
             data["med_specialties"] = _json.dumps(data["med_specialties"])
+        if data.get("minors") is not None:
+            data["minors"] = _json.dumps(data["minors"])
         session.add(Education(user_id=current_user.id, **data))
     session.commit()
     await invalidate_tags("users", f"user:{current_user.slug}")
@@ -324,6 +326,7 @@ def _edu_list(user: User, public_only: bool = False):
         {
             "id": e.id, "uni_name": e.uni_name, "degree": e.degree,
             "major": e.major, "major2": e.major2, "minor1": e.minor1,
+            "minors": _json.loads(e.minors) if isinstance(e.minors, str) else (e.minors or ([e.minor1] if e.minor1 else [])),
             "country": e.country, "state": e.state, "city": e.city,
             "scholarship": e.scholarship, "scholarship_type": e.scholarship_type,
             "scholarship_bond": e.scholarship_bond,
@@ -368,7 +371,7 @@ def _user_to_public(user: User) -> dict:
         "teach_department": user.teach_department,
         "place": user.place, "place_level2": user.place_level2,
         "latitude": user.latitude, "longitude": user.longitude, "country": user.country,
-        "profile_pic_url": user.profile_pic_url, "bio": user.bio,
+        "profile_pic_url": user.profile_pic_url, "goose_config": user.goose_config, "bio": user.bio,
         "mbti": user.mbti, "zodiac": user.zodiac, "chronotype": user.chronotype,
         "interests": user.interests if user.interests_public is not False else None,
         "interests_public": user.interests_public,

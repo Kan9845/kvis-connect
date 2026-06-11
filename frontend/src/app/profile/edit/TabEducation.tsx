@@ -65,16 +65,16 @@ export function TabEducation({
           key={i}
           className="py-7 border-b border-[var(--kvis-border)]"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-baseline gap-3">
-              <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">
+          <div className="flex flex-wrap items-center justify-between gap-y-2 mb-4">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)] shrink-0">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)]">
+              <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] shrink-0">
                 Education
               </span>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 shrink-0">
               <PrivacyToggle
                 value={edu.is_public ?? true}
                 onChange={(v) =>
@@ -373,18 +373,62 @@ export function TabEducation({
                   }
                 />
               </FieldRow>
-              <FieldRow label="Minor" hint="Optional.">
-                <MajorCombobox
-                  variant="underline"
-                  value={edu.minor1 ?? ""}
-                  onChange={(v) =>
+              {(edu.minors ?? []).map((minor, mi) => (
+                <FieldRow
+                  key={mi}
+                  label={mi === 0 ? "Minor" : `Minor (${mi + 1})`}
+                  hint="Optional."
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <MajorCombobox
+                        variant="underline"
+                        value={minor}
+                        onChange={(v) =>
+                          setEducation((prev) =>
+                            prev.map((x, j) => {
+                              if (j !== i) return x;
+                              const next = [...(x.minors ?? [])];
+                              next[mi] = v;
+                              return { ...x, minors: next };
+                            }),
+                          )
+                        }
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEducation((prev) =>
+                          prev.map((x, j) => {
+                            if (j !== i) return x;
+                            const next = (x.minors ?? []).filter((_, k) => k !== mi);
+                            return { ...x, minors: next };
+                          }),
+                        )
+                      }
+                      className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </FieldRow>
+              ))}
+              <FieldRow label="">
+                <button
+                  type="button"
+                  onClick={() =>
                     setEducation((prev) =>
                       prev.map((x, j) =>
-                        j === i ? { ...x, minor1: v } : x,
+                        j === i ? { ...x, minors: [...(x.minors ?? []), ""] } : x,
                       ),
                     )
                   }
-                />
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Add minor
+                </button>
               </FieldRow>
             </>
           )}
@@ -572,16 +616,10 @@ export function TabEducation({
           onClick={() =>
             setEducation((prev) => [
               ...prev,
-              {
-                uni_name: "",
-                degree: "",
-                major: "",
-                country: "",
-                is_public: true,
-              },
+              { uni_name: "", degree: "", major: "", country: "", is_public: true },
             ])
           }
-          className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2"
+          className="h-auto rounded-none border-foreground bg-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-1.5"
         >
           <Plus className="h-3.5 w-3.5" /> Add entry
         </Button>

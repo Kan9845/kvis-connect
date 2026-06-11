@@ -12,6 +12,7 @@ export interface Education {
   is_public?: boolean;
   major2?: string;
   minor1?: string;
+  minors?: string[];
   med_school?: string;
   med_dual_degree?: boolean;
   med_dual_type?: string;
@@ -27,7 +28,7 @@ export interface Career {
   id: string;
   job_title: string;
   employer: string;
-  job_field: string;
+  job_field?: string;
   country: string;
   state?: string;
   city?: string;
@@ -84,6 +85,7 @@ export interface UserPublic extends UserCard {
   projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
   publications?: { citation: string; doi?: string }[];
   portfolio_links?: { type: string; url: string }[];
+  goose_config?: string;
 }
 
 export interface UserMe extends UserPublic {
@@ -110,6 +112,7 @@ export interface UserMe extends UserPublic {
   kvis_fav_event?: string;
   kvis_fav_area?: string;
   extra_contacts: { type: string; value: string; public: boolean }[];
+  goose_config?: string;
 }
 
 export interface GlobePin {
@@ -208,6 +211,7 @@ export interface DirectoryCard {
   teach_end_year?: number;
   is_current_teacher?: boolean;
   profile_pic_url?: string;
+  goose_config?: string;
   country?: string;
   place?: string;
   mbti?: string;

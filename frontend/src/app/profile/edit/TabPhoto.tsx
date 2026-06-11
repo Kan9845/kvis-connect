@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Upload, Check } from "lucide-react";
 import { AvatarCustomizer } from "@/components/avatar/AvatarCustomizer";
-import { AvatarPreview } from "@/components/avatar/AvatarPreview";
+import { AvatarCanvas } from "@/components/avatar/AvatarCanvas";
 import { AvatarConfig } from "@/lib/avatarTypes";
 import { cohortColorHex } from "@/lib/utils";
 import { userApi } from "@/lib/api";
@@ -148,31 +148,44 @@ export function TabPhoto({
       <div className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-section py-lg border-b border-[var(--kvis-border)] items-start">
         <div className="space-y-lg self-start">
           <div className="relative w-full max-w-[320px]">
-            <div
-              key={profileMode}
-              ref={profileMode === "goose" ? avatarRef : undefined}
-              className={`relative aspect-square overflow-hidden ${profileMode === "goose" ? "rounded-full" : ""}`}
-              style={{ background: cohortColorHex(me.kvis_year) }}
-            >
-              {profileMode === "goose" ? (
-                <div className="absolute inset-0 scale-[1.26] origin-center pointer-events-none">
-                  <AvatarPreview config={gooseConfig} backgroundColor={cohortColorHex(me.kvis_year)} />
-                </div>
-              ) : previewUrl ? (
+            {profileMode === "goose" ? (
+              <div
+                key={profileMode}
+                ref={avatarRef}
+                className="relative w-full overflow-hidden rounded-full"
+              >
+                <AvatarCanvas config={gooseConfig} backgroundColor="var(--kvis-green)" />
+              </div>
+            ) : previewUrl ? (
+              <div
+                key="upload-photo"
+                className="relative w-full overflow-hidden"
+                style={{ paddingBottom: "100%", background: cohortColorHex(me.kvis_year) }}
+              >
                 <img
                   src={previewUrl}
                   alt={`${me.first_name} ${me.last_name}`}
                   className="absolute inset-0 h-full w-full object-cover"
                 />
-              ) : (
-                <div
-                  className="absolute inset-0 flex items-center justify-center font-black text-2xl text-white"
-                  style={{ background: cohortColorHex(me.kvis_year) }}
-                >
+              </div>
+            ) : me.goose_config ? (
+              <div
+                key="upload-goose"
+                className="relative w-full overflow-hidden rounded-full"
+              >
+                <AvatarCanvas config={gooseConfig} backgroundColor="var(--kvis-green)" />
+              </div>
+            ) : (
+              <div
+                key="upload-initials"
+                className="relative w-full overflow-hidden"
+                style={{ paddingBottom: "100%", background: cohortColorHex(me.kvis_year) }}
+              >
+                <div className="absolute inset-0 flex items-center justify-center font-black text-2xl text-white">
                   {initials}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -227,7 +240,7 @@ export function TabPhoto({
                 } else if (pendingFile) {
                   try {
                     const { url } = await userApi.uploadProfilePic(pendingFile);
-                    const updated = await userApi.updateMe({ profile_pic_url: url });
+                    const updated = await userApi.updateMe({ profile_pic_url: url, goose_config: null as any });
                     onMeUpdateSuccess(qc, updated);
                     await refetch();
                     setPicPreview(url);

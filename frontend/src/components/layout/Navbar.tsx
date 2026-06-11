@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarCanvas } from "@/components/avatar/AvatarCanvas";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -115,7 +116,7 @@ function AlumniSearch({
             >
               <div
                 className="w-8 h-8 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold text-white"
-                style={{ background: "#1e3a5f", border: "2px solid #3b82f6" }}
+                style={{ background: cohortColorHex(p.kvis_year) }}
               >
                 {p.profile_pic_url ? (
                   <img
@@ -237,9 +238,15 @@ type PanelUser = {
   email: string;
   slug: string;
   profile_pic_url?: string | null;
+  goose_config?: string | null;
   is_verified?: boolean;
   kvis_year?: number | null;
 };
+
+function parseGoose(cfg?: string | null) {
+  if (!cfg) return null;
+  try { return JSON.parse(cfg); } catch { return null; }
+}
 
 function PanelDivider({ dark }: { dark: boolean }) {
   return (
@@ -372,20 +379,26 @@ function MobileNavPanel({
           {/* Identity row */}
           <div className="flex items-center gap-3 px-3 py-3">
             <Avatar className="h-9 w-9 shrink-0 shadow-sm overflow-hidden">
-              <AvatarImage
-                src={user.profile_pic_url ?? ""}
-                alt={user.first_name}
-                className="w-full h-full object-cover"
-                style={{ borderRadius: "inherit" }}
-              />
-              <AvatarFallback
-                style={{
-                  background: cohortColorHex(user.kvis_year),
-                  color: "white",
-                }}
-              >
-                {`${user.first_name[0]}${user.last_name[0]}`.toUpperCase()}
-              </AvatarFallback>
+              {parseGoose(user.goose_config) ? (
+                <AvatarCanvas config={parseGoose(user.goose_config)} backgroundColor="var(--kvis-green)" />
+              ) : (
+                <>
+                  <AvatarImage
+                    src={user.profile_pic_url ?? ""}
+                    alt={user.first_name}
+                    className="w-full h-full object-cover"
+                    style={{ borderRadius: "inherit" }}
+                  />
+                  <AvatarFallback
+                    style={{
+                      background: cohortColorHex(user.kvis_year),
+                      color: "white",
+                    }}
+                  >
+                    {`${user.first_name[0]}${user.last_name[0]}`.toUpperCase()}
+                  </AvatarFallback>
+                </>
+              )}
             </Avatar>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
@@ -487,20 +500,26 @@ export function Navbar() {
             }}
           >
             <Avatar className="h-9 w-9 cursor-pointer shadow-md overflow-hidden">
-              <AvatarImage
-                src={user.profile_pic_url ?? ""}
-                alt={user.first_name}
-                className="w-full h-full object-cover"
-                style={{ borderRadius: "inherit" }}
-              />
-              <AvatarFallback
-                style={{
-                  background: cohortColorHex(user.kvis_year),
-                  color: "white",
-                }}
-              >
-                {initials}
-              </AvatarFallback>
+              {parseGoose(user.goose_config) ? (
+                <AvatarCanvas config={parseGoose(user.goose_config)} backgroundColor="var(--kvis-green)" />
+              ) : (
+                <>
+                  <AvatarImage
+                    src={user.profile_pic_url ?? ""}
+                    alt={user.first_name}
+                    className="w-full h-full object-cover"
+                    style={{ borderRadius: "inherit" }}
+                  />
+                  <AvatarFallback
+                    style={{
+                      background: cohortColorHex(user.kvis_year),
+                      color: "white",
+                    }}
+                  >
+                    {initials}
+                  </AvatarFallback>
+                </>
+              )}
             </Avatar>
           </button>
         </DropdownMenuTrigger>

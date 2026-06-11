@@ -58,7 +58,7 @@ export function TabCareer({
           key={i}
           className="py-7 border-b border-[var(--kvis-border)]"
         >
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap items-center justify-between gap-y-2 mb-4">
             <div className="flex items-baseline gap-3">
               <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">
                 {String(i + 1).padStart(2, "0")}
@@ -75,7 +75,7 @@ export function TabCareer({
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 shrink-0">
               <PrivacyToggle
                 value={job.is_public ?? true}
                 onChange={(v) =>
@@ -88,9 +88,7 @@ export function TabCareer({
               />
               <button
                 type="button"
-                onClick={() =>
-                  setCareer((prev) => prev.filter((_, j) => j !== i))
-                }
+                onClick={() => setCareer((prev) => prev.filter((_, j) => j !== i))}
                 className="text-xs font-bold uppercase tracking-[0.22em] inline-flex items-center gap-1.5 hover:text-foreground transition-colors text-[var(--kvis-text3)]"
               >
                 <Trash2 className="h-3 w-3" /> Remove
@@ -197,29 +195,6 @@ export function TabCareer({
                 {ROLE_TYPES.map((r) => (
                   <SelectItem key={r} value={r}>
                     {r}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldRow>
-          <FieldRow label="Field">
-            <Select
-              value={job.job_field}
-              onValueChange={(v) =>
-                setCareer((prev) =>
-                  prev.map((x, j) =>
-                    j === i ? { ...x, job_field: v } : x,
-                  ),
-                )
-              }
-            >
-              <SelectTrigger className={selectTriggerCls}>
-                <SelectValue placeholder="Select field" />
-              </SelectTrigger>
-              <SelectContent>
-                {JOB_FIELDS.map((f) => (
-                  <SelectItem key={f.value} value={f.value}>
-                    {f.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -361,17 +336,10 @@ export function TabCareer({
           onClick={() =>
             setCareer((prev) => [
               ...prev,
-              {
-                job_title: "",
-                employer: "",
-                job_field: "",
-                country: "",
-                is_current: false,
-                is_public: true,
-              },
+              { job_title: "", employer: "", country: "", is_current: false, is_public: true },
             ])
           }
-          className="h-auto rounded-none border-foreground bg-transparent px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-2"
+          className="h-auto rounded-none border-foreground bg-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-1.5"
         >
           <Plus className="h-3.5 w-3.5" /> Add entry
         </Button>

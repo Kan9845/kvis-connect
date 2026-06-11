@@ -21,6 +21,7 @@ class EducationRead(BaseModel):
     is_public: bool = True
     major2: Optional[str] = None
     minor1: Optional[str] = None
+    minors: Optional[List[str]] = None
     scholarship_type: Optional[str] = None
     scholarship_bond: Optional[str] = None
     # Medical track
@@ -47,6 +48,7 @@ class EducationWrite(BaseModel):
     is_public: bool = True
     major2: Optional[str] = None
     minor1: Optional[str] = None
+    minors: Optional[List[str]] = None
     scholarship_type: Optional[str] = None
     scholarship_bond: Optional[str] = None
     # Medical track
@@ -65,7 +67,7 @@ class CareerRead(BaseModel):
     id: uuid.UUID
     job_title: str
     employer: str
-    job_field: str
+    job_field: Optional[str] = None
     country: str
     state: Optional[str] = None
     city: Optional[str] = None
@@ -82,7 +84,7 @@ class CareerRead(BaseModel):
 class CareerWrite(BaseModel):
     job_title: str
     employer: str
-    job_field: str
+    job_field: Optional[str] = None
     country: str
     state: Optional[str] = None
     city: Optional[str] = None
@@ -167,6 +169,7 @@ class UserPublic(BaseModel):
     country: Optional[str] = None
     # Profile
     profile_pic_url: Optional[str] = None
+    goose_config: Optional[str] = None
     bio: Optional[str] = None
     mbti: Optional[str] = None
     zodiac: Optional[str] = None
@@ -253,6 +256,7 @@ class UserUpdate(BaseModel):
     kvis_fav_area: Optional[str] = None
     profile_setup_done: Optional[bool] = None
     profile_pic_url: Optional[str] = None
+    goose_config: Optional[str] = None
 
 
 class UserCard(BaseModel):

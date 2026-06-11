@@ -24,10 +24,9 @@ export function AvatarOption({ asset, category, selected, onClick }: Props) {
     >
       {/* bg color behind everything */}
       {!isBackground && (
-        <img
-          src="/goose/bg_blue.png"
-          alt=""
-          className="absolute inset-0 w-full h-full object-contain scale-150"
+        <div
+          className="absolute inset-0"
+          style={{ background: "var(--kvis-green)" }}
         />
       )}
 

@@ -22,6 +22,7 @@ class Education(SQLModel, table=True):
     is_public: bool = True
     major2: Optional[str] = None
     minor1: Optional[str] = None
+    minors: Optional[str] = None   # JSON list
     scholarship_type: Optional[str] = None
     scholarship_bond: Optional[str] = None
 
@@ -43,7 +44,7 @@ class Career(SQLModel, table=True):
 
     job_title: str
     employer: str
-    job_field: str
+    job_field: Optional[str] = None
     country: str
     state: Optional[str] = None
     city: Optional[str] = None
@@ -173,6 +174,7 @@ class User(SQLModel, table=True):
 
     # Profile
     profile_pic_url: Optional[str] = None
+    goose_config: Optional[str] = None   # JSON
     bio: Optional[str] = None
     mbti: Optional[str] = None
     zodiac: Optional[str] = None

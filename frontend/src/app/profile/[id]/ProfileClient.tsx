@@ -7,11 +7,12 @@ import { userApi, blogApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
-import { degreeLabel, jobFieldLabel } from "@/lib/constants/options";
+import { degreeLabel } from "@/lib/constants/options";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 import type { BlogRead } from "@/lib/types";
 import { cohortColorHex, cohortColorSoftHex, formatDate, cohortLabel, isFaculty, facultyPeriodLabel, FACULTY_COLOR, FACULTY_COLOR_HEX, FACULTY_COLOR_SOFT_HEX } from "@/lib/utils";
 import { RESEARCH_CATEGORIES } from "@/app/profile/edit/constants";
+import { AvatarCanvas } from "@/components/avatar/AvatarCanvas";
 
 function parseInterests(t?: string) {
   return (t ?? "").split(",").map((x) => x.trim()).filter(Boolean);
@@ -249,22 +250,26 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 style={{ gridTemplateColumns: "auto 1fr" }}>
 
                 {/* Avatar */}
-                <div className="relative overflow-hidden shrink-0 w-20 sm:w-28 md:w-40">
-                  <div className="relative w-full" style={{ paddingBottom: "100%" }}>
-                    {user.profile_pic_url ? (
-                      <Image src={user.profile_pic_url} alt={`${user.first_name} ${user.last_name}`}
-                        fill sizes="(max-width: 640px) 80px, (max-width: 768px) 112px, 160px"
-                        className="object-cover" priority />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center font-black text-2xl sm:text-3xl md:text-4xl"
-                        style={{
-                          background: isFaculty(user) ? FACULTY_COLOR_HEX : cohortColorHex(user.kvis_year),
-                          color: "white",
-                        }}>
-                        {initials}
-                      </div>
-                    )}
-                  </div>
+                <div className={`relative overflow-hidden shrink-0 w-20 sm:w-28 md:w-40 ${user.goose_config ? "rounded-full" : ""}`}>
+                  {user.goose_config ? (
+                    <AvatarCanvas config={(() => { try { return JSON.parse(user.goose_config); } catch { return {}; } })()} backgroundColor="var(--kvis-green)" />
+                  ) : (
+                    <div className="relative w-full" style={{ paddingBottom: "100%" }}>
+                      {user.profile_pic_url ? (
+                        <Image src={user.profile_pic_url} alt={`${user.first_name} ${user.last_name}`}
+                          fill sizes="(max-width: 640px) 80px, (max-width: 768px) 112px, 160px"
+                          className="object-cover" priority />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center font-black text-2xl sm:text-3xl md:text-4xl"
+                          style={{
+                            background: isFaculty(user) ? FACULTY_COLOR_HEX : cohortColorHex(user.kvis_year),
+                            color: "white",
+                          }}>
+                          {initials}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Name + role + tags */}
@@ -407,7 +412,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                       : [degreeLabel(e.degree), majors].filter(Boolean).join(" / ");
                     const metaParts: string[] = [];
                     if (place) metaParts.push(place);
-                    if (!isMed && e.minor1) metaParts.push(`Minor: ${e.minor1}`);
+                    if (!isMed) {
+                      const allMinors = (e.minors && e.minors.length > 0) ? e.minors : (e.minor1 ? [e.minor1] : []);
+                      if (allMinors.length > 0) metaParts.push(`Minor: ${allMinors.join(", ")}`);
+                    }
                     if (isMed && (e.med_specialties ?? []).length > 0) metaParts.push((e.med_specialties ?? []).join(", "));
                     if (isMed && e.med_hospital) metaParts.push(e.med_hospital);
                     if (e.scholarship) metaParts.push(`${e.scholarship} Scholar`);
@@ -434,7 +442,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 <StaggerList>
                   {user.career.map((c, i) => {
                     const place = [c.city, c.state, c.country].filter(Boolean).join(", ");
-                    const subtitle = [c.employer, jobFieldLabel(c.job_field)].filter(Boolean).join(" / ");
+                    const subtitle = c.employer ?? "";
                     const metaParts: string[] = [];
                     if (place) metaParts.push(place);
                     if (c.company_type) metaParts.push(c.company_type);

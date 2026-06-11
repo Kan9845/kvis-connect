@@ -55,9 +55,15 @@ export default function EditPageInner() {
   const [picPreview, setPicPreview] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [tab, setTab] = useState<Tab>("general");
-  const [gooseConfig, setGooseConfig] = useState<AvatarConfig>(defaultAvatar);
+  const isGooseProfile = !!me?.goose_config;
+  const [gooseConfig, setGooseConfig] = useState<AvatarConfig>(() => {
+    if (me?.goose_config) {
+      try { return JSON.parse(me.goose_config); } catch { /* fall through */ }
+    }
+    return defaultAvatar;
+  });
   const avatarRef = useRef<HTMLDivElement>(null);
-  const [profileMode, setProfileMode] = useState<"upload" | "goose">("upload");
+  const [profileMode, setProfileMode] = useState<"upload" | "goose">(isGooseProfile ? "goose" : "upload");
 
   // Extra contacts state
   const [extraContacts, setExtraContacts] = useState<
@@ -278,61 +284,15 @@ export default function EditPageInner() {
   const handleUseGooseProfile = async () => {
     if (!me) return;
     try {
-      const size = 600;
-      const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext("2d")!;
-      ctx.beginPath();
-      ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.fillStyle = cohortColorHex(me.kvis_year);
-      ctx.fillRect(0, 0, size, size);
-      const drawLayer = (src: string, scale = 1.26) =>
-        new Promise<void>((res, rej) => {
-          const img = new window.Image();
-          img.crossOrigin = "anonymous";
-          img.onload = () => {
-            const off = (size * (scale - 1)) / 2;
-            ctx.drawImage(img, -off, -off, size * scale, size * scale);
-            res();
-          };
-          img.onerror = (e) => {
-            console.warn("Failed to load", src, e);
-            res();
-          };
-          img.src = src;
-        });
-      const layerOrder = [
-        "eyes",
-        "brows",
-        "hair",
-        "head",
-        "glasses",
-        "cheek",
-        "neck",
-        "hand",
-      ] as const;
-      await drawLayer("/goose/goose_base.png");
-      for (const layer of layerOrder) {
-        const asset = gooseConfig[layer];
-        if (asset) await drawLayer(`/goose/${asset}.png`);
-      }
-      await drawLayer("/goose/layout.png");
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], "goose-profile.png", {
-          type: "image/png",
-        });
-        const { url } = await userApi.uploadProfilePic(file);
-        const updated = await userApi.updateMe({ profile_pic_url: url });
-        onMeUpdateSuccess(qc, updated);
-        await refetch();
-        setPicPreview(url);
-        notify.success("Goose profile updated");
-      }, "image/png");
-    } catch (err: any) {
-      notify.error("Failed to generate goose profile");
+      const updated = await userApi.updateMe({
+        goose_config: JSON.stringify(gooseConfig),
+        profile_pic_url: null as any,
+      });
+      onMeUpdateSuccess(qc, updated);
+      await refetch();
+      notify.success("Goose profile updated");
+    } catch {
+      notify.error("Failed to save goose profile");
     }
   };
 
@@ -362,7 +322,7 @@ export default function EditPageInner() {
   return (
     <div className="min-h-full bg-background">
       <div
-        className={`mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout ${isSetup ? "pb-32" : ""}`}
+        className={`mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout ${isSetup ? "pb-28 sm:pb-44 lg:pb-44" : ""}`}
       >
         <header className="pb-7 border-b border-[var(--sep-strong)]">
           <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center gap-1">
@@ -538,119 +498,113 @@ export default function EditPageInner() {
         )}
       </div>
       {isSetup && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--kvis-border)] bg-background/95 backdrop-blur px-6 py-4 flex items-center justify-between gap-4">
-          {/* Step indicator */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-[var(--kvis-border)]">
           {(() => {
             const tabs = isStudent
               ? ["general", "research", "personal"]
               : ["general", "education", "career", "research", "personal"];
             const idx = tabs.indexOf(tab);
+            const isLast = idx === tabs.length - 1;
+
+            const handleSave = async () => {
+              try {
+                if (tab === "general") await handleSubmit(saveGeneral)();
+                else if (tab === "education") await saveEducation();
+                else if (tab === "career") await saveCareer();
+                else if (tab === "research") await saveResearch();
+                else if (tab === "personal") await savePersonal();
+              } catch { /* don't block */ }
+            };
+
             return (
-              <div className="flex items-center gap-3">
-                <span
-                  className="font-mono font-black text-2xl tabular-nums"
-                  style={{
-                    color: "var(--kvis-green-light)",
-                    letterSpacing: "-0.02em",
-                  }}
-                >
-                  {String(idx + 1).padStart(2, "0")}
-                </span>
-                <div className="flex gap-1">
+              <>
+                {/* Progress strip - full width, visible on all sizes */}
+                <div className="flex">
                   {tabs.map((t, j) => (
                     <div
                       key={t}
-                      className="h-1 w-6 transition-colors"
+                      className="h-[3px] flex-1 transition-colors duration-300"
                       style={{
-                        background:
-                          j <= idx
-                            ? "var(--kvis-purple)"
-                            : "var(--kvis-border)",
+                        background: j <= idx ? "var(--kvis-purple)" : "var(--kvis-rule)",
                       }}
                     />
                   ))}
                 </div>
-                <span
-                  className="text-xs uppercase tracking-[0.22em] hidden sm:block"
-                  style={{ color: "var(--kvis-text2)" }}
-                >
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </span>
-              </div>
+
+                {/* Main row */}
+                <div className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-3">
+                  {/* Step label */}
+                  <div className="flex items-center gap-4 min-w-0">
+                    <span
+                      className="font-mono font-black text-3xl sm:text-4xl tabular-nums leading-none shrink-0"
+                      style={{ color: "var(--kvis-green-light)", letterSpacing: "-0.04em" }}
+                    >
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.22em] truncate"
+                        style={{ color: "var(--kvis-text3)" }}>
+                        Step {idx + 1} of {tabs.length}
+                      </p>
+                      <p className="text-xs sm:text-sm font-semibold truncate text-foreground">
+                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {idx > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setTab(tabs[idx - 1] as Tab)}
+                        className="flex items-center gap-1 px-3 sm:px-5 py-2.5 sm:py-3 text-xs font-bold uppercase tracking-[0.24em] border border-[var(--kvis-border)] bg-transparent text-foreground hover:bg-foreground hover:text-background transition-colors"
+                      >
+                        <ArrowLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                        <span className="hidden xs:inline">Back</span>
+                      </button>
+                    )}
+                    {isLast ? (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await handleSave();
+                          try {
+                            await userApi.updateMe({ profile_setup_done: true });
+                            await refetch();
+                            router.push("/kvisian");
+                          } catch {
+                            notify.error("Something went wrong, try again.");
+                          }
+                        }}
+                        className="flex items-center gap-1.5 px-4 sm:px-8 py-2.5 sm:py-3 text-xs font-bold uppercase tracking-[0.24em] bg-foreground text-background hover:bg-foreground/90 transition-opacity"
+                      >
+                        <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                        <span className="sm:hidden">Done</span>
+                        <span className="hidden sm:inline">Done - take me in</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await handleSave();
+                          setTab(tabs[idx + 1] as Tab);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="flex items-center gap-1.5 px-4 sm:px-8 py-2.5 sm:py-3 text-xs font-bold uppercase tracking-[0.24em] bg-foreground text-background hover:bg-foreground/90 transition-opacity"
+                      >
+                        <span className="sm:hidden">Next</span>
+                        <span className="hidden sm:inline">
+                          {tabs[idx + 1].charAt(0).toUpperCase() + tabs[idx + 1].slice(1)}
+                        </span>
+                        <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </>
             );
           })()}
-
-          <div className="flex items-center gap-3">
-            {tab !== "general" && (
-              <button
-                type="button"
-                onClick={() => {
-                  const tabs = isStudent
-                    ? ["general", "research", "personal"]
-                    : ["general", "education", "career", "research", "personal"];
-                  const idx = tabs.indexOf(tab);
-                  if (idx > 0) setTab(tabs[idx - 1] as Tab);
-                }}
-                className="flex items-center gap-1.5 px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] border border-[var(--kvis-border)] bg-transparent text-foreground hover:bg-foreground hover:text-background transition-colors"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" /> Back
-              </button>
-            )}
-            {(() => {
-              const tabs = isStudent
-                ? ["general", "research", "personal"]
-                : ["general", "education", "career", "research", "personal"];
-              const isLast = tabs.indexOf(tab) === tabs.length - 1;
-              return isLast ? (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      if (tab === "general") await handleSubmit(saveGeneral)();
-                      else if (tab === "education") await saveEducation();
-                      else if (tab === "career") await saveCareer();
-                      else if (tab === "research") await saveResearch();
-                      else if (tab === "personal") await savePersonal();
-                    } catch {
-                      /* ignore */
-                    }
-                    try {
-                      await userApi.updateMe({ profile_setup_done: true });
-                      await refetch();
-                      router.push("/kvisian");
-                    } catch {
-                      notify.error("Something went wrong, try again.");
-                    }
-                  }}
-                  className="flex items-center gap-2 px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity"
-                >
-                  <Check className="h-3.5 w-3.5" /> Done - take me in
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const idx = tabs.indexOf(tab);
-                    const next = tabs[idx + 1] as Tab;
-                    try {
-                      if (tab === "general") await handleSubmit(saveGeneral)();
-                      else if (tab === "education") await saveEducation();
-                      else if (tab === "career") await saveCareer();
-                      else if (tab === "research") await saveResearch();
-                      else if (tab === "personal") await savePersonal();
-                    } catch {
-                      /* don't block */
-                    }
-                    setTab(next);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                  className="flex items-center gap-2 px-8 py-3 text-xs font-bold uppercase tracking-[0.28em] bg-foreground text-background hover:bg-foreground/90 transition-opacity"
-                >
-                  Next <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              );
-            })()}
-          </div>
         </div>
       )}
     </div>

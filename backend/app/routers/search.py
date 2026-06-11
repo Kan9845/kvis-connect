@@ -24,7 +24,7 @@ def directory_list(session: Session = Depends(get_session)):
             u.id::text, u.slug, u.first_name, u.last_name, u.kvis_year,
             u.current_grade,
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
-            u.profile_pic_url, u.country, u.place, u.mbti, u.interests,
+            u.profile_pic_url, u.goose_config, u.country, u.place, u.mbti, u.interests,
             u.is_verified,
             (SELECT job_title FROM career
              WHERE user_id = u.id ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_title,
@@ -166,6 +166,7 @@ def _to_card(user: User) -> dict:
                 "scholarship": e.scholarship, "start_year": e.start_year,
                 "end_year": e.end_year, "is_public": getattr(e, "is_public", True),
                 "major2": getattr(e, "major2", None), "minor1": getattr(e, "minor1", None),
+                "minors": (lambda v, m1: __import__("json").loads(v) if isinstance(v, str) else (v or ([m1] if m1 else [])))(getattr(e, "minors", None), getattr(e, "minor1", None)),
             }
             for e in user.education
         ],
