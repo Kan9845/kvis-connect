@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             <RQProviders>
               <NavbarVariantProvider>
-                <div className="h-screen h-dvh flex flex-col overflow-hidden">
+                <div className="h-dvh flex flex-col overflow-hidden">
                   <Navbar />
                   <main className="min-h-0 flex-1 relative overflow-y-auto">{children}</main>
                 </div>
