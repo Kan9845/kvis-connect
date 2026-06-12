@@ -198,6 +198,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   const initials = `${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase();
   const interests = parseInterests(user.interests);
   const currentRole = user.career?.find((c) => c.is_current) ?? user.career?.[0];
+  const currentEdu = user.education?.find((e) => e.is_current);
   const ringColor = isFaculty(user) ? FACULTY_COLOR : cohortColorHex(user.kvis_year);
 
   // Group research interests by category
@@ -312,9 +313,11 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
                   {(currentRole || user.place || user.place_level2 || user.country) && (
                     <p className="text-sm mt-3 flex items-center flex-wrap gap-1" style={{ color: "var(--kvis-text2)" }}>
-                      {currentRole && (
+                      {currentEdu ? (
+                        <span>{currentEdu.major}{currentEdu.uni_name && ` @ ${currentEdu.uni_name}`}</span>
+                      ) : currentRole ? (
                         <span>{currentRole.job_title}{currentRole.employer && ` @ ${currentRole.employer}`}</span>
-                      )}
+                      ) : null}
                       {(user.place || user.place_level2 || user.country) && (
                         <>
                           {currentRole && <Dot className="h-3 w-3 shrink-0" aria-hidden />}

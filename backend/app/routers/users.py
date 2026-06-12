@@ -22,13 +22,56 @@ from app.schemas.user import (
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+COUNTRY_CODES = {
+    "Afghanistan": "af", "Albania": "al", "Algeria": "dz", "Andorra": "ad",
+    "Angola": "ao", "Argentina": "ar", "Armenia": "am", "Australia": "au",
+    "Austria": "at", "Azerbaijan": "az", "Bahrain": "bh", "Bangladesh": "bd",
+    "Belarus": "by", "Belgium": "be", "Belize": "bz", "Benin": "bj",
+    "Bhutan": "bt", "Bolivia": "bo", "Bosnia and Herzegovina": "ba",
+    "Botswana": "bw", "Brazil": "br", "Brunei": "bn", "Bulgaria": "bg",
+    "Burkina Faso": "bf", "Burundi": "bi", "Cambodia": "kh", "Cameroon": "cm",
+    "Canada": "ca", "Chile": "cl", "China": "cn", "Colombia": "co",
+    "Costa Rica": "cr", "Croatia": "hr", "Cuba": "cu", "Cyprus": "cy",
+    "Czech Republic": "cz", "Denmark": "dk", "Ecuador": "ec", "Egypt": "eg",
+    "El Salvador": "sv", "Estonia": "ee", "Ethiopia": "et", "Finland": "fi",
+    "France": "fr", "Georgia": "ge", "Germany": "de", "Ghana": "gh",
+    "Greece": "gr", "Guatemala": "gt", "Honduras": "hn", "Hong Kong": "hk",
+    "Hungary": "hu", "Iceland": "is", "India": "in", "Indonesia": "id",
+    "Iran": "ir", "Iraq": "iq", "Ireland": "ie", "Israel": "il",
+    "Italy": "it", "Jamaica": "jm", "Japan": "jp", "Jordan": "jo",
+    "Kazakhstan": "kz", "Kenya": "ke", "Kuwait": "kw", "Kyrgyzstan": "kg",
+    "Laos": "la", "Latvia": "lv", "Lebanon": "lb", "Libya": "ly",
+    "Liechtenstein": "li", "Lithuania": "lt", "Luxembourg": "lu",
+    "Macau": "mo", "Malaysia": "my", "Maldives": "mv", "Malta": "mt",
+    "Mexico": "mx", "Moldova": "md", "Monaco": "mc", "Mongolia": "mn",
+    "Montenegro": "me", "Morocco": "ma", "Mozambique": "mz", "Myanmar": "mm",
+    "Namibia": "na", "Nepal": "np", "Netherlands": "nl", "New Zealand": "nz",
+    "Nicaragua": "ni", "Nigeria": "ng", "North Korea": "kp",
+    "North Macedonia": "mk", "Norway": "no", "Oman": "om", "Pakistan": "pk",
+    "Palestine": "ps", "Panama": "pa", "Paraguay": "py", "Peru": "pe",
+    "Philippines": "ph", "Poland": "pl", "Portugal": "pt", "Qatar": "qa",
+    "Romania": "ro", "Russia": "ru", "Rwanda": "rw", "Saudi Arabia": "sa",
+    "Senegal": "sn", "Serbia": "rs", "Singapore": "sg", "Slovakia": "sk",
+    "Slovenia": "si", "Somalia": "so", "South Africa": "za",
+    "South Korea": "kr", "South Sudan": "ss", "Spain": "es", "Sri Lanka": "lk",
+    "Sudan": "sd", "Sweden": "se", "Switzerland": "ch", "Syria": "sy",
+    "Taiwan": "tw", "Tajikistan": "tj", "Tanzania": "tz", "Thailand": "th",
+    "Tunisia": "tn", "Turkey": "tr", "Turkmenistan": "tm", "Uganda": "ug",
+    "Ukraine": "ua", "United Arab Emirates": "ae", "United Kingdom": "gb",
+    "United States": "us", "Uruguay": "uy", "Uzbekistan": "uz",
+    "Venezuela": "ve", "Vietnam": "vn", "Yemen": "ye", "Zambia": "zm",
+    "Zimbabwe": "zw",
+}
 
-async def _geocode(query: str) -> tuple[float, float] | None:
+async def _geocode(query: str, country: str = None) -> tuple[float, float] | None:
     try:
+        params = {"q": query, "format": "json", "limit": 1}
+        if country and country in COUNTRY_CODES:
+            params["countrycodes"] = COUNTRY_CODES[country]
         async with httpx.AsyncClient(timeout=5.0) as client:
             r = await client.get(
                 "https://nominatim.openstreetmap.org/search",
-                params={"q": query, "format": "json", "limit": 1},
+                params=params,
                 headers={"User-Agent": "kvis-connect/1.0 (contact@kvis.ac.th)"},
             )
             results = r.json()
@@ -83,13 +126,13 @@ async def update_me(
         user.slug = unique_user_slug(session, user.first_name, user.last_name, exclude_id=user.id)
     # Geocode when any location field changes — use most specific available
     if any(k in data for k in ("place", "place_level2", "country")):
-        geo_query = (
-            user.place
-            or user.place_level2
-            or user.country
-        )
+        geo_query = ", ".join(filter(None, [
+            user.place,
+            user.place_level2,
+            user.country,
+        ]))
         if geo_query:
-            coords = await _geocode(geo_query)
+            coords = await _geocode(geo_query, user.country)
             if coords:
                 user.latitude, user.longitude = coords
     user.updated_at = datetime.utcnow()

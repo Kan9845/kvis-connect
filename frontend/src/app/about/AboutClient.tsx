@@ -158,26 +158,13 @@ export function AboutClient() {
                   style={{ lineHeight: 1.85, maxWidth: "62ch" }}
                 >
                   <p>
-                    Founded in 2014 by PTT Public Company Limited and the STEM
-                    Education Foundation, Kamnoetvidya Science Academy - KVIS -
-                    is Thailand&apos;s first fully residential science high
-                    school built to identify and nurture the country&apos;s most
-                    gifted students in science and mathematics.
+                    Founded in 2014 through the support of the PTT Group, Kamnoetvidya Science Academy (KVIS) is a private boarding high school (Grades 10–12) located in Rayong as part of the Eastern Economic Corridor of Innovation (EECi) project. The school was established to support upper secondary students who show a strong aptitude for mathematics and science, providing an education with English as the main language of instruction. To ensure that talented students from various backgrounds can access these opportunities, the school provides 100% scholarships to its students.
                   </p>
                   <p>
-                    The campus sits in the Eastern Science City in Rayong,
-                    designed from the ground up for hands-on research. Every
-                    admitted student receives a full scholarship: tuition,
-                    housing, and meals for the entire three-year program.
-                    Admission is intensely competitive - fewer than 72 students
-                    are selected from the national pool each year.
+                    The school&apos;s goal is to contribute to Thailand&apos;s scientific community by helping prepare students for further studies at research universities. Through a focused curriculum and academic collaboration with external organizations, communities, and other schools, KVIS works to support the country&apos;s need for skilled personnel in science and technology. The institution strives to be a helpful part of the educational ecosystem, sharing resources and learning alongside its peers and partners.
                   </p>
                   <p>
-                    Graduates have gone on to institutions including MIT,
-                    Caltech, ETH Zürich, and Oxford, returning expertise to
-                    Thailand&apos;s science and technology landscape. The alumni
-                    community is small, global, and tightly connected -
-                    qualities that KVIS Connect is built to sustain.
+                    Beyond academic learning, the school places a strong emphasis on nurturing well-rounded individuals who are mindful of their social responsibilities. Students are encouraged to care for their physical and mental health, appreciate arts and culture, and develop a genuine love for lifelong research. Ultimately, the hope is that graduates will use their education to give back to society, collaborating with others to help build a sustainable, thoughtful, and harmonious community.
                   </p>
                 </div>
               </div>
