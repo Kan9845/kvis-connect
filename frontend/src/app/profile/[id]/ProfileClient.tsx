@@ -284,7 +284,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 </div>
 
                 {/* Name + role + tags */}
-                <div className="min-w-0 pt-1">
+                <div className="min-w-0 pt-1 overflow-hidden">
                   <div className="flex items-center gap-sm mb-3 flex-wrap">
                     {isFaculty(user) ? (
                       <>
@@ -312,7 +312,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     )}
                   </div>
 
-                  <h1 className="font-display text-4xl sm:text-5xl font-black tracking-[-0.035em] leading-[0.9] text-foreground">
+                  <h1 className="font-display text-4xl sm:text-5xl font-black tracking-[-0.035em] leading-[0.9] text-foreground break-words">
                     {user.first_name} {user.last_name}
                     {user.nickname && user.nickname_public && (
                       <span className="font-normal text-2xl sm:text-3xl ml-2" style={{ color: "var(--kvis-text3)" }}>
