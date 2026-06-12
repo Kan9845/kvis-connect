@@ -422,6 +422,15 @@ export default function StatsClient() {
     [filtered],
   );
 
+  const totalWithMajor = useMemo(
+    () =>
+      filtered.reduce((s, u) => {
+        const e = primaryEducation(u);
+        return e?.major ? s + 1 : s;
+      }, 0),
+    [filtered],
+  );
+
   const stemCount = useMemo(
     () =>
       filtered.reduce((s, u) => {
@@ -440,8 +449,8 @@ export default function StatsClient() {
       const f = classifyFaculty(e.major);
       c.set(f, (c.get(f) ?? 0) + 1);
     });
-    return toRanked(c, totalEdu);
-  }, [filtered, totalEdu]);
+    return toRanked(c, totalWithMajor);
+  }, [filtered, totalWithMajor]);
 
   const uniRanked = useMemo(() => {
     const c = new Map<string, number>();
@@ -457,7 +466,7 @@ export default function StatsClient() {
     const c = new Map<string, number>();
     filtered.forEach((u) => {
       const e = primaryEducation(u);
-      const country = e?.country ?? u.country;
+      const country = e?.country;
       if (!country) return;
       c.set(country, (c.get(country) ?? 0) + 1);
     });
