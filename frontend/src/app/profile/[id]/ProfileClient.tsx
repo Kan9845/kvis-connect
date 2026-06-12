@@ -195,6 +195,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   }
 
   const isMe = me?.slug === slug;
+  const canSee = (isPublic: boolean | undefined) => (isPublic ?? true) || !!me;
   const initials = `${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase();
   const interests = parseInterests(user.interests);
   const currentRole = user.career?.find((c) => c.is_current) ?? user.career?.[0];
@@ -210,6 +211,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
     .filter(g => g.matched.length > 0);
 
   const contacts: { label: string; display: string; href: string }[] = [];
+  if (user.contact_email && canSee(user.contact_email_public)) contacts.push({ label: "Email", display: user.contact_email, href: `mailto:${user.contact_email}` });
   if (user.linkedin_url) contacts.push({ label: "LinkedIn", display: hostname(user.linkedin_url), href: user.linkedin_url });
   if (user.facebook_url) contacts.push({ label: "Facebook", display: hostname(user.facebook_url), href: user.facebook_url });
   if (user.instagram_url) contacts.push({ label: "Instagram", display: hostname(user.instagram_url), href: user.instagram_url });

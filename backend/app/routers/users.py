@@ -419,6 +419,8 @@ def _user_to_public(user: User) -> dict:
         "mbti": user.mbti, "zodiac": user.zodiac, "chronotype": user.chronotype,
         "interests": user.interests if user.interests_public is not False else None,
         "interests_public": user.interests_public,
+        "contact_email": user.contact_email,
+        "contact_email_public": user.contact_email_public,
         "facebook_url": user.facebook_url, "linkedin_url": user.linkedin_url,
         "instagram_url": user.instagram_url,
         "website_url": user.website_url, "is_verified": user.is_verified,

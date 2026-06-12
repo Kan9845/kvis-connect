@@ -179,6 +179,8 @@ class UserPublic(BaseModel):
     interests: Optional[str] = None
     interests_public: bool = True
     # Socials
+    contact_email: Optional[str] = None
+    contact_email_public: bool = True
     facebook_url: Optional[str] = None
     linkedin_url: Optional[str] = None
     instagram_url: Optional[str] = None

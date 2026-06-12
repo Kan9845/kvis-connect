@@ -71,6 +71,8 @@ export interface UserPublic extends UserCard {
   latitude?: number;
   longitude?: number;
   bio?: string;
+  contact_email?: string | null;
+  contact_email_public?: boolean;
   facebook_url?: string;
   linkedin_url?: string;
   website_url?: string;
