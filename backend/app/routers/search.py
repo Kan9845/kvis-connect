@@ -23,9 +23,12 @@ def directory_list(session: Session = Depends(get_session)):
         SELECT
             u.id::text, u.slug, u.first_name, u.last_name, u.kvis_year,
             u.current_grade,
+            u.hobbies,
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
             u.profile_pic_url, u.goose_config, u.country, u.place, u.mbti, u.interests,
             u.is_verified,
+            (SELECT string_agg(interest, ' ') FROM research_interest
+             WHERE user_id = u.id) AS research_interests_text,
             (SELECT job_title FROM career
          WHERE user_id = u.id 
          ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_title,

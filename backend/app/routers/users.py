@@ -439,6 +439,10 @@ def _user_to_public(user: User) -> dict:
         ],
         "created_at": user.created_at,
         "education": _edu_list(user, public_only=True), "career": _career_list(user, public_only=True),
+        "hobbies": (lambda h: __import__('json').loads(h) if isinstance(h, str) else h)(user.hobbies) if user.hobbies else None,
+        "kvis_fav_menu": user.kvis_fav_menu,
+        "kvis_fav_event": user.kvis_fav_event,
+        "kvis_fav_area": user.kvis_fav_area,
     }
 
 

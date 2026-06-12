@@ -542,6 +542,8 @@ function KvisianInner() {
           u.job_field,
           u.edu_major,
           u.edu_uni,
+          u.hobbies ? (typeof u.hobbies === 'string' ? u.hobbies : JSON.stringify(u.hobbies)) : null,
+          u.research_interests_text,
         ]
           .filter(Boolean)
           .join(" ")

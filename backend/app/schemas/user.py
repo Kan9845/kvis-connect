@@ -193,6 +193,11 @@ class UserPublic(BaseModel):
     education: List[EducationRead] = []
     career: List[CareerRead] = []
     created_at: datetime
+    # KVIS-only (visible to logged-in users, filtered on frontend)
+    hobbies: Optional[Any] = None
+    kvis_fav_menu: Optional[str] = None
+    kvis_fav_event: Optional[str] = None
+    kvis_fav_area: Optional[str] = None
 
 
 class UserMe(UserPublic):

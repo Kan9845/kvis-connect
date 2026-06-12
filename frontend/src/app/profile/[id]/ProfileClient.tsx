@@ -225,6 +225,12 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
   const hasPersonality = !!user.zodiac || !!user.chronotype;
 
+  const hasHobbies = !!me && !!user.hobbies && Object.values(
+    typeof user.hobbies === 'string' ? JSON.parse(user.hobbies) : user.hobbies
+  ).some((v: any) => Array.isArray(v) ? v.length > 0 : !!v);
+
+  const hasNostalgia = !!me && !!(user.kvis_fav_menu || user.kvis_fav_event || user.kvis_fav_area);
+
   const sections: { key: string; label: string }[] = [];
   if (user.bio) sections.push({ key: "bio", label: "About" });
   if (user.education?.length) sections.push({ key: "education", label: "Schooling" });
@@ -232,11 +238,13 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   if (hasResearch) sections.push({ key: "research", label: "Research" });
   if (contacts.length) sections.push({ key: "contact", label: "Get in touch" });
   if (hasPersonality) sections.push({ key: "personality", label: "Vibe" });
+  if (hasHobbies) sections.push({ key: "hobbies", label: "Hobbies" });
+  if (hasNostalgia) sections.push({ key: "nostalgia", label: "KVIS Nostalgia" });  // 👈 here
   if (userBlogs.length) sections.push({ key: "posts", label: "Writing" });
 
   const numeralFor = (key: string) => {
     const idx = sections.findIndex((s) => s.key === key);
-    return ["I.", "II.", "III.", "IV.", "V.", "VI.", "VII.", "VIII."][idx] ?? "-";
+    return ["I.", "II.", "III.", "IV.", "V.", "VI.", "VII.", "VIII.", "IX."][idx] ?? "-";
   };
 
   return (
@@ -605,6 +613,63 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     <div>
                       <p className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-1">Chronotype</p>
                       <p className="text-2xl font-bold text-foreground tracking-[-0.01em]">{user.chronotype}</p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            </FadeUp>
+          )}
+
+          {/* ── HOBBIES ─────────────────────────────────────────────────────── */}
+          {hasHobbies && (
+            <FadeUp>
+              <section>
+                <SectionHead numeral={numeralFor("hobbies")} kicker="Hobbies & Interests" />
+                <div className="pb-lg border-b border-[var(--kvis-border)]">
+                  {Object.entries(typeof user.hobbies === 'string' ? JSON.parse(user.hobbies) : user.hobbies)
+                    .filter(([_, v]: any) => Array.isArray(v) ? v.length > 0 : !!v)
+                    .map(([category, items]: any) => (
+                      <div key={category} className="pt-lg">
+                        <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--kvis-text3)] mb-3">
+                          {category}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {(Array.isArray(items) ? items : [items]).map((item: string) => (
+                            <span key={item}
+                              className="px-2.5 py-1 text-xs font-semibold border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </section>
+            </FadeUp>
+          )}
+
+          {/* ── KVIS NOSTALGIA ──────────────────────────────────────────────── */}
+          {!!me && (user.kvis_fav_menu || user.kvis_fav_event || user.kvis_fav_area) && (
+            <FadeUp>
+              <section>
+                <SectionHead numeral={numeralFor("nostalgia")} kicker="KVIS Nostalgia" />
+                <div className="flex items-start gap-2xl flex-wrap pb-lg border-b border-[var(--kvis-border)]">
+                  {user.kvis_fav_menu && (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-1">Fav Menu</p>
+                      <p className="text-2xl font-bold text-foreground tracking-[-0.01em]">{user.kvis_fav_menu}</p>
+                    </div>
+                  )}
+                  {user.kvis_fav_event && (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-1">Fav Event</p>
+                      <p className="text-2xl font-bold text-foreground tracking-[-0.01em]">{user.kvis_fav_event}</p>
+                    </div>
+                  )}
+                  {user.kvis_fav_area && (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-1">Fav Area</p>
+                      <p className="text-2xl font-bold text-foreground tracking-[-0.01em]">{user.kvis_fav_area}</p>
                     </div>
                   )}
                 </div>

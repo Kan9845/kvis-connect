@@ -81,6 +81,10 @@ export interface UserPublic extends UserCard {
   place_level2?: string;
   zodiac?: string;
   chronotype?: string;
+  hobbies?: Record<string, string[]> | null;
+  kvis_fav_menu?: string | null;
+  kvis_fav_event?: string | null;
+  kvis_fav_area?: string | null;
   research_keywords?: string;
   research_interests?: string[];
   projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
@@ -225,4 +229,6 @@ export interface DirectoryCard {
   edu_major?: string;
   edu_degree?: string;
   edu_uni?: string;
+  hobbies?: any;
+  research_interests_text?: string | null;
 }
