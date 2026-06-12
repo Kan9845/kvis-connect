@@ -386,6 +386,7 @@ export const HOBBIES: Record<string, string[]> = {
     "CS2/CS:GO",
     "Genshin Impact",
     "Honkai: Star Rail",
+    "Cookie Run: Kingdom",
     "Minecraft",
     "Roblox",
     "Elden Ring",
@@ -394,6 +395,8 @@ export const HOBBIES: Record<string, string[]> = {
     "Board Games",
     "TTRPG (D&D)",
     "Trading Card Games",
+    "Chess",
+    "Sudoku/Puzzles",
   ],
   music: [
     "Pop",
@@ -412,6 +415,7 @@ export const HOBBIES: Record<string, string[]> = {
     "Soundtracks",
     "Podcasts",
     "Audiobooks",
+    "Musicals",
   ],
   instruments: [
     "Vocals",
@@ -468,6 +472,7 @@ export const HOBBIES: Record<string, string[]> = {
     "Manga",
     "Webtoons/Manhwa",
     "Poetry",
+    "Movies & TV",
   ],
   other: [
     "Birdwatching",
