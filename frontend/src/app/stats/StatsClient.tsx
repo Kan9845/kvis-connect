@@ -16,7 +16,7 @@ import { keys } from "@/lib/cache/keys";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { FilterPill } from "@/components/ui/filter-pill";
-import type { UserCard, Education } from "@/lib/types";
+import type { UserCard, Education, Career } from "@/lib/types";
 import {
   PageEntrance,
   FadeUp,
@@ -120,6 +120,14 @@ function primaryEducation(u: UserCard): Education | null {
   )[0];
 }
 
+function primaryCareer(u: UserCard): Career | null {
+  if (!u.career?.length) return null;
+  return (
+    u.career.find((c) => c.is_current) ??
+    [...u.career].sort((a, b) => (b.start_year ?? 0) - (a.start_year ?? 0))[0]
+  );
+}
+
 type Row = {
   key: string;
   label: string;
@@ -139,7 +147,6 @@ function toRanked(map: Map<string, number>, total: number): Row[] {
 }
 
 // ── Stat figures ─────────────────────────────────────────────────────────────
-// Clean typographic display - no card backgrounds, no side-stripe borders
 function StatFigures({
   items,
 }: {
@@ -159,10 +166,7 @@ function StatFigures({
           </p>
           <p
             className="font-display font-black tabular-nums leading-none text-2xl"
-            style={{
-              letterSpacing: "-0.04em",
-              color: item.color,
-            }}
+            style={{ letterSpacing: "-0.04em", color: item.color }}
           >
             {item.value}
           </p>
@@ -202,7 +206,6 @@ function RankedList({
               <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">
                 {String(it.rank).padStart(2, "0")}
               </span>
-
               <div className="flex items-center gap-2 min-w-0">
                 {showFlag && <FlagImg country={it.label} size={16} />}
                 <span
@@ -213,8 +216,6 @@ function RankedList({
                   {it.label}
                 </span>
               </div>
-
-              {/* Bar with real visual weight */}
               <div className="h-2 rounded-full overflow-hidden bg-[var(--kvis-rule)]">
                 <div
                   className="h-full rounded-full"
@@ -225,7 +226,6 @@ function RankedList({
                   }}
                 />
               </div>
-
               <span className="text-sm font-bold tabular-nums text-right text-foreground">
                 {it.count}
               </span>
@@ -242,10 +242,7 @@ function RankedList({
           variant="link"
           onClick={() => setShowAll(true)}
           className="mt-5 h-auto p-0 text-xs font-bold uppercase tracking-[0.22em] no-underline hover:underline text-[var(--kvis-purple-light)]"
-          style={{
-            textDecorationColor: "var(--kvis-purple-light)",
-            textUnderlineOffset: 4,
-          }}
+          style={{ textDecorationColor: "var(--kvis-purple-light)", textUnderlineOffset: 4 }}
         >
           See all {items.length} entries <ArrowRight className="h-3 w-3 ml-1" />
         </Button>
@@ -346,18 +343,16 @@ export default function StatsClient() {
     queryKey: keys.stats.alumni(),
     queryFn: () =>
       api
-        .get<
-          UserCard[]
-        >("/api/search", { params: { sort: "kvis_year", order: "asc", limit: 1000 } })
+        .get<UserCard[]>("/api/search", {
+          params: { sort: "kvis_year", order: "asc", limit: 1000 },
+        })
         .then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   });
 
   const cohorts = useMemo(() => {
     const ys = new Set<number>();
-    alumni.forEach((u) => {
-      if (u.kvis_year) ys.add(u.kvis_year);
-    });
+    alumni.forEach((u) => { if (u.kvis_year) ys.add(u.kvis_year); });
     return Array.from(ys).sort((a, b) => a - b);
   }, [alumni]);
 
@@ -370,11 +365,11 @@ export default function StatsClient() {
   }, [alumni]);
 
   const filtered = useMemo(
-    () =>
-      cohort === null ? alumni : alumni.filter((u) => u.kvis_year === cohort),
+    () => cohort === null ? alumni : alumni.filter((u) => u.kvis_year === cohort),
     [alumni, cohort],
   );
 
+  // ── Education memos ───────────────────────────────────────────────────────
   const totalEdu = useMemo(
     () => filtered.reduce((s, u) => s + (primaryEducation(u) ? 1 : 0), 0),
     [filtered],
@@ -389,12 +384,11 @@ export default function StatsClient() {
   );
 
   const stemCount = useMemo(
-    () =>
-      filtered.reduce((s, u) => {
-        const e = primaryEducation(u);
-        if (!e?.field_of_study) return s;
-        return STEM_FIELDS.has(classifyFaculty(e)) ? s + 1 : s;
-      }, 0),
+    () => filtered.reduce((s, u) => {
+      const e = primaryEducation(u);
+      if (!e?.field_of_study) return s;
+      return STEM_FIELDS.has(classifyFaculty(e)) ? s + 1 : s;
+    }, 0),
     [filtered],
   );
 
@@ -431,8 +425,7 @@ export default function StatsClient() {
   }, [filtered, totalEdu]);
 
   const stackedData = useMemo(() => {
-    const activeCohorts =
-      cohort === null ? cohorts : cohorts.filter((k) => k === cohort);
+    const activeCohorts = cohort === null ? cohorts : cohorts.filter((k) => k === cohort);
     const fields = Object.keys(FIELD_COLORS);
     return {
       labels: activeCohorts.map((k) => `K${k}`),
@@ -454,11 +447,37 @@ export default function StatsClient() {
     };
   }, [alumni, cohorts, cohort]);
 
+  // ── Career memos ──────────────────────────────────────────────────────────
+  const totalCareer = useMemo(
+    () => filtered.reduce((s, u) => s + (primaryCareer(u) ? 1 : 0), 0),
+    [filtered],
+  );
+
+  const industryRanked = useMemo(() => {
+    const c = new Map<string, number>();
+    filtered.forEach((u) => {
+      const job = primaryCareer(u);
+      if (!job?.industry_sector) return;
+      c.set(job.industry_sector, (c.get(job.industry_sector) ?? 0) + 1);
+    });
+    return toRanked(c, totalCareer);
+  }, [filtered, totalCareer]);
+
+  const roleTypeRanked = useMemo(() => {
+    const c = new Map<string, number>();
+    filtered.forEach((u) => {
+      const job = primaryCareer(u);
+      if (!job?.role_type) return;
+      c.set(job.role_type, (c.get(job.role_type) ?? 0) + 1);
+    });
+    return toRanked(c, totalCareer);
+  }, [filtered, totalCareer]);
+
+  // ── Derived display values ────────────────────────────────────────────────
   const totalAlumni = filtered.length;
   const uniqueUnis = uniRanked.length;
   const uniqueCountries = countryRanked.length;
   const cohortLabel = cohort === null ? "all cohorts" : `KVIS ${cohort}`;
-  const activeColor = cohortColor(cohort ?? undefined);
   const stemPct = totalEdu > 0 ? Math.round((stemCount / totalEdu) * 100) : 0;
 
   const now = new Date();
@@ -470,6 +489,7 @@ export default function StatsClient() {
     <PageEntrance>
       <div className="min-h-full bg-background">
         <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
+
           {/* ── Masthead ─────────────────────────────────────────────────── */}
           <FadeUp>
             <header className="pb-md border-b border-[var(--sep-strong)]">
@@ -481,9 +501,8 @@ export default function StatsClient() {
                 <span style={{ color: "var(--kvis-purple)" }}>Numbers</span>
               </h1>
               <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[60ch] leading-relaxed">
-                Where KVIS alumni went to study after graduation - the faculties
-                they chose, the universities that took them in, and the
-                countries they ended up in.
+                Where KVIS alumni went to study, what they chose to do, and the
+                industries they ended up in.
               </p>
               <div className="flex items-center gap-3 md:gap-4 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap mt-6 text-[var(--kvis-text3)]">
                 <span>{dateline}</span>
@@ -591,7 +610,6 @@ export default function StatsClient() {
 
               <FadeUp>
                 <div className="grid md:grid-cols-2 gap-x-10 gap-y-10 pb-10">
-                  {/* Countries */}
                   <div>
                     <SubHead>By country</SubHead>
                     {countryRanked.length === 0 ? (
@@ -604,8 +622,6 @@ export default function StatsClient() {
                       />
                     )}
                   </div>
-
-                  {/* Universities */}
                   <div>
                     <SubHead>By university</SubHead>
                     {uniRanked.length === 0 ? (
@@ -660,7 +676,6 @@ export default function StatsClient() {
 
               <FadeUp>
                 <div className="pb-10">
-                  {/* Legend */}
                   <div className="flex flex-wrap gap-x-5 gap-y-2 mb-6">
                     {Object.entries(FIELD_COLORS).map(([field, color]) => (
                       <div key={field} className="flex items-center gap-1.5">
@@ -674,7 +689,6 @@ export default function StatsClient() {
                       </div>
                     ))}
                   </div>
-
                   <div
                     style={{
                       position: "relative",
@@ -696,16 +710,13 @@ export default function StatsClient() {
                             callbacks: {
                               label: (ctx) => {
                                 const val = ctx.parsed.x;
-                                if (val === 0 || val == null)
-                                  return null as any;
+                                if (val === 0 || val == null) return null as any;
                                 const activeCohorts =
                                   cohort === null
                                     ? cohorts
                                     : cohorts.filter((k) => k === cohort);
                                 const k = activeCohorts[ctx.dataIndex];
-                                const cohortAlumni = alumni.filter(
-                                  (u) => u.kvis_year === k,
-                                );
+                                const cohortAlumni = alumni.filter((u) => u.kvis_year === k);
                                 const withField = cohortAlumni.filter(
                                   (u) => primaryEducation(u)?.field_of_study,
                                 );
@@ -737,15 +748,54 @@ export default function StatsClient() {
                     />
                   </div>
                 </div>
+                <Separator className="bg-[var(--kvis-border)]" />
               </FadeUp>
 
-              <Separator className="bg-[var(--kvis-border)]" />
+              {/* ── § 4: Where they work ─────────────────────────────────── */}
+              <FadeUp>
+                <SectionHead
+                  numeral="04"
+                  kicker="Career"
+                  title="Where they work"
+                  lede="Industry and role breakdown based on each alumnus's current or most recent position."
+                  accentColor="var(--kvis-green-light)"
+                />
+              </FadeUp>
+
+              <FadeUp>
+                <div className="grid md:grid-cols-2 gap-x-10 gap-y-10 pb-10">
+                  <div>
+                    <SubHead>By industry</SubHead>
+                    {industryRanked.length === 0 ? (
+                      <EmptyRow label="industries" />
+                    ) : (
+                      <RankedList
+                        items={industryRanked}
+                        barColor="var(--kvis-green-light)"
+                      />
+                    )}
+                  </div>
+                  <div>
+                    <SubHead>By role type</SubHead>
+                    {roleTypeRanked.length === 0 ? (
+                      <EmptyRow label="role types" />
+                    ) : (
+                      <RankedList
+                        items={roleTypeRanked}
+                        barColor="var(--kvis-purple-light)"
+                      />
+                    )}
+                  </div>
+                </div>
+                <Separator className="bg-[var(--kvis-border)]" />
+              </FadeUp>
 
               {/* Footer note */}
               <FadeUp>
                 <p className="text-xs text-[var(--kvis-text3)] pt-6 pb-10 max-w-[80ch] leading-relaxed">
                   Data covers registered KVIS Connect members only and may not
-                  reflect the full alumni body. Field of study is self-reported by each member.
+                  reflect the full alumni body. Field of study and career
+                  information is self-reported by each member.
                 </p>
               </FadeUp>
             </>
