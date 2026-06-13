@@ -32,6 +32,7 @@ import { TabCareer } from "./TabCareer";
 import { TabResearch } from "./TabResearch";
 import { TabPersonal } from "./TabPersonal";
 import { MED_DEGREES } from "./constants";
+import { TabAccount } from "./TabAccount";
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -555,13 +556,23 @@ export default function EditPageInner() {
             savePersonal={savePersonal}
           />
         )}
+
+        {tab === "account" && (
+          <TabAccount
+            me={me}
+            refetch={refetch}
+            googleStatus={googleStatus}
+            unlinking={unlinking}
+            handleUnlinkGoogle={handleUnlinkGoogle}
+          />
+        )}
       </div>
       {isSetup && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-[var(--kvis-border)]">
           {(() => {
             const tabs = isStudent
-              ? ["general", "research", "personal"]
-              : ["general", "education", "career", "research", "personal"];
+              ? ["general", "research", "personal", "account"]
+              : ["general", "education", "career", "research", "personal", "account"];
             const idx = tabs.indexOf(tab);
             const isLast = idx === tabs.length - 1;
 
