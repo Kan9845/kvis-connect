@@ -74,7 +74,7 @@ function ForgotInner() {
             registered, a reset link has been sent. It expires in 30 minutes.
           </p>
           <p className="text-xs text-muted-foreground">
-            Didn't receive it? Check your spam folder, or{" "}
+            Didn&apos;t receive it? Check your spam folder, or{" "}
             <button
               type="button"
               onClick={() => setSent(false)}
