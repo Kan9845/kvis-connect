@@ -69,6 +69,7 @@ def search_users(
     place: Optional[str] = Query(default=None),
     uni_name: Optional[str] = Query(default=None),
     degree: Optional[str] = Query(default=None),
+    field_of_study: Optional[str] = Query(default=None),
     major: Optional[str] = Query(default=None),
     scholarship: Optional[str] = Query(default=None),
     job_title: Optional[str] = Query(default=None),
@@ -101,7 +102,7 @@ def search_users(
 
     result = []
     for user in users:
-        if not _matches_education(user.education, uni_name, degree, major, scholarship):
+        if not _matches_education(user.education, uni_name, degree, major, scholarship, field_of_study):
             continue
         if not _matches_career(user.career, job_title, employer, job_field):
             continue
@@ -120,8 +121,8 @@ def search_users(
     return [_to_card(u) for u in result]
 
 
-def _matches_education(education, uni_name, degree, major, scholarship) -> bool:
-    if not any([uni_name, degree, major, scholarship]):
+def _matches_education(education, uni_name, degree, major, scholarship, field_of_study) -> bool:
+    if not any([uni_name, degree, major, scholarship, field_of_study]):
         return True
     for e in education:
         match = True
@@ -132,6 +133,8 @@ def _matches_education(education, uni_name, degree, major, scholarship) -> bool:
         if major and major.lower() not in (e.major or "").lower():
             match = False
         if scholarship and scholarship.lower() not in (e.scholarship or "").lower():
+            match = False
+        if field_of_study and field_of_study.lower() not in (e.field_of_study or "").lower():
             match = False
         if match:
             return True

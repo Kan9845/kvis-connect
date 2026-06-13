@@ -38,6 +38,7 @@ class EducationRead(BaseModel):
 
 class EducationWrite(BaseModel):
     uni_name: str
+    field_of_study: Optional[str] = None
     degree: str
     major: str
     country: str
