@@ -74,6 +74,8 @@ export const authApi = {
   googleLogin: () => {
     window.location.href = `/api/auth/google`;
   },
+  linkGoogle: () => { window.location.href = `/api/auth/link-google`; },
+  unlinkGoogle: () => api.post("/api/auth/unlink-google"),
   requestPasswordReset: (email: string) =>
     api.post("/api/auth/password-reset/request", { email }),
   confirmPasswordReset: (token: string, new_password: string) =>
@@ -88,6 +90,8 @@ export const authApi = {
     api.post("/api/auth/email/verify", { email, otp }),
   resendVerification: (email: string) =>
     api.post("/api/auth/otp/request", { email }),
+  changePassword: (current_password: string, new_password: string) =>
+    api.post("/api/auth/change-password", { current_password, new_password }),
 };
 
 // Users
@@ -118,6 +122,7 @@ export const userApi = {
   },
   getGlobePins: () =>
     api.get<GlobePin[]>("/api/users/globe/pins").then((r) => filterGlobePins(r.data)),
+  deleteAccount: () => api.delete("/api/users/me"),
 };
 
 // Search

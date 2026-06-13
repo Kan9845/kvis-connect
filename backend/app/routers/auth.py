@@ -16,8 +16,7 @@ from app.core.mailer import send_email
 from app.core.cache import invalidate_tags
 from app.core.slug import unique_user_slug
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody
-
+from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody, ChangePasswordBody
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 # Google OAuth setup
@@ -178,6 +177,8 @@ def login(body: LoginRequest, response: Response, session: Session = Depends(get
     user = session.exec(select(User).where(User.email == body.email)).first()
     if not user or not user.hashed_password or not verify_password(body.password, user.hashed_password):
         raise HTTPException(401, detail="Invalid credentials")
+    if user.is_deleted:                                          # 👈 add here
+        raise HTTPException(401, detail="This account has been deleted.")
     if not user.email_verified:
         otp = _generate_otp()
         _otp_store[user.email] = {
@@ -333,6 +334,8 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
     email = userinfo.get("email", "")
 
     user = session.exec(select(User).where(User.google_id == google_id)).first()
+    if user and user.is_deleted:
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/login?error=account_deleted")
     if not user:
         user = session.exec(select(User).where(User.email == email)).first()
         is_new_user = user is None
@@ -344,6 +347,9 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
                 user.is_verified = True
                 user.kvis_email = email
         else:
+            # Block new signups via Google for non-kvis emails
+            if not is_kvis:
+                return RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/login?error=google_not_kvis")
             name_parts = userinfo.get("name", "").split(" ", 1)
             slug = unique_user_slug(session, name_parts[0] if name_parts else "", name_parts[1] if len(name_parts) > 1 else "")
             user = User(
@@ -365,6 +371,51 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
     response = RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/callback")
     _set_auth_cookies(response, user.id)
     return response
+
+@router.get("/link-google")
+async def link_google(request: Request, current_user: User = Depends(get_current_user)):
+    redirect_uri = f"{settings.FRONTEND_URL}/api/auth/google/link-callback"
+    return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+@router.get("/google/link-callback")
+async def google_link_callback(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    if request.query_params.get("error"):
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/profile/edit?error=google_cancelled")
+    token = await oauth.google.authorize_access_token(request)
+    userinfo = token.get("userinfo") or await oauth.google.userinfo(token=token)
+    google_id = userinfo["sub"]
+    google_email = userinfo.get("email", "")
+
+    existing = session.exec(select(User).where(User.google_id == google_id)).first()
+    if existing and existing.id != current_user.id:
+        return RedirectResponse(url=f"{settings.FRONTEND_URL}/profile/edit?error=google_taken")
+
+    user = session.get(User, current_user.id)
+    user.google_id = google_id
+    session.add(user)
+    session.commit()
+    await invalidate_tags(f"user:{user.slug}")
+    return RedirectResponse(url=f"{settings.FRONTEND_URL}/profile/edit?google=linked&email={google_email}")
+
+
+@router.post("/unlink-google")
+async def unlink_google(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    if not current_user.hashed_password:
+        raise HTTPException(400, detail="Set a password before unlinking Google — otherwise you'll lose access.")
+    user = session.get(User, current_user.id)
+    user.google_id = None
+    session.add(user)
+    session.commit()
+    await invalidate_tags(f"user:{user.slug}")
+    return {"message": "Google unlinked"}
 
 
 # Password Reset
@@ -417,3 +468,17 @@ def password_reset_confirm(body: PasswordResetConfirm, session: Session = Depend
 
     del _reset_store[body.token]
     return {"message": "Password updated successfully."}
+
+@router.post("/change-password")
+async def change_password(
+    body: ChangePasswordBody,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    user = session.get(User, current_user.id)
+    if not user.hashed_password or not verify_password(body.current_password, user.hashed_password):
+        raise HTTPException(400, detail="Current password is incorrect.")
+    user.hashed_password = hash_password(body.new_password)
+    session.add(user)
+    session.commit()
+    return {"message": "Password changed"}

@@ -10,6 +10,7 @@ class EducationRead(BaseModel):
     id: uuid.UUID
     uni_name: str
     degree: str
+    field_of_study: Optional[str] = None
     major: str
     country: str
     state: Optional[str] = None
@@ -185,6 +186,13 @@ class UserPublic(BaseModel):
     linkedin_url: Optional[str] = None
     instagram_url: Optional[str] = None
     website_url: Optional[str] = None
+    linkedin_public: bool = True
+    facebook_public: bool = True
+    instagram_public: bool = True
+    website_public: bool = True
+    line_id_public: bool = True
+    extra_contacts: List[Any] = []
+    line_id: Optional[str] = None
     # Research (JSON-serialized lists/objects stored as text in DB)
     research_interests: List[str] = []
     research_keywords: Optional[str] = None
@@ -212,6 +220,7 @@ class UserMe(UserPublic):
     email_verified: bool
     is_verified: bool
     kvis_email: Optional[str] = None
+    google_id: Optional[str] = None
     profile_setup_done: bool
     # Personal / KVIS-only (not shown publicly)
     languages: List[Any] = []

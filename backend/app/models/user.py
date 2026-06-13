@@ -10,6 +10,7 @@ class Education(SQLModel, table=True):
 
     uni_name: str
     degree: str
+    field_of_study: Optional[str] = None
     major: str
     country: str
     state: Optional[str] = None
@@ -102,6 +103,11 @@ class ExtraContact(SQLModel, table=True):
     value: str
     is_public: bool = True
     order_index: int = 0
+    linkedin_public: bool = True
+    facebook_public: bool = True
+    instagram_public: bool = True
+    website_public: bool = True
+    line_id_public: bool = True
     user: Optional["User"] = Relationship(back_populates="extra_contacts")
 
 
@@ -134,6 +140,9 @@ class User(SQLModel, table=True):
     email_verified: bool = False
     is_verified: bool = False
     kvis_email: Optional[str] = None
+
+    is_deleted: bool = False
+    is_deleted_at: Optional[datetime] = None
 
     # Basic info
     slug: str = Field(unique=True, index=True)

@@ -182,12 +182,18 @@ async def upload_profile_pic(
 
 
 @router.get("/{slug}", response_model=UserPublic)
-@cached(key=lambda slug, session: f"user:{slug}", tags=lambda slug, session: ["users", f"user:{slug}"], ttl=settings.CACHE_TTL_LONG)
-def get_user(slug: str, session: Session = Depends(get_session)):
+@cached(key=lambda slug, session, current_user: f"user:{slug}:{'auth' if current_user else 'anon'}", 
+        tags=lambda slug, session, current_user: ["users", f"user:{slug}"], 
+        ttl=settings.CACHE_TTL_LONG)
+def get_user(
+    slug: str, 
+    session: Session = Depends(get_session),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
     user = session.exec(select(User).where(User.slug == slug)).first()
     if not user:
         raise HTTPException(404, detail="User not found")
-    return _user_to_public(user)
+    return _user_to_public(user, is_kvis=current_user is not None)
 
 
 # Education
@@ -368,6 +374,7 @@ def _edu_list(user: User, public_only: bool = False):
     return [
         {
             "id": e.id, "uni_name": e.uni_name, "degree": e.degree,
+            "field_of_study": e.field_of_study,
             "major": e.major, "major2": e.major2, "minor1": e.minor1,
             "minors": _json.loads(e.minors) if isinstance(e.minors, str) else (e.minors or ([e.minor1] if e.minor1 else [])),
             "country": e.country, "state": e.state, "city": e.city,
@@ -402,28 +409,58 @@ def _career_list(user: User, public_only: bool = False):
     ]
 
 
-def _user_to_public(user: User) -> dict:
+def _user_to_public(user: User, public_only: bool = False, is_kvis: bool = False) -> dict:
     return {
-        "id": user.id, "slug": user.slug, "first_name": user.first_name, "last_name": user.last_name,
-        "nickname": user.nickname, "nickname_public": user.nickname_public,
+        "id": user.id,
+        "slug": user.slug,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "nickname": user.nickname if (user.nickname_public or is_kvis) else None,
+        "nickname_public": user.nickname_public,
         "kvis_year": user.kvis_year,
         "current_grade": user.current_grade,
         "current_status": user.current_status,
+        # Faculty
         "teach_start_year": user.teach_start_year,
         "teach_end_year": user.teach_end_year,
         "is_current_teacher": user.is_current_teacher,
         "teach_department": user.teach_department,
-        "place": user.place, "place_level2": user.place_level2,
-        "latitude": user.latitude, "longitude": user.longitude, "country": user.country,
-        "profile_pic_url": user.profile_pic_url, "goose_config": user.goose_config, "bio": user.bio,
-        "mbti": user.mbti, "zodiac": user.zodiac, "chronotype": user.chronotype,
-        "interests": user.interests if user.interests_public is not False else None,
+        # Location
+        "place": user.place,
+        "place_level2": user.place_level2,
+        "latitude": user.latitude,
+        "longitude": user.longitude,
+        "country": user.country,
+        # Profile
+        "profile_pic_url": user.profile_pic_url,
+        "goose_config": user.goose_config,
+        "bio": user.bio,
+        # KVIS-only fields
+        "mbti": user.mbti if is_kvis else None,
+        "zodiac": user.zodiac if is_kvis else None,
+        "chronotype": user.chronotype if is_kvis else None,
+        "hobbies": (lambda h: __import__('json').loads(h) if isinstance(h, str) else h)(user.hobbies) if (user.hobbies and is_kvis) else None,
+        "kvis_fav_menu": user.kvis_fav_menu if is_kvis else None,
+        "kvis_fav_event": user.kvis_fav_event if is_kvis else None,
+        "kvis_fav_area": user.kvis_fav_area if is_kvis else None,
+        # Privacy-gated fields
+        "interests": user.interests if (user.interests_public or is_kvis) else None,
         "interests_public": user.interests_public,
-        "contact_email": user.contact_email,
+        "facebook_url": user.facebook_url if (user.facebook_public or is_kvis) else None,
+        "facebook_public": user.facebook_public,
+        "linkedin_url": user.linkedin_url if (user.linkedin_public or is_kvis) else None,
+        "linkedin_public": user.linkedin_public,
+        "instagram_url": user.instagram_url if (user.instagram_public or is_kvis) else None,
+        "instagram_public": user.instagram_public,
+        "website_url": user.website_url if (user.website_public or is_kvis) else None,
+        "website_public": user.website_public,
+        "line_id": user.line_id if (getattr(user, 'line_id_public', True) or is_kvis) else None,
+        "line_id_public": getattr(user, 'line_id_public', True),
+        "contact_email": user.contact_email if (user.contact_email_public or is_kvis) else None,
         "contact_email_public": user.contact_email_public,
-        "facebook_url": user.facebook_url, "linkedin_url": user.linkedin_url,
-        "instagram_url": user.instagram_url,
-        "website_url": user.website_url, "is_verified": user.is_verified,
+        # Always public
+        "website_url": user.website_url if (getattr(user, 'website_public', True) or is_kvis) else None,
+        "is_verified": user.is_verified,
         "research_keywords": user.research_keywords,
         "research_interests": [r.interest for r in sorted(user.research_interests, key=lambda x: x.order_index)],
         "projects": [
@@ -439,12 +476,16 @@ def _user_to_public(user: User) -> dict:
             {"type": p.type, "url": p.url}
             for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
         ],
+        "extra_contacts": [
+            {"type": c.type, "value": c.value, "public": c.is_public}
+            for c in sorted(user.extra_contacts, key=lambda x: x.order_index)
+            if c.is_public or is_kvis
+        ],
+        "line_id": user.line_id if (getattr(user, 'line_id_public', True) or is_kvis) else None,
         "created_at": user.created_at,
-        "education": _edu_list(user, public_only=True), "career": _career_list(user, public_only=True),
-        "hobbies": (lambda h: __import__('json').loads(h) if isinstance(h, str) else h)(user.hobbies) if user.hobbies else None,
-        "kvis_fav_menu": user.kvis_fav_menu,
-        "kvis_fav_event": user.kvis_fav_event,
-        "kvis_fav_area": user.kvis_fav_area,
+        "education": _edu_list(user, public_only=True),
+        "career": _career_list(user, public_only=True),
+        "google_id": user.google_id if is_kvis else None,
     }
 
 
@@ -467,6 +508,7 @@ def _user_to_me(user: User) -> dict:
         "profile_setup_done": user.profile_setup_done,
         "contact_email": user.contact_email,
         "contact_email_public": user.contact_email_public,
+        "google_id": user.google_id,
         "hobbies": hobbies,
         "kvis_fav_menu": user.kvis_fav_menu,
         "kvis_fav_event": user.kvis_fav_event,
@@ -500,3 +542,19 @@ def _user_to_me(user: User) -> dict:
             for r in sorted(user.research_interests, key=lambda x: x.order_index)
         ],
     }
+
+@router.delete("/me")
+async def delete_account(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    user = session.get(User, current_user.id)
+    user.is_deleted = True
+    user.is_deleted_at = datetime.utcnow()
+    session.add(user)
+    session.commit()
+    response = Response()
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    await invalidate_tags("users", f"user:{user.slug}")
+    return responses

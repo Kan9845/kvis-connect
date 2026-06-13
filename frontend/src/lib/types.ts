@@ -2,6 +2,7 @@ export interface Education {
   id: string;
   uni_name: string;
   degree: string;
+  field_of_study?: string | null;
   major: string;
   country: string;
   state?: string;
@@ -76,6 +77,13 @@ export interface UserPublic extends UserCard {
   facebook_url?: string;
   linkedin_url?: string;
   website_url?: string;
+  linkedin_public?: boolean;
+  facebook_public?: boolean;
+  instagram_public?: boolean;
+  website_public?: boolean;
+  line_id?: string | null;
+  line_id_public?: boolean;
+  extra_contacts?: { type: string; value: string; public: boolean }[];
   is_verified: boolean;
   created_at: string;
   interests_public?: boolean;
@@ -107,6 +115,7 @@ export interface UserMe extends UserPublic {
   chronotype?: string;
   contact_email?: string;
   contact_email_public?: boolean;
+  google_id?: string | null;
   interests_public?: boolean;
   research_interests: string[];
   research_keywords?: string;

@@ -26,6 +26,10 @@ function LoginInner() {
   const { user, loading, refetch } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("error") === "google_not_kvis")
+      setError("Only @kvis.ac.th accounts can register. Please sign up with your KVIS email first.");
+  }, [searchParams]);
   const next = searchParams.get("next") || "/";
 
   const [email, setEmail] = useState("");

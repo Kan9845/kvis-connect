@@ -44,3 +44,7 @@ class KvisVerifyBody(BaseModel):
 class EmailVerifyBody(BaseModel):
     email: EmailStr
     otp: str
+
+class ChangePasswordBody(BaseModel):
+    current_password: str
+    new_password: str

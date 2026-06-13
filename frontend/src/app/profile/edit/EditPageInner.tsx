@@ -1,9 +1,9 @@
 "use client";
 import type { Area } from "react-easy-crop";
 import { useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormHandleSubmit } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { userApi } from "@/lib/api";
+import { userApi, authApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { onMeUpdateSuccess } from "@/lib/cache/invalidate";
@@ -37,6 +37,30 @@ import { TabPersonal } from "./TabPersonal";
 export default function EditPageInner() {
   const searchParams = useSearchParams();
   const isSetup = searchParams.has("setup");
+  const [googleStatus, setGoogleStatus] = useState<"linked" | "error_taken" | "error_cancelled" | null>(null);
+  const [unlinking, setUnlinking] = useState(false);
+
+  useEffect(() => {
+    const g = searchParams.get("google");
+    const err = searchParams.get("error");
+    if (g === "linked") setGoogleStatus("linked");
+    if (err === "google_taken") setGoogleStatus("error_taken");
+    if (err === "google_cancelled") setGoogleStatus("error_cancelled");
+  }, [searchParams]);
+
+  async function handleUnlinkGoogle() {
+    setUnlinking(true);
+    try {
+      await authApi.unlinkGoogle();
+      await refetch();
+      setGoogleStatus(null);
+    } catch (e: any) {
+      alert(e?.response?.data?.detail ?? "Failed to unlink.");
+    } finally {
+      setUnlinking(false);
+    }
+  }
+
   const notify = {
     success: (msg: string) => {
       if (!isSetup) toast.success(msg);
@@ -129,7 +153,7 @@ export default function EditPageInner() {
       ? {
           first_name: me.first_name,
           last_name: me.last_name,
-          kvis_year: me.kvis_year ?? undefined,
+          kvis_year: me.kvis_year ?? 0,
           expected_grad_year: me.expected_grad_year ?? undefined,
           teach_department: me.teach_department ?? "",
           place: me.place ?? "",
@@ -138,6 +162,7 @@ export default function EditPageInner() {
           mbti: me.mbti ?? "",
           interests: me.interests ?? "",
           facebook_url: me.facebook_url ?? "",
+          instagram_url: me.instagram_url ?? "",
           linkedin_url: me.linkedin_url ?? "",
           line_id: me.line_id ?? "",
           website_url: me.website_url ?? "",
@@ -150,15 +175,23 @@ export default function EditPageInner() {
           place_level2: me.place_level2 ?? "",
           contact_email: me.contact_email ?? "",
           contact_email_public: me.contact_email_public ?? true,
-          instagram_url: me.instagram_url ?? "",
+          linkedin_public: me.linkedin_public ?? true,
+          facebook_public: me.facebook_public ?? true,
+          instagram_public: me.instagram_public ?? true,
+          website_public: me.website_public ?? true,
+          line_id_public: me.line_id_public ?? true,
           interests_public: me.interests_public ?? true,
-        }
-      : undefined,
+        } as GeneralForm : undefined,
   });
 
   const watchNicknamePublic = watch("nickname_public") ?? true;
   const watchInterestsPublic = watch("interests_public") ?? true;
   const watchContactEmailPublic = watch("contact_email_public") ?? true;
+  const watchLinkedinPublic = watch("linkedin_public") ?? true;
+  const watchFacebookPublic = watch("facebook_public") ?? true;
+  const watchInstagramPublic = watch("instagram_public") ?? true;
+  const watchWebsitePublic = watch("website_public") ?? true;
+  const watchLineIdPublic = watch("line_id_public") ?? true;
 
   const [education, setEducation] = useState<Omit<Education, "id">[]>([]);
   const [career, setCareer] = useState<Omit<Career, "id">[]>([]);
@@ -422,6 +455,14 @@ export default function EditPageInner() {
             watchNicknamePublic={watchNicknamePublic}
             watchInterestsPublic={watchInterestsPublic}
             watchContactEmailPublic={watchContactEmailPublic}
+            googleStatus={googleStatus}
+            unlinking={unlinking}
+            handleUnlinkGoogle={handleUnlinkGoogle}
+            watchLinkedinPublic={watchLinkedinPublic}
+            watchFacebookPublic={watchFacebookPublic}
+            watchInstagramPublic={watchInstagramPublic}
+            watchWebsitePublic={watchWebsitePublic}
+            watchLineIdPublic={watchLineIdPublic}
           />
         )}
 

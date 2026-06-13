@@ -65,31 +65,22 @@ const ISO_MAP: Record<string, string> = {
 };
 
 const FIELD_COLORS: Record<string, string> = {
-  Engineering: "#5b8dee",
-  "Computing & AI": "#7c6fcd",
-  "Medicine & Health": "#e06b8b",
-  "Biological Sciences": "#4caf86",
-  "Physics & Astronomy": "#e8a838",
-  Chemistry: "#e0724a",
-  "Mathematics & Statistics": "#8bb8a8",
-  "Business & Economics": "#c49a3c",
-  "Earth & Environment": "#6bab6b",
-  Law: "#a0896b",
-  "Architecture & Design": "#b07ab0",
-  "Arts & Humanities": "#7a9ab0",
-  "Social Sciences": "#8faa7a",
-  "Other Fields": "#aaa",
+  "Mathematics & Data Science": "#7c6fcd",
+  "Computer Science & Software Engineering": "#5b8dee",
+  "Physical Sciences & Engineering": "#e8a838",
+  "Chemical Sciences & Engineering": "#e0724a",
+  "Life Sciences & Bioengineering": "#4caf86",
+  "Earth, Space, & Environmental Sciences": "#6bab6b",
+  "Non-STEM / Humanities / Social Sciences": "#aaa",
 };
 
 const STEM_FIELDS = new Set([
-  "Engineering",
-  "Computing & AI",
-  "Medicine & Health",
-  "Biological Sciences",
-  "Physics & Astronomy",
-  "Chemistry",
-  "Mathematics & Statistics",
-  "Earth & Environment",
+  "Mathematics & Data Science",
+  "Computer Science & Software Engineering",
+  "Physical Sciences & Engineering",
+  "Chemical Sciences & Engineering",
+  "Life Sciences & Bioengineering",
+  "Earth, Space, & Environmental Sciences",
 ]);
 
 function FlagImg({ country, size = 20 }: { country: string; size?: number }) {
@@ -114,41 +105,8 @@ function FlagImg({ country, size = 20 }: { country: string; size?: number }) {
   );
 }
 
-function classifyFaculty(major: string): string {
-  const m = major.toLowerCase();
-  if (
-    /comput|software|robot|data scien|informat|cyber|\bai\b|artificial intel/.test(
-      m,
-    )
-  )
-    return "Computing & AI";
-  if (
-    /engineer|mechan|electr|civil|chemical eng|aero|industri|materials|nuclear/.test(
-      m,
-    )
-  )
-    return "Engineering";
-  if (/physic|astron|geophys/.test(m)) return "Physics & Astronomy";
-  if (/\bmath|statisti|actuar/.test(m)) return "Mathematics & Statistics";
-  if (/biochem|chem(?!ic)/.test(m)) return "Chemistry";
-  if (/biolog|biotech|microb|ecolog|zoolog|genet|neurosci/.test(m))
-    return "Biological Sciences";
-  if (/medic|nurs|pharma|dent|public health|biomed|veterin/.test(m))
-    return "Medicine & Health";
-  if (/econ|finance|account|business|management|marketing|\bmba\b/.test(m))
-    return "Business & Economics";
-  if (/law|legal|jurisp/.test(m)) return "Law";
-  if (/architect|industrial design|urban plann/.test(m))
-    return "Architecture & Design";
-  if (
-    /\barts?\b|music|film|literature|philoso|history|languag|linguist/.test(m)
-  )
-    return "Arts & Humanities";
-  if (/psycholog|sociolog|politic|anthropo|internat|public policy/.test(m))
-    return "Social Sciences";
-  if (/environment|earth|geolog|atmospher|ocean|climate/.test(m))
-    return "Earth & Environment";
-  return "Other Fields";
+function classifyFaculty(edu: Education): string {
+  return edu.field_of_study ?? "Non-STEM / Humanities / Social Sciences";
 }
 
 function primaryEducation(u: UserCard): Education | null {
@@ -422,12 +380,11 @@ export default function StatsClient() {
     [filtered],
   );
 
-  const totalWithMajor = useMemo(
-    () =>
-      filtered.reduce((s, u) => {
-        const e = primaryEducation(u);
-        return e?.major ? s + 1 : s;
-      }, 0),
+  const totalWithField = useMemo(
+    () => filtered.reduce((s, u) => {
+      const e = primaryEducation(u);
+      return e?.field_of_study ? s + 1 : s;
+    }, 0),
     [filtered],
   );
 
@@ -435,8 +392,8 @@ export default function StatsClient() {
     () =>
       filtered.reduce((s, u) => {
         const e = primaryEducation(u);
-        if (!e?.major) return s;
-        return STEM_FIELDS.has(classifyFaculty(e.major)) ? s + 1 : s;
+        if (!e?.field_of_study) return s;
+        return STEM_FIELDS.has(classifyFaculty(e)) ? s + 1 : s;
       }, 0),
     [filtered],
   );
@@ -445,12 +402,12 @@ export default function StatsClient() {
     const c = new Map<string, number>();
     filtered.forEach((u) => {
       const e = primaryEducation(u);
-      if (!e?.major) return;
-      const f = classifyFaculty(e.major);
+      if (!e?.field_of_study) return;
+      const f = classifyFaculty(e);
       c.set(f, (c.get(f) ?? 0) + 1);
     });
-    return toRanked(c, totalWithMajor);
-  }, [filtered, totalWithMajor]);
+    return toRanked(c, totalWithField);
+  }, [filtered, totalWithField]);
 
   const uniRanked = useMemo(() => {
     const c = new Map<string, number>();
@@ -483,13 +440,11 @@ export default function StatsClient() {
         label: field,
         data: activeCohorts.map((k) => {
           const cohortAlumni = alumni.filter((u) => u.kvis_year === k);
-          const withMajor = cohortAlumni.filter(
-            (u) => primaryEducation(u)?.major,
-          );
-          const total = withMajor.length;
+          const withField = cohortAlumni.filter(u => primaryEducation(u)?.field_of_study);
+          const total = withField.length;
           if (total === 0) return 0;
-          const count = withMajor.filter(
-            (u) => classifyFaculty(primaryEducation(u)!.major!) === field,
+          const count = withField.filter(
+            (u) => classifyFaculty(primaryEducation(u)!) === field,
           ).length;
           return (count / total) * 100;
         }),
@@ -751,10 +706,10 @@ export default function StatsClient() {
                                 const cohortAlumni = alumni.filter(
                                   (u) => u.kvis_year === k,
                                 );
-                                const withMajor = cohortAlumni.filter(
-                                  (u) => primaryEducation(u)?.major,
+                                const withField = cohortAlumni.filter(
+                                  (u) => primaryEducation(u)?.field_of_study,
                                 );
-                                const total = withMajor.length;
+                                const total = withField.length;
                                 const count = Math.round((val / 100) * total);
                                 return ` ${ctx.dataset.label}: ${val < 1 ? val.toFixed(1) : Math.round(val)}% (${count})`;
                               },
@@ -790,8 +745,7 @@ export default function StatsClient() {
               <FadeUp>
                 <p className="text-xs text-[var(--kvis-text3)] pt-6 pb-10 max-w-[80ch] leading-relaxed">
                   Data covers registered KVIS Connect members only and may not
-                  reflect the full alumni body. Field classification is based on
-                  major name matching and may contain minor inaccuracies.
+                  reflect the full alumni body. Field of study is self-reported by each member.
                 </p>
               </FadeUp>
             </>

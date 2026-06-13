@@ -45,6 +45,16 @@ interface TabEducationProps {
   saveEducation: () => Promise<void>;
 }
 
+const FIELDS_OF_STUDY = [
+  "Mathematics & Data Science",
+  "Computer Science & Software Engineering",
+  "Physical Sciences & Engineering",
+  "Chemical Sciences & Engineering",
+  "Life Sciences & Bioengineering",
+  "Earth, Space, & Environmental Sciences",
+  "Non-STEM / Humanities / Social Sciences",
+];
+
 export function TabEducation({
   isSetup,
   isDirty,
@@ -345,6 +355,29 @@ export function TabEducation({
               </FieldRow>
             </>
           )}
+          <FieldRow label="Field of Study" required>
+            <Select
+              value={edu.field_of_study ?? ""}
+              onValueChange={(v) =>
+                setEducation((prev) =>
+                  prev.map((x, j) =>
+                    j === i ? { ...x, field_of_study: v } : x,
+                  ),
+                )
+              }
+            >
+              <SelectTrigger className={selectTriggerCls}>
+                <SelectValue placeholder="Select field" />
+              </SelectTrigger>
+              <SelectContent>
+                {FIELDS_OF_STUDY.map((f) => (
+                  <SelectItem key={f} value={f}>
+                    {f}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldRow>
           {!MED_DEGREES.includes(edu.degree) && (
             <>
               <FieldRow label="Major (1)" required>

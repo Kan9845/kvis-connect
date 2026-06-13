@@ -212,10 +212,15 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
   const contacts: { label: string; display: string; href: string }[] = [];
   if (user.contact_email && canSee(user.contact_email_public)) contacts.push({ label: "Email", display: user.contact_email, href: `mailto:${user.contact_email}` });
-  if (user.linkedin_url) contacts.push({ label: "LinkedIn", display: hostname(user.linkedin_url), href: user.linkedin_url });
-  if (user.facebook_url) contacts.push({ label: "Facebook", display: hostname(user.facebook_url), href: user.facebook_url });
-  if (user.instagram_url) contacts.push({ label: "Instagram", display: hostname(user.instagram_url), href: user.instagram_url });
-  if (user.website_url) contacts.push({ label: "Website", display: hostname(user.website_url), href: user.website_url });
+  if (user.linkedin_url && canSee(user.linkedin_public ?? true)) contacts.push({ label: "LinkedIn", display: hostname(user.linkedin_url), href: user.linkedin_url });
+  if (user.facebook_url && canSee(user.facebook_public ?? true)) contacts.push({ label: "Facebook", display: hostname(user.facebook_url), href: user.facebook_url });
+  if (user.instagram_url && canSee(user.instagram_public ?? true)) contacts.push({ label: "Instagram", display: hostname(user.instagram_url), href: user.instagram_url });
+  if (user.website_url && canSee(user.website_public ?? true)) contacts.push({ label: "Website", display: hostname(user.website_url), href: user.website_url });
+  if (user.line_id && canSee(user.line_id_public ?? true)) contacts.push({ label: "LINE", display: user.line_id, href: `https://line.me/ti/p/~${user.line_id}` });
+  (user.extra_contacts ?? []).forEach((ec: any) => {
+    if (!ec.public) return;
+    contacts.push({ label: ec.type, display: ec.value, href: ec.value.startsWith("http") ? ec.value : `mailto:${ec.value}` });
+  });
   (user.portfolio_links ?? []).forEach((pl) => {
     contacts.push({ label: pl.type, display: hostname(pl.url), href: pl.url });
   });
@@ -225,7 +230,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
     (user.projects?.length ?? 0) > 0 ||
     (user.publications?.length ?? 0) > 0;
 
-  const hasPersonality = !!user.zodiac || !!user.chronotype;
+  const hasPersonality = !!me && (!!user.zodiac || !!user.chronotype);
 
   const hasHobbies = !!me && !!user.hobbies && Object.values(
     typeof user.hobbies === 'string' ? JSON.parse(user.hobbies) : user.hobbies
@@ -350,7 +355,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                           {user.mbti}
                         </span>
                       )}
-                      {interests.slice(0, 4).map(t => (
+                      {(user.interests_public !== false || !!me) && interests.slice(0, 4).map(t => (
                         <span key={t} className="text-xs font-semibold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
                           {t}
                         </span>
