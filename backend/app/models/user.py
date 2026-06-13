@@ -103,11 +103,6 @@ class ExtraContact(SQLModel, table=True):
     value: str
     is_public: bool = True
     order_index: int = 0
-    linkedin_public: bool = True
-    facebook_public: bool = True
-    instagram_public: bool = True
-    website_public: bool = True
-    line_id_public: bool = True
     user: Optional["User"] = Relationship(back_populates="extra_contacts")
 
 
@@ -174,6 +169,12 @@ class User(SQLModel, table=True):
     extra_contacts: Optional[str] = None   # JSON list stored as text
     contact_email: Optional[str] = None
     contact_email_public: bool = True
+    
+    linkedin_public: bool = True
+    facebook_public: bool = True
+    instagram_public: bool = True
+    website_public: bool = True
+    line_id_public: bool = True
 
     # Location
     place: Optional[str] = None
