@@ -1,10 +1,15 @@
 import logging
 import threading
 import time
+from typing import TYPE_CHECKING, Optional
 
 import httpx
 
 from app.core.config import settings
+
+if TYPE_CHECKING:
+    from sqlmodel import Session
+    from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
@@ -58,3 +63,28 @@ def send_email(to_email: str, subject: str, text: str) -> None:
         timeout=15,
     )
     resp.raise_for_status()
+
+
+def send_notification(
+    session: "Session",
+    user: "User",
+    type: str,
+    title: str,
+    body: str,
+    link: Optional[str] = None,
+) -> None:
+    from app.models.notification import Notification
+
+    notif = Notification(user_id=user.id, type=type, title=title, body=body, link=link)
+    session.add(notif)
+
+    try:
+        send_email(
+            user.email,
+            f"KVIS Connect - {title}",
+            f"Hi {user.first_name},\n\n{body}\n\n"
+            + (f"Open: {settings.FRONTEND_URL}{link}\n\n" if link else "")
+            + "- KVIS Connect",
+        )
+    except Exception as e:
+        logger.warning("Failed to send notification email to %s: %s", user.email, e)

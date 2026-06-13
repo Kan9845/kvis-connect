@@ -61,9 +61,9 @@ export function NotificationBell() {
       {open && (
         <>
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-30 w-80 border border-[var(--kvis-rule)] bg-background shadow-xl rounded-sm overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 z-30 w-80 border border-[var(--kvis-border)] bg-background shadow-xl rounded-sm overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--kvis-rule)]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--kvis-border)]">
               <span className="text-xs font-bold uppercase tracking-[0.24em] text-foreground">
                 Notifications {unread > 0 && `(${unread})`}
               </span>
@@ -84,7 +84,7 @@ export function NotificationBell() {
             </div>
 
             {/* List */}
-            <div className="max-h-80 overflow-y-auto divide-y divide-[var(--kvis-rule)]">
+            <div className="max-h-80 overflow-y-auto divide-y divide-[var(--kvis-border)]">
               {notifs.length === 0 ? (
                 <p className="px-4 py-8 text-xs text-center text-muted-foreground">
                   No notifications yet.

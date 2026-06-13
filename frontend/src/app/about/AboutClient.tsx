@@ -9,6 +9,7 @@ import {
   StaggerItem,
 } from "@/components/ui/motion";
 import { Separator } from "@/components/ui/separator";
+import { FeedbackSection } from "./FeedbackSection";
 
 const SCHOOL_FACTS = [
   { label: "Established", value: "2014" },
@@ -21,21 +22,9 @@ const SCHOOL_FACTS = [
 
 const STAT_STRIP = [
   { value: "2014", label: "Year founded", color: "var(--kvis-green-light)" },
-  {
-    value: "72",
-    label: "Students per cohort",
-    color: "var(--kvis-purple-light)",
-  },
-  {
-    value: "100%",
-    label: "Scholarship coverage",
-    color: "var(--kvis-green-light)",
-  },
-  {
-    value: "600+",
-    label: "Alumni worldwide",
-    color: "var(--kvis-purple-light)",
-  },
+  { value: "72", label: "Students per cohort", color: "var(--kvis-purple-light)" },
+  { value: "100%", label: "Scholarship coverage", color: "var(--kvis-green-light)" },
+  { value: "600+", label: "Alumni worldwide", color: "var(--kvis-purple-light)" },
 ];
 
 const CONTRIBUTORS: {
@@ -198,7 +187,7 @@ export function AboutClient() {
             <section className="py-2xl grid md:grid-cols-[2fr_3fr] gap-layout items-start">
               <div>
                 <p
-                  className="text-xs font-semibold uppercase tracking-widest mb-5 text-[var(--kvis-purple)]"
+                  className="text-xs font-semibold uppercase tracking-widest mb-5 text-[var(--kvis-purple-light)]"
                   style={{ letterSpacing: "0.1em" }}
                 >
                   The Platform
@@ -232,7 +221,7 @@ export function AboutClient() {
                   Want to join the network?{" "}
                   <Link
                     href="/auth/register"
-                    className="font-semibold underline underline-offset-2 text-[var(--kvis-purple)]"
+                    className="font-semibold underline underline-offset-2 text-[var(--kvis-purple-light)]"
                   >
                     Create a profile
                   </Link>{" "}
@@ -261,54 +250,58 @@ export function AboutClient() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-lg">
                   {CONTRIBUTORS.map((c, i) => (
                     <StaggerItem key={i}>
-                      <Link href={`/profile/${c.slug}`} className="group block">
-                        <div
-                          className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
-                          style={{ aspectRatio: "1 / 1" }}
-                        >
-                          {c.image ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={c.image}
-                              alt={c.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-3xl font-black text-[var(--kvis-purple)]">
-                              {c.initials}
-                            </span>
-                          )}
-                        </div>
+                      <div className="group">
+                        <Link href={`/profile/${c.slug}`} className="block">
+                          <div
+                            className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
+                            style={{ aspectRatio: "1 / 1" }}
+                          >
+                            {c.image ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={c.image}
+                                alt={c.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-3xl font-black text-[var(--kvis-purple-light)]">
+                                {c.initials}
+                              </span>
+                            )}
+                          </div>
 
-                        <div className="flex flex-col gap-0.5">
-                          <p className="text-xs font-semibold text-[var(--kvis-ink)] group-hover:underline underline-offset-2">
-                            {c.name}
-                          </p>
-                          <p className="text-xs font-medium text-[var(--kvis-purple)]">
-                            {c.role}
-                          </p>
-                          <p className="text-xs font-semibold text-[var(--kvis-green-light)]">
-                            {c.batch}
-                          </p>
-                          {c.instagram && (
-                            <a
-                              href={`https://instagram.com/${c.instagram}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-xs font-medium text-[var(--kvis-text3)]"
-                            >
-                              <Instagram className="h-3 w-3 shrink-0" />
-                              <span>@{c.instagram}</span>
-                            </a>
-                          )}
-                        </div>
-                      </Link>
+                          <div className="flex flex-col gap-0.5 mb-1">
+                            <p className="text-xs font-semibold text-[var(--kvis-ink)] group-hover:underline underline-offset-2">
+                              {c.name}
+                            </p>
+                            <p className="text-xs font-medium text-[var(--kvis-purple-light)]">
+                              {c.role}
+                            </p>
+                            <p className="text-xs font-semibold text-[var(--kvis-green-light)]">
+                              {c.batch}
+                            </p>
+                          </div>
+                        </Link>
+                        {c.instagram && (
+                          <a
+                            href={`https://instagram.com/${c.instagram}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs font-medium text-[var(--kvis-text3)]"
+                          >
+                            <Instagram className="h-3 w-3 shrink-0" />
+                            <span>@{c.instagram}</span>
+                          </a>
+                        )}
+                      </div>
                     </StaggerItem>
                   ))}
                 </div>
               </StaggerList>
             </section>
           </FadeUp>
+
+          <FeedbackSection />
         </div>
       </div>
     </PageEntrance>

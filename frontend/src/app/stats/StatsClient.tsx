@@ -201,7 +201,7 @@ function RankedList({
         {visible.map((it) => (
           <StaggerItem key={it.key}>
             <div
-              className="grid items-center py-3 border-b border-[var(--kvis-rule)]"
+              className="grid items-start py-3 border-b border-[var(--kvis-rule)]"
               style={{
                 gridTemplateColumns: "1.75rem minmax(0,1fr) 4rem 2.5rem 3rem",
                 columnGap: "0.75rem",
@@ -214,9 +214,8 @@ function RankedList({
               <div className="flex items-center gap-2 min-w-0">
                 {showFlag && <FlagImg country={it.label} size={16} />}
                 <span
-                  className="font-semibold text-foreground truncate text-sm"
+                  className="font-semibold text-foreground text-sm leading-snug"
                   style={{ letterSpacing: "-0.005em" }}
-                  title={it.label}
                 >
                   {it.label}
                 </span>

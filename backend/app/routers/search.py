@@ -176,6 +176,7 @@ def _to_card(user: User) -> dict:
         "education": [
             {
                 "id": e.id, "uni_name": e.uni_name, "degree": e.degree,
+                "field_of_study": getattr(e, "field_of_study", None),
                 "major": e.major, "country": e.country, "state": e.state,
                 "scholarship": e.scholarship, "start_year": e.start_year,
                 "end_year": e.end_year, "is_public": getattr(e, "is_public", True),

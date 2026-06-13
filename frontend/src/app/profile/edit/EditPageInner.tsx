@@ -422,7 +422,7 @@ export default function EditPageInner() {
             {(isStudent
               ? ["general", "research", "personal", "account"]
               : ["general", "education", "career", "research", "personal", "account"]
-            ).map((t) => (
+            ).filter((t) => !(isSetup && t === "account")).map((t) => (
               <TabsTrigger
                 key={t}
                 value={t}

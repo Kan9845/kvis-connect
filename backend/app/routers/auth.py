@@ -17,6 +17,7 @@ from app.core.cache import invalidate_tags
 from app.core.slug import unique_user_slug
 from app.models.user import User
 from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody, ChangePasswordBody
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 # Google OAuth setup
@@ -439,9 +440,9 @@ def password_reset_request(body: PasswordResetRequest, session: Session = Depend
 
     try:
         _send_reset_email(body.email, token)
-    except Exception:
-        del _reset_store[token]
-        raise HTTPException(500, detail="Failed to send reset email. Check SMTP configuration.")
+    except Exception as e:
+        reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
+        logger.warning("Failed to send reset email to %s (%s). Reset URL: %s", body.email, e, reset_url)
 
     return {"message": "If that email is registered, a reset link has been sent."}
 

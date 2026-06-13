@@ -132,7 +132,7 @@ export function TabAccount({
               <span className="text-sm text-muted-foreground">Not connected</span>
               <button
                 type="button"
-                onClick={() => authApi.googleLogin()}
+                onClick={() => authApi.linkGoogle()}
                 className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.22em] text-foreground border border-[var(--kvis-border)] px-3 py-1.5 hover:bg-foreground hover:text-background transition-colors"
               >
                 Link Google
@@ -160,7 +160,7 @@ export function TabAccount({
           You signed up with Google — no password is set. You can set one via{" "}
           <button
             type="button"
-            onClick={() => router.push("/auth/forgot-password")}
+            onClick={() => router.push("/auth/forgot")}
             className="underline underline-offset-4 hover:text-foreground transition-colors"
           >
             forgot password
