@@ -420,8 +420,8 @@ export default function EditPageInner() {
         >
           <TabsList className="h-auto w-full justify-start gap-7 rounded-none bg-transparent p-0 pt-5 pb-0 border-b border-[var(--sep-strong)] overflow-x-auto">
             {(isStudent
-              ? ["general", "research", "personal"]
-              : ["general", "education", "career", "research", "personal"]
+              ? ["general", "research", "personal", "account"]
+              : ["general", "education", "career", "research", "personal", "account"]
             ).map((t) => (
               <TabsTrigger
                 key={t}
@@ -571,8 +571,8 @@ export default function EditPageInner() {
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-[var(--kvis-border)]">
           {(() => {
             const tabs = isStudent
-              ? ["general", "research", "personal", "account"]
-              : ["general", "education", "career", "research", "personal", "account"];
+              ? ["general", "research", "personal"]
+              : ["general", "education", "career", "research", "personal"];
             const idx = tabs.indexOf(tab);
             const isLast = idx === tabs.length - 1;
 
