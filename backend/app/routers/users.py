@@ -6,6 +6,7 @@ import boto3
 import uuid
 import httpx
 import json
+from typing import Optional, List
 
 from app.core.database import get_session
 from app.core.deps import get_current_user, get_optional_user
