@@ -90,8 +90,8 @@ export const authApi = {
     api.post("/api/auth/email/verify", { email, otp }),
   resendVerification: (email: string) =>
     api.post("/api/auth/otp/request", { email }),
-  changePassword: (current_password: string, new_password: string) =>
-    api.post("/api/auth/change-password", { current_password, new_password }),
+  changePassword: (data: { current_password: string; new_password: string }) =>
+    api.post("/api/auth/change-password", data),
 };
 
 // Users

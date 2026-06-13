@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -37,6 +38,8 @@ import {
   SCHOLARSHIP_BOND,
 } from "./constants";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface TabEducationProps {
   isSetup: boolean;
   isDirty: boolean;
@@ -45,15 +48,28 @@ interface TabEducationProps {
   saveEducation: () => Promise<void>;
 }
 
-const FIELDS_OF_STUDY = [
-  "Mathematics & Data Science",
-  "Computer Science & Software Engineering",
-  "Physical Sciences & Engineering",
-  "Chemical Sciences & Engineering",
-  "Life Sciences & Bioengineering",
-  "Earth, Space, & Environmental Sciences",
-  "Non-STEM / Humanities / Social Sciences",
-];
+// Per-entry validation errors
+type EduErrors = {
+  uni_name?: string;
+  degree?: string;
+  major?: string;
+  med_school?: string;
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function validateEducation(edu: Omit<Education, "id">): EduErrors {
+  const errors: EduErrors = {};
+  if (!edu.uni_name?.trim()) errors.uni_name = "University is required.";
+  if (!edu.degree?.trim()) errors.degree = "Degree is required.";
+  if (!MED_DEGREES.includes(edu.degree) && !edu.major?.trim())
+    errors.major = "Major is required.";
+  if (MED_DEGREES.includes(edu.degree) && !edu.med_school?.trim())
+    errors.med_school = "Medical school is required.";
+  return errors;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export function TabEducation({
   isSetup,
@@ -62,6 +78,59 @@ export function TabEducation({
   setEducation,
   saveEducation,
 }: TabEducationProps) {
+  // Per-entry "Other" scholarship custom name (stored locally, merged on save)
+  const [scholarshipOther, setScholarshipOther] = useState<
+    Record<number, string>
+  >({});
+
+  // Per-entry validation errors (shown after a failed save attempt)
+  const [errors, setErrors] = useState<Record<number, EduErrors>>({});
+
+  // ── Validate all entries and call saveEducation ───────────────────────────
+  const handleSave = async () => {
+    // Validate
+    const newErrors: Record<number, EduErrors> = {};
+    let hasError = false;
+    education.forEach((edu, i) => {
+      const e = validateEducation(edu);
+      if (Object.keys(e).length > 0) {
+        newErrors[i] = e;
+        hasError = true;
+      }
+    });
+    setErrors(newErrors);
+    if (hasError) return;
+
+    // Resolve "Other" scholarship names before saving
+    if (Object.keys(scholarshipOther).length > 0) {
+      setEducation((prev) =>
+        prev.map((edu, i) => {
+          const custom = scholarshipOther[i]?.trim();
+          if (edu.scholarship === "Other" && custom) {
+            return { ...edu, scholarship: custom };
+          }
+          return edu;
+        }),
+      );
+      // Give React one tick to flush state before saving
+      await new Promise((r) => setTimeout(r, 0));
+    }
+
+    await saveEducation();
+    setErrors({});
+  };
+
+  // ── Clear error for a specific entry+field when user edits ────────────────
+  const clearError = (i: number, field: keyof EduErrors) => {
+    setErrors((prev) => {
+      if (!prev[i]?.[field]) return prev;
+      const next = { ...prev };
+      next[i] = { ...next[i] };
+      delete next[i][field];
+      return next;
+    });
+  };
+
   return (
     <section>
       <SectionHead numeral="I." kicker="Schooling" title="Education" />
@@ -71,10 +140,8 @@ export function TabEducation({
         </div>
       )}
       {education.map((edu, i) => (
-        <div
-          key={i}
-          className="py-7 border-b border-[var(--kvis-border)]"
-        >
+        <div key={i} className="py-7 border-b border-[var(--kvis-border)]">
+          {/* ── Entry header ──────────────────────────────────────────────── */}
           <div className="flex flex-wrap items-center justify-between gap-y-2 mb-4">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)] shrink-0">
@@ -89,9 +156,7 @@ export function TabEducation({
                 value={edu.is_public ?? true}
                 onChange={(v) =>
                   setEducation((prev) =>
-                    prev.map((x, j) =>
-                      j === i ? { ...x, is_public: v } : x,
-                    ),
+                    prev.map((x, j) => (j === i ? { ...x, is_public: v } : x)),
                   )
                 }
               />
@@ -106,34 +171,36 @@ export function TabEducation({
               </button>
             </div>
           </div>
-          <FieldRow label="University">
+
+          {/* ── University ────────────────────────────────────────────────── */}
+          <FieldRow label="University" required error={errors[i]?.uni_name}>
             <UniversityCombobox
               variant="underline"
               value={edu.uni_name}
-              onChange={(v) =>
+              onChange={(v) => {
+                clearError(i, "uni_name");
                 setEducation((prev) =>
-                  prev.map((x, j) =>
-                    j === i ? { ...x, uni_name: v } : x,
-                  ),
-                )
-              }
+                  prev.map((x, j) => (j === i ? { ...x, uni_name: v } : x)),
+                );
+              }}
               onCountryChange={(c) =>
                 setEducation((prev) =>
-                  prev.map((x, j) =>
-                    j === i ? { ...x, country: c } : x,
-                  ),
+                  prev.map((x, j) => (j === i ? { ...x, country: c } : x)),
                 )
               }
             />
           </FieldRow>
-          <FieldRow label="Degree">
+
+          {/* ── Degree ────────────────────────────────────────────────────── */}
+          <FieldRow label="Degree" required error={errors[i]?.degree}>
             <Select
               value={edu.degree}
-              onValueChange={(v) =>
+              onValueChange={(v) => {
+                clearError(i, "degree");
                 setEducation((prev) =>
                   prev.map((x, j) => (j === i ? { ...x, degree: v } : x)),
-                )
-              }
+                );
+              }}
             >
               <SelectTrigger className={selectTriggerCls}>
                 <SelectValue placeholder="Select degree" />
@@ -147,7 +214,8 @@ export function TabEducation({
               </SelectContent>
             </Select>
           </FieldRow>
-          {/* Medical track - shown when degree is MD/MBBS */}
+
+          {/* ── Medical track ─────────────────────────────────────────────── */}
           {MED_DEGREES.includes(edu.degree) && (
             <>
               <div className="mt-4 mb-2 py-2 border-b border-[var(--kvis-border)]">
@@ -159,16 +227,17 @@ export function TabEducation({
                 </p>
               </div>
 
-              <FieldRow label="Medical school">
+              <FieldRow label="Medical school" required error={errors[i]?.med_school}>
                 <Select
                   value={edu.med_school ?? ""}
-                  onValueChange={(v) =>
+                  onValueChange={(v) => {
+                    clearError(i, "med_school");
                     setEducation((prev) =>
                       prev.map((x, j) =>
                         j === i ? { ...x, med_school: v } : x,
                       ),
-                    )
-                  }
+                    );
+                  }}
                 >
                   <SelectTrigger className={selectTriggerCls}>
                     <SelectValue placeholder="Select school" />
@@ -190,9 +259,7 @@ export function TabEducation({
                     onChange={(e) =>
                       setEducation((prev) =>
                         prev.map((x, j) =>
-                          j === i
-                            ? { ...x, uni_name: e.target.value }
-                            : x,
+                          j === i ? { ...x, uni_name: e.target.value } : x,
                         ),
                       )
                     }
@@ -294,9 +361,7 @@ export function TabEducation({
                   onChange={(e) =>
                     setEducation((prev) =>
                       prev.map((x, j) =>
-                        j === i
-                          ? { ...x, med_hospital: e.target.value }
-                          : x,
+                        j === i ? { ...x, med_hospital: e.target.value } : x,
                       ),
                     )
                   }
@@ -355,42 +420,20 @@ export function TabEducation({
               </FieldRow>
             </>
           )}
-          <FieldRow label="Field of Study" required>
-            <Select
-              value={edu.field_of_study ?? ""}
-              onValueChange={(v) =>
-                setEducation((prev) =>
-                  prev.map((x, j) =>
-                    j === i ? { ...x, field_of_study: v } : x,
-                  ),
-                )
-              }
-            >
-              <SelectTrigger className={selectTriggerCls}>
-                <SelectValue placeholder="Select field" />
-              </SelectTrigger>
-              <SelectContent>
-                {FIELDS_OF_STUDY.map((f) => (
-                  <SelectItem key={f} value={f}>
-                    {f}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldRow>
+
+          {/* ── Non-medical: Major ────────────────────────────────────────── */}
           {!MED_DEGREES.includes(edu.degree) && (
             <>
-              <FieldRow label="Major (1)" required>
+              <FieldRow label="Major (1)" required error={errors[i]?.major}>
                 <MajorCombobox
                   variant="underline"
                   value={edu.major}
-                  onChange={(v) =>
+                  onChange={(v) => {
+                    clearError(i, "major");
                     setEducation((prev) =>
-                      prev.map((x, j) =>
-                        j === i ? { ...x, major: v } : x,
-                      ),
-                    )
-                  }
+                      prev.map((x, j) => (j === i ? { ...x, major: v } : x)),
+                    );
+                  }}
                 />
               </FieldRow>
               <FieldRow label="Major (2)" hint="Optional.">
@@ -399,61 +442,64 @@ export function TabEducation({
                   value={edu.major2 ?? ""}
                   onChange={(v) =>
                     setEducation((prev) =>
-                      prev.map((x, j) =>
-                        j === i ? { ...x, major2: v } : x,
-                      ),
+                      prev.map((x, j) => (j === i ? { ...x, major2: v } : x)),
                     )
                   }
                 />
               </FieldRow>
-              {(edu.minors ?? []).map((minor, mi) => (
-                <FieldRow
-                  key={mi}
-                  label={mi === 0 ? "Minor" : `Minor (${mi + 1})`}
-                  hint="Optional."
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <MajorCombobox
-                        variant="underline"
-                        value={minor}
-                        onChange={(v) =>
-                          setEducation((prev) =>
-                            prev.map((x, j) => {
-                              if (j !== i) return x;
-                              const next = [...(x.minors ?? [])];
-                              next[mi] = v;
-                              return { ...x, minors: next };
-                            }),
-                          )
-                        }
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() =>
+              <FieldRow label="Minor(s)" hint="Optional.">
+                {(edu.minors ?? [""]).map((minor, mi) => (
+                  <div key={mi} className="flex items-center gap-2 mb-2">
+                    <MajorCombobox
+                      variant="underline"
+                      value={minor}
+                      onChange={(v) =>
                         setEducation((prev) =>
-                          prev.map((x, j) => {
-                            if (j !== i) return x;
-                            const next = (x.minors ?? []).filter((_, k) => k !== mi);
-                            return { ...x, minors: next };
-                          }),
+                          prev.map((x, j) =>
+                            j === i
+                              ? {
+                                  ...x,
+                                  minors: (x.minors ?? [""]).map((m, k) =>
+                                    k === mi ? v : m,
+                                  ),
+                                }
+                              : x,
+                          ),
                         )
                       }
-                      className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    />
+                    {mi > 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setEducation((prev) =>
+                            prev.map((x, j) =>
+                              j === i
+                                ? {
+                                    ...x,
+                                    minors: (x.minors ?? []).filter(
+                                      (_, k) => k !== mi,
+                                    ),
+                                  }
+                                : x,
+                            ),
+                          )
+                        }
+                        className="text-[var(--kvis-text3)] hover:text-foreground transition-colors shrink-0"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
-                </FieldRow>
-              ))}
-              <FieldRow label="">
+                ))}
                 <button
                   type="button"
                   onClick={() =>
                     setEducation((prev) =>
                       prev.map((x, j) =>
-                        j === i ? { ...x, minors: [...(x.minors ?? []), ""] } : x,
+                        j === i
+                          ? { ...x, minors: [...(x.minors ?? []), ""] }
+                          : x,
                       ),
                     )
                   }
@@ -465,6 +511,8 @@ export function TabEducation({
               </FieldRow>
             </>
           )}
+
+          {/* ── Location ─────────────────────────────────────────────────── */}
           <FieldRow label="Country">
             <CountrySelect
               variant="underline"
@@ -503,14 +551,14 @@ export function TabEducation({
                 value={edu.city ?? ""}
                 onChange={(v) =>
                   setEducation((prev) =>
-                    prev.map((x, j) =>
-                      j === i ? { ...x, city: v } : x,
-                    ),
+                    prev.map((x, j) => (j === i ? { ...x, city: v } : x)),
                   )
                 }
               />
             </FieldRow>
           )}
+
+          {/* ── Years ────────────────────────────────────────────────────── */}
           <FieldRow label="Years">
             <div className="flex items-center gap-3">
               <Input
@@ -523,8 +571,7 @@ export function TabEducation({
                       j === i
                         ? {
                             ...x,
-                            start_year:
-                              parseInt(e.target.value) || undefined,
+                            start_year: parseInt(e.target.value) || undefined,
                           }
                         : x,
                     ),
@@ -545,8 +592,7 @@ export function TabEducation({
                       j === i
                         ? {
                             ...x,
-                            end_year:
-                              parseInt(e.target.value) || undefined,
+                            end_year: parseInt(e.target.value) || undefined,
                           }
                         : x,
                     ),
@@ -556,36 +602,39 @@ export function TabEducation({
               />
             </div>
           </FieldRow>
-          <FieldRow label="Status">
-            <label className="inline-flex items-center gap-2.5 text-sm text-foreground cursor-pointer pt-1.5">
-              <input
-                type="checkbox"
-                checked={edu.is_current ?? false}
-                onChange={(e) =>
-                  setEducation((prev) =>
-                    prev.map((x, j) =>
-                      j === i
-                        ? { ...x, is_current: e.target.checked }
-                        : x,
-                    ),
-                  )
-                }
-                className="h-4 w-4 accent-foreground"
-              />
-              <span>I am currently studying here</span>
-            </label>
-          </FieldRow>
-          {/* Scholarship */}
+
+          {/* ── Scholarship ──────────────────────────────────────────────── */}
           <FieldRow label="Scholarship">
             <Select
-              value={edu.scholarship ?? ""}
-              onValueChange={(v) =>
+              value={
+                // If the stored value isn't in the list, it was a custom "Other" name
+                SCHOLARSHIP_NAMES.includes(edu.scholarship ?? "")
+                  ? (edu.scholarship ?? "")
+                  : edu.scholarship
+                    ? "Other"
+                    : ""
+              }
+              onValueChange={(v) => {
                 setEducation((prev) =>
                   prev.map((x, j) =>
                     j === i ? { ...x, scholarship: v } : x,
                   ),
-                )
-              }
+                );
+                // Reset custom name when switching away from Other
+                if (v !== "Other") {
+                  setScholarshipOther((prev) => {
+                    const next = { ...prev };
+                    delete next[i];
+                    return next;
+                  });
+                } else {
+                  // Pre-fill if the stored value was already a custom name
+                  const stored = education[i]?.scholarship;
+                  if (stored && !SCHOLARSHIP_NAMES.includes(stored)) {
+                    setScholarshipOther((prev) => ({ ...prev, [i]: stored }));
+                  }
+                }
+              }}
             >
               <SelectTrigger className={selectTriggerCls}>
                 <SelectValue placeholder="Select scholarship" />
@@ -599,6 +648,28 @@ export function TabEducation({
               </SelectContent>
             </Select>
           </FieldRow>
+
+          {/* "Other" scholarship → specify */}
+          {(edu.scholarship === "Other" ||
+            (edu.scholarship &&
+              !SCHOLARSHIP_NAMES.includes(edu.scholarship))) && (
+            <FieldRow label="Please specify" hint="Name of your scholarship.">
+              <Input
+                placeholder="e.g. Royal Thai Government Scholarship"
+                value={scholarshipOther[i] ?? ""}
+                onChange={(e) =>
+                  setScholarshipOther((prev) => ({
+                    ...prev,
+                    [i]: e.target.value,
+                  }))
+                }
+                className={inputCls}
+                autoFocus
+              />
+            </FieldRow>
+          )}
+
+          {/* ── Funding type & Bond (shown when any scholarship selected) ── */}
           {edu.scholarship && (
             <>
               <FieldRow label="Funding type">
@@ -651,11 +722,13 @@ export function TabEducation({
           )}
         </div>
       ))}
+
+      {/* ── Actions ────────────────────────────────────────────────────────── */}
       <div className="pt-8 flex items-center gap-4 flex-wrap">
         {!isSetup && (
           <Button
             type="button"
-            onClick={saveEducation}
+            onClick={handleSave}
             disabled={!isDirty}
             className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >
@@ -668,7 +741,13 @@ export function TabEducation({
           onClick={() =>
             setEducation((prev) => [
               ...prev,
-              { uni_name: "", degree: "", major: "", country: "", is_public: true, is_current: false },
+              {
+                uni_name: "",
+                degree: "",
+                major: "",
+                country: "",
+                is_public: true,
+              },
             ])
           }
           className="h-auto rounded-none border-foreground bg-transparent px-4 py-2.5 text-xs font-bold uppercase tracking-[0.28em] text-foreground hover:bg-foreground hover:text-background gap-1.5"

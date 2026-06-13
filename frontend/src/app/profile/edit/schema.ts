@@ -36,4 +36,4 @@ export const generalSchema = z.object({
 });
 
 export type GeneralForm = z.infer<typeof generalSchema>;
-export type Tab = "general" | "education" | "career" | "research" | "personal";
+export type Tab = "general" | "education" | "career" | "research" | "personal" | "account";

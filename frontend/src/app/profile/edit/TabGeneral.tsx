@@ -6,8 +6,7 @@ import type { UserMe } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
-import { authApi, userApi } from "@/lib/api";
+import { authApi } from "@/lib/api";
 import {
   Select,
   SelectContent,
@@ -25,7 +24,6 @@ import {
   Check,
   ShieldCheck,
   ShieldAlert,
-  Dot,
 } from "lucide-react";
 import {
   MBTI_TYPES,
@@ -97,14 +95,11 @@ interface TabGeneralProps {
   watchNicknamePublic: boolean;
   watchInterestsPublic: boolean;
   watchContactEmailPublic: boolean;
-  googleStatus: "linked" | "error_taken" | "error_cancelled" | null;
   watchLinkedinPublic: boolean;
   watchFacebookPublic: boolean;
   watchInstagramPublic: boolean;
   watchWebsitePublic: boolean;
   watchLineIdPublic: boolean;
-  unlinking: boolean;
-  handleUnlinkGoogle: () => Promise<void>;
 }
 
 export function TabGeneral({
@@ -148,9 +143,6 @@ export function TabGeneral({
   watchNicknamePublic,
   watchInterestsPublic,
   watchContactEmailPublic,
-  googleStatus,
-  unlinking,  
-  handleUnlinkGoogle,
   watchLinkedinPublic,
   watchFacebookPublic,
   watchInstagramPublic,
@@ -158,14 +150,6 @@ export function TabGeneral({
   watchLineIdPublic,
 }: TabGeneralProps) {
   const router = useRouter();
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [changePwError, setChangePwError] = useState("");
-  const [changePwLoading, setChangePwLoading] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
-  const [deleteLoading, setDeleteLoading] = useState(false);
 
   return (
     <>
@@ -260,18 +244,10 @@ export function TabGeneral({
             kicker="Identity"
             title="The basics"
           />
-          <FieldRow
-            label="First name"
-            required
-            error={errors.first_name?.message}
-          >
+          <FieldRow label="First name" required error={errors.first_name?.message}>
             <Input {...register("first_name")} className={inputCls} />
           </FieldRow>
-          <FieldRow
-            label="Last name"
-            required
-            error={errors.last_name?.message}
-          >
+          <FieldRow label="Last name" required error={errors.last_name?.message}>
             <Input {...register("last_name")} className={inputCls} />
           </FieldRow>
           <FieldRow label="Nickname" hint="Optional display name.">
@@ -292,13 +268,9 @@ export function TabGeneral({
           {(isAlumni || isFacultyUser) && (
             <FieldRow label="KVIS cohort" required>
               <Select
-                defaultValue={
-                  me.kvis_year ? String(me.kvis_year) : undefined
-                }
+                defaultValue={me.kvis_year ? String(me.kvis_year) : undefined}
                 onValueChange={(v) =>
-                  setValue("kvis_year", parseInt(v), {
-                    shouldDirty: true,
-                  })
+                  setValue("kvis_year", parseInt(v), { shouldDirty: true })
                 }
               >
                 <SelectTrigger className={selectTriggerCls}>
@@ -314,52 +286,6 @@ export function TabGeneral({
               </Select>
             </FieldRow>
           )}
-          <FieldRow label="Google" required>
-            {me.google_id ? (
-              <div className="flex items-center justify-between pt-1.5">
-                <div className="flex items-center gap-2">
-                  <svg width="14" height="14" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                  </svg>
-                  <span className="text-sm text-foreground">Linked</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleUnlinkGoogle}
-                  disabled={unlinking}
-                  className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors disabled:opacity-40"
-                >
-                  {unlinking ? "Unlinking..." : "Unlink"}
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => authApi.linkGoogle()}
-                className="flex items-center gap-2 pt-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-purple-light)] hover:opacity-80 transition-opacity"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Link Google account
-              </button>
-            )}
-            {googleStatus === "linked" && (
-              <p className="text-xs text-[var(--kvis-green-light)] mt-1.5">Google linked — you can now sign in with Google.</p>
-            )}
-            {googleStatus === "error_taken" && (
-              <p className="text-xs text-destructive mt-1.5">This Google account is already linked to another profile.</p>
-            )}
-            {googleStatus === "error_cancelled" && (
-              <p className="text-xs text-[var(--kvis-text3)] mt-1.5">Google linking was cancelled.</p>
-            )}
-          </FieldRow>
           {/* Teaching period - faculty only */}
           {isFaculty(me) && (
             <>
@@ -387,15 +313,10 @@ export function TabGeneral({
                 kicker="Faculty"
                 title="Teaching period"
               />
-              <FieldRow
-                label="Start year"
-                hint="First year you taught at KVIS"
-              >
+              <FieldRow label="Start year" hint="First year you taught at KVIS">
                 <Input
                   type="number"
-                  {...register("teach_start_year", {
-                    valueAsNumber: true,
-                  })}
+                  {...register("teach_start_year", { valueAsNumber: true })}
                   className={inputCls}
                   placeholder="e.g. 2018"
                 />
@@ -423,15 +344,10 @@ export function TabGeneral({
                 </div>
               </FieldRow>
               {watch("is_current_teacher_str") === "false" && (
-                <FieldRow
-                  label="End year"
-                  hint="Last year you taught at KVIS"
-                >
+                <FieldRow label="End year" hint="Last year you taught at KVIS">
                   <Input
                     type="number"
-                    {...register("teach_end_year", {
-                      valueAsNumber: true,
-                    })}
+                    {...register("teach_end_year", { valueAsNumber: true })}
                     className={inputCls}
                     placeholder="e.g. 2024"
                   />
@@ -467,13 +383,7 @@ export function TabGeneral({
             </Select>
           </FieldRow>
           {(isStudent ||
-            [
-              "undergraduate",
-              "masters",
-              "phd",
-              "med_preclinical",
-              "med_clinical",
-            ].includes(
+            ["undergraduate", "masters", "phd", "med_preclinical", "med_clinical"].includes(
               watch("current_status") ?? me.current_status ?? "",
             )) && (
             <FieldRow
@@ -482,9 +392,7 @@ export function TabGeneral({
             >
               <Input
                 type="number"
-                {...register("expected_grad_year", {
-                  valueAsNumber: true,
-                })}
+                {...register("expected_grad_year", { valueAsNumber: true })}
                 placeholder={`e.g. ${new Date().getFullYear() + 2}`}
                 className={inputCls}
               />
@@ -536,25 +444,16 @@ export function TabGeneral({
 
         {/* Location */}
         <section>
-          <SectionHead
-            numeral="IV."
-            kicker="Location"
-            title="Where you are"
-          />
+          <SectionHead numeral="IV." kicker="Location" title="Where you are" />
           <FieldRow label="Country">
             <CountrySelect
               variant="underline"
               value={watch("country") ?? ""}
-              onChange={(v) =>
-                setValue("country", v, { shouldDirty: true })
-              }
+              onChange={(v) => setValue("country", v, { shouldDirty: true })}
             />
           </FieldRow>
           {watch("country") && !CITY_STATE_COUNTRIES.has(watch("country")!) && (
-            <FieldRow
-              label="Province / State"
-              hint="Region within your country."
-            >
+            <FieldRow label="Province / State" hint="Region within your country.">
               <ProvinceSelect
                 variant="underline"
                 country={watch("country") ?? ""}
@@ -572,9 +471,7 @@ export function TabGeneral({
                 country={watch("country") ?? ""}
                 province={watch("place_level2") ?? ""}
                 value={watch("place") ?? ""}
-                onChange={(v) =>
-                  setValue("place", v, { shouldDirty: true })
-                }
+                onChange={(v) => setValue("place", v, { shouldDirty: true })}
               />
             </FieldRow>
           )}
@@ -582,15 +479,8 @@ export function TabGeneral({
 
         {/* Contacts */}
         <section>
-          <SectionHead
-            numeral="V."
-            kicker="Contact"
-            title="How to reach you"
-          />
-          <FieldRow
-            label="Public email"
-            hint="Shown on your profile if public."
-          >
+          <SectionHead numeral="V." kicker="Contact" title="How to reach you" />
+          <FieldRow label="Public email" hint="Shown on your profile if public.">
             <div className="flex items-center gap-3">
               <Input
                 placeholder="you@gmail.com"
@@ -600,54 +490,42 @@ export function TabGeneral({
               <PrivacyToggle
                 value={watchContactEmailPublic}
                 onChange={(v) =>
-                  setValue("contact_email_public", v, {
-                    shouldDirty: true,
-                  })
+                  setValue("contact_email_public", v, { shouldDirty: true })
                 }
               />
             </div>
           </FieldRow>
-
           <FieldRow label="LinkedIn">
             <div className="flex items-center gap-3">
               <Input placeholder="https://linkedin.com/in/..." {...register("linkedin_url")} className={`${inputCls} flex-1`} />
               <PrivacyToggle value={watchLinkedinPublic} onChange={(v) => setValue("linkedin_public", v, { shouldDirty: true })} />
             </div>
           </FieldRow>
-
           <FieldRow label="Facebook">
             <div className="flex items-center gap-3">
               <Input placeholder="https://facebook.com/..." {...register("facebook_url")} className={`${inputCls} flex-1`} />
               <PrivacyToggle value={watchFacebookPublic} onChange={(v) => setValue("facebook_public", v, { shouldDirty: true })} />
             </div>
           </FieldRow>
-
           <FieldRow label="Instagram">
             <div className="flex items-center gap-3">
               <Input placeholder="https://instagram.com/..." {...register("instagram_url")} className={`${inputCls} flex-1`} />
               <PrivacyToggle value={watchInstagramPublic} onChange={(v) => setValue("instagram_public", v, { shouldDirty: true })} />
             </div>
           </FieldRow>
-
           <FieldRow label="Website">
             <div className="flex items-center gap-3">
               <Input placeholder="https://..." {...register("website_url")} className={`${inputCls} flex-1`} />
               <PrivacyToggle value={watchWebsitePublic} onChange={(v) => setValue("website_public", v, { shouldDirty: true })} />
             </div>
           </FieldRow>
-
           <FieldRow label="LINE ID">
             <div className="flex items-center gap-3">
               <Input placeholder="your.line.id" {...register("line_id")} className={`${inputCls} flex-1`} />
               <PrivacyToggle value={watchLineIdPublic} onChange={(v) => setValue("line_id_public", v, { shouldDirty: true })} />
             </div>
           </FieldRow>
-
-          {/* Extra contacts */}
-          <FieldRow
-            label="More contacts"
-            hint="Up to 3 extra contact methods."
-          >
+          <FieldRow label="More contacts" hint="Up to 3 extra contact methods.">
             <div className="space-y-3 md:pt-2.5">
               {extraContacts.map((c, i) => (
                 <div key={i} className="flex items-center gap-2">
@@ -655,9 +533,7 @@ export function TabGeneral({
                     value={c.type}
                     onValueChange={(v) =>
                       setExtraContacts((prev) =>
-                        prev.map((x, j) =>
-                          j === i ? { ...x, type: v } : x,
-                        ),
+                        prev.map((x, j) => (j === i ? { ...x, type: v } : x)),
                       )
                     }
                   >
@@ -666,9 +542,7 @@ export function TabGeneral({
                     </SelectTrigger>
                     <SelectContent>
                       {CONTACT_TYPES.map((t) => (
-                        <SelectItem key={t} value={t}>
-                          {t}
-                        </SelectItem>
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -688,18 +562,14 @@ export function TabGeneral({
                     value={c.public}
                     onChange={(v) =>
                       setExtraContacts((prev) =>
-                        prev.map((x, j) =>
-                          j === i ? { ...x, public: v } : x,
-                        ),
+                        prev.map((x, j) => (j === i ? { ...x, public: v } : x)),
                       )
                     }
                   />
                   <button
                     type="button"
                     onClick={() =>
-                      setExtraContacts((prev) =>
-                        prev.filter((_, j) => j !== i),
-                      )
+                      setExtraContacts((prev) => prev.filter((_, j) => j !== i))
                     }
                     className="text-[var(--kvis-text3)] hover:text-foreground transition-colors"
                   >
@@ -724,94 +594,6 @@ export function TabGeneral({
             </div>
           </FieldRow>
         </section>
-
-        <SectionHead numeral="VII." kicker="Account" title="Security & account" />
-
-        <FieldRow label="Password">
-          <button type="button" onClick={() => setShowChangePassword(!showChangePassword)}
-            className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-purple-light)]">
-            Change password
-          </button>
-        </FieldRow>
-
-        {showChangePassword && (
-          <div className="py-4 space-y-3 border-b border-[var(--kvis-border)]">
-            <Input
-              type="password"
-              placeholder="Current password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className={inputCls}
-            />
-            <Input
-              type="password"
-              placeholder="New password (min. 8 characters)"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className={inputCls}
-            />
-            {changePwError && <p className="text-xs text-destructive">{changePwError}</p>}
-            <button
-              type="button"
-              disabled={changePwLoading}
-              onClick={async () => {
-                setChangePwError("");
-                if (newPassword.length < 8) { setChangePwError("New password must be at least 8 characters."); return; }
-                setChangePwLoading(true);
-                try {
-                  await authApi.changePassword(currentPassword, newPassword);
-                  setShowChangePassword(false);
-                  setCurrentPassword("");
-                  setNewPassword("");
-                  notify.success("Password changed.");
-                } catch (e: any) {
-                  setChangePwError(e?.response?.data?.detail ?? "Failed to change password.");
-                } finally {
-                  setChangePwLoading(false);
-                }
-              }}
-              className="text-xs font-bold uppercase tracking-[0.18em] px-4 py-2 bg-foreground text-background disabled:opacity-40"
-            >
-              {changePwLoading ? "Saving..." : "Save new password"}
-            </button>
-          </div>
-        )}
-
-        <FieldRow label="">
-          <button type="button" onClick={() => setShowDeleteConfirm(!showDeleteConfirm)}
-            className="text-xs font-bold uppercase tracking-[0.18em] text-destructive">
-            Delete account
-          </button>
-        </FieldRow>
-
-        {showDeleteConfirm && (
-          <div className="py-4 space-y-3 border-b border-[var(--kvis-border)]">
-            <p className="text-sm text-muted-foreground">This will deactivate your account. Type <strong>DELETE</strong> to confirm.</p>
-            <Input
-              placeholder="DELETE"
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              className={inputCls}
-            />
-            <button
-              type="button"
-              disabled={deleteConfirmText !== "DELETE" || deleteLoading}
-              onClick={async () => {
-                setDeleteLoading(true);
-                try {
-                  await userApi.deleteAccount();
-                  router.push("/auth/login");
-                } catch (e: any) {
-                  notify.error(e?.response?.data?.detail ?? "Failed to delete account.");
-                  setDeleteLoading(false);
-                }
-              }}
-              className="text-xs font-bold uppercase tracking-[0.18em] px-4 py-2 bg-destructive text-white disabled:opacity-40"
-            >
-              {deleteLoading ? "Deleting..." : "Confirm delete"}
-            </button>
-          </div>
-        )}
 
         {!isSetup && (
           <div className="pt-8 flex items-center gap-4 flex-wrap">
@@ -838,4 +620,3 @@ export function TabGeneral({
     </>
   );
 }
-

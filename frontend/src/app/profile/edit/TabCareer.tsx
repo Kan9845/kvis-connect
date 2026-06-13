@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -30,6 +30,8 @@ import {
 } from "./components";
 import { COMPANY_TYPES, INDUSTRY_SECTORS, ROLE_TYPES } from "./constants";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface TabCareerProps {
   isSetup: boolean;
   isDirty: boolean;
@@ -38,6 +40,27 @@ interface TabCareerProps {
   saveCareer: () => Promise<void>;
 }
 
+type CareerErrors = {
+  job_title?: string;
+  employer?: string;
+  company_type?: string;
+  industry_sector?: string;
+  role_type?: string;
+  country?: string;
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function validateCareer(job: Omit<Career, "id">): CareerErrors {
+  const errors: CareerErrors = {};
+  if (!job.job_title?.trim()) errors.job_title = "Job title is required.";
+  if (!job.industry_sector?.trim()) errors.industry_sector = "Industry is required.";
+  if (!job.role_type?.trim()) errors.role_type = "Role type is required.";
+  return errors;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
 export function TabCareer({
   isSetup,
   isDirty,
@@ -45,6 +68,34 @@ export function TabCareer({
   setCareer,
   saveCareer,
 }: TabCareerProps) {
+  const [errors, setErrors] = useState<Record<number, CareerErrors>>({});
+
+  const handleSave = async () => {
+    const newErrors: Record<number, CareerErrors> = {};
+    let hasError = false;
+    career.forEach((job, i) => {
+      const e = validateCareer(job);
+      if (Object.keys(e).length > 0) {
+        newErrors[i] = e;
+        hasError = true;
+      }
+    });
+    setErrors(newErrors);
+    if (hasError) return;
+    await saveCareer();
+    setErrors({});
+  };
+
+  const clearError = (i: number, field: keyof CareerErrors) => {
+    setErrors((prev) => {
+      if (!prev[i]?.[field]) return prev;
+      const next = { ...prev };
+      next[i] = { ...next[i] };
+      delete next[i][field];
+      return next;
+    });
+  };
+
   return (
     <section>
       <SectionHead numeral="I." kicker="Work" title="What you do" />
@@ -54,10 +105,7 @@ export function TabCareer({
         </div>
       )}
       {career.map((job, i) => (
-        <div
-          key={i}
-          className="py-7 border-b border-[var(--kvis-border)]"
-        >
+        <div key={i} className="py-7 border-b border-[var(--kvis-border)]">
           <div className="flex flex-wrap items-center justify-between gap-y-2 mb-4">
             <div className="flex items-baseline gap-3">
               <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)]">
@@ -80,9 +128,7 @@ export function TabCareer({
                 value={job.is_public ?? true}
                 onChange={(v) =>
                   setCareer((prev) =>
-                    prev.map((x, j) =>
-                      j === i ? { ...x, is_public: v } : x,
-                    ),
+                    prev.map((x, j) => (j === i ? { ...x, is_public: v } : x)),
                   )
                 }
               />
@@ -95,44 +141,50 @@ export function TabCareer({
               </button>
             </div>
           </div>
-          <FieldRow label="Job title">
+
+          <FieldRow label="Job title" required error={errors[i]?.job_title}>
             <Input
               placeholder="e.g. ML Engineer"
               value={job.job_title}
-              onChange={(e) =>
+              onChange={(e) => {
+                clearError(i, "job_title");
                 setCareer((prev) =>
                   prev.map((x, j) =>
                     j === i ? { ...x, job_title: e.target.value } : x,
                   ),
-                )
-              }
+                );
+              }}
               className={inputCls}
             />
           </FieldRow>
+
           <FieldRow label="Employer">
             <Input
               placeholder="e.g. Google"
               value={job.employer}
-              onChange={(e) =>
+              onChange={(e) => {
+                clearError(i, "employer");
                 setCareer((prev) =>
                   prev.map((x, j) =>
                     j === i ? { ...x, employer: e.target.value } : x,
                   ),
-                )
-              }
+                );
+              }}
               className={inputCls}
             />
           </FieldRow>
+
           <FieldRow label="Company type">
             <Select
               value={job.company_type ?? ""}
-              onValueChange={(v) =>
+              onValueChange={(v) => {
+                clearError(i, "company_type");
                 setCareer((prev) =>
                   prev.map((x, j) =>
                     j === i ? { ...x, company_type: v } : x,
                   ),
-                )
-              }
+                );
+              }}
             >
               <SelectTrigger className={selectTriggerCls}>
                 <SelectValue placeholder="Select type" />
@@ -146,16 +198,18 @@ export function TabCareer({
               </SelectContent>
             </Select>
           </FieldRow>
-          <FieldRow label="Industry">
+
+          <FieldRow label="Industry" required error={errors[i]?.industry_sector}>
             <Select
               value={job.industry_sector ?? ""}
-              onValueChange={(v) =>
+              onValueChange={(v) => {
+                clearError(i, "industry_sector");
                 setCareer((prev) =>
                   prev.map((x, j) =>
                     j === i ? { ...x, industry_sector: v } : x,
                   ),
-                )
-              }
+                );
+              }}
             >
               <SelectTrigger className={selectTriggerCls}>
                 <SelectValue placeholder="Select industry" />
@@ -177,16 +231,18 @@ export function TabCareer({
               </SelectContent>
             </Select>
           </FieldRow>
-          <FieldRow label="Role type">
+
+          <FieldRow label="Role type" required error={errors[i]?.role_type}>
             <Select
               value={job.role_type ?? ""}
-              onValueChange={(v) =>
+              onValueChange={(v) => {
+                clearError(i, "role_type");
                 setCareer((prev) =>
                   prev.map((x, j) =>
                     j === i ? { ...x, role_type: v } : x,
                   ),
-                )
-              }
+                );
+              }}
             >
               <SelectTrigger className={selectTriggerCls}>
                 <SelectValue placeholder="Select role type" />
@@ -200,19 +256,22 @@ export function TabCareer({
               </SelectContent>
             </Select>
           </FieldRow>
+
           <FieldRow label="Country">
             <CountrySelect
               variant="underline"
               value={job.country}
-              onChange={(v) =>
+              onChange={(v) => {
+                clearError(i, "country");
                 setCareer((prev) =>
                   prev.map((x, j) =>
                     j === i ? { ...x, country: v, state: "", city: "" } : x,
                   ),
-                )
-              }
+                );
+              }}
             />
           </FieldRow>
+
           {job.country && !CITY_STATE_COUNTRIES.has(job.country) && (
             <FieldRow label="Province / State">
               <ProvinceSelect
@@ -238,14 +297,13 @@ export function TabCareer({
                 value={job.city ?? ""}
                 onChange={(v) =>
                   setCareer((prev) =>
-                    prev.map((x, j) =>
-                      j === i ? { ...x, city: v } : x,
-                    ),
+                    prev.map((x, j) => (j === i ? { ...x, city: v } : x)),
                   )
                 }
               />
             </FieldRow>
           )}
+
           <FieldRow label="Years">
             <div className="flex items-center gap-3">
               <Input
@@ -256,11 +314,7 @@ export function TabCareer({
                   setCareer((prev) =>
                     prev.map((x, j) =>
                       j === i
-                        ? {
-                            ...x,
-                            start_year:
-                              parseInt(e.target.value) || undefined,
-                          }
+                        ? { ...x, start_year: parseInt(e.target.value) || undefined }
                         : x,
                     ),
                   )
@@ -273,21 +327,13 @@ export function TabCareer({
               <Input
                 type="number"
                 placeholder="To"
-                value={
-                  job.is_current
-                    ? new Date().getFullYear()
-                    : (job.end_year ?? "")
-                }
+                value={job.is_current ? new Date().getFullYear() : (job.end_year ?? "")}
                 disabled={job.is_current}
                 onChange={(e) =>
                   setCareer((prev) =>
                     prev.map((x, j) =>
                       j === i
-                        ? {
-                            ...x,
-                            end_year:
-                              parseInt(e.target.value) || undefined,
-                          }
+                        ? { ...x, end_year: parseInt(e.target.value) || undefined }
                         : x,
                     ),
                   )
@@ -296,6 +342,7 @@ export function TabCareer({
               />
             </div>
           </FieldRow>
+
           {job.start_year && (
             <FieldRow label="Status">
               <label className="inline-flex items-center gap-2.5 text-sm text-foreground cursor-pointer pt-1.5">
@@ -305,9 +352,7 @@ export function TabCareer({
                   onChange={(e) =>
                     setCareer((prev) =>
                       prev.map((x, j) =>
-                        j === i
-                          ? { ...x, is_current: e.target.checked }
-                          : x,
+                        j === i ? { ...x, is_current: e.target.checked } : x,
                       ),
                     )
                   }
@@ -319,11 +364,12 @@ export function TabCareer({
           )}
         </div>
       ))}
+
       <div className="pt-8 flex items-center gap-4 flex-wrap">
         {!isSetup && (
           <Button
             type="button"
-            onClick={saveCareer}
+            onClick={handleSave}
             disabled={!isDirty}
             className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
           >

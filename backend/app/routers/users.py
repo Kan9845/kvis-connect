@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response
 from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
 from datetime import datetime
@@ -125,7 +125,6 @@ async def update_me(
             setattr(user, k, v)
     if name_changed:
         user.slug = unique_user_slug(session, user.first_name, user.last_name, exclude_id=user.id)
-    # Geocode when any location field changes — use most specific available
     if any(k in data for k in ("place", "place_level2", "country")):
         geo_query = ", ".join(filter(None, [
             user.place,
@@ -183,18 +182,30 @@ async def upload_profile_pic(
 
 
 @router.get("/{slug}", response_model=UserPublic)
-@cached(key=lambda slug, session, current_user: f"user:{slug}:{'auth' if current_user else 'anon'}", 
-        tags=lambda slug, session, current_user: ["users", f"user:{slug}"], 
-        ttl=settings.CACHE_TTL_LONG)
 def get_user(
-    slug: str, 
+    slug: str,
     session: Session = Depends(get_session),
-    current_user: Optional[User] = Depends(get_optional_user),
+    viewer: Optional[User] = Depends(get_optional_user),
 ):
-    user = session.exec(select(User).where(User.slug == slug)).first()
+    user = session.exec(
+        select(User)
+        .where(User.slug == slug)
+        .options(
+            selectinload(User.education),
+            selectinload(User.career),
+            selectinload(User.projects),
+            selectinload(User.publications),
+            selectinload(User.portfolio_links),
+            selectinload(User.research_interests),
+            selectinload(User.extra_contacts),
+        )
+    ).first()
     if not user:
         raise HTTPException(404, detail="User not found")
-    return _user_to_public(user, is_kvis=current_user is not None)
+
+    # A verified KVIS member (or the owner) sees KVIS-only content
+    is_kvis_viewer = viewer is not None and (viewer.is_verified or viewer.id == user.id)
+    return _user_to_public(user, public_only=not is_kvis_viewer, is_kvis=is_kvis_viewer)
 
 
 # Education
@@ -410,7 +421,7 @@ def _career_list(user: User, public_only: bool = False):
     ]
 
 
-def _user_to_public(user: User, public_only: bool = False, is_kvis: bool = False) -> dict:
+def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False) -> dict:
     return {
         "id": user.id,
         "slug": user.slug,
@@ -447,20 +458,18 @@ def _user_to_public(user: User, public_only: bool = False, is_kvis: bool = False
         # Privacy-gated fields
         "interests": user.interests if (user.interests_public or is_kvis) else None,
         "interests_public": user.interests_public,
-        "facebook_url": user.facebook_url if (user.facebook_public or is_kvis) else None,
-        "facebook_public": user.facebook_public,
-        "linkedin_url": user.linkedin_url if (user.linkedin_public or is_kvis) else None,
-        "linkedin_public": user.linkedin_public,
-        "instagram_url": user.instagram_url if (user.instagram_public or is_kvis) else None,
-        "instagram_public": user.instagram_public,
-        "website_url": user.website_url if (user.website_public or is_kvis) else None,
-        "website_public": user.website_public,
+        "facebook_url": user.facebook_url if (getattr(user, 'facebook_public', True) or is_kvis) else None,
+        "facebook_public": getattr(user, 'facebook_public', True),
+        "linkedin_url": user.linkedin_url if (getattr(user, 'linkedin_public', True) or is_kvis) else None,
+        "linkedin_public": getattr(user, 'linkedin_public', True),
+        "instagram_url": user.instagram_url if (getattr(user, 'instagram_public', True) or is_kvis) else None,
+        "instagram_public": getattr(user, 'instagram_public', True),
+        "website_url": user.website_url if (getattr(user, 'website_public', True) or is_kvis) else None,
+        "website_public": getattr(user, 'website_public', True),
         "line_id": user.line_id if (getattr(user, 'line_id_public', True) or is_kvis) else None,
         "line_id_public": getattr(user, 'line_id_public', True),
         "contact_email": user.contact_email if (user.contact_email_public or is_kvis) else None,
         "contact_email_public": user.contact_email_public,
-        # Always public
-        "website_url": user.website_url if (getattr(user, 'website_public', True) or is_kvis) else None,
         "is_verified": user.is_verified,
         "research_keywords": user.research_keywords,
         "research_interests": [r.interest for r in sorted(user.research_interests, key=lambda x: x.order_index)],
@@ -482,10 +491,9 @@ def _user_to_public(user: User, public_only: bool = False, is_kvis: bool = False
             for c in sorted(user.extra_contacts, key=lambda x: x.order_index)
             if c.is_public or is_kvis
         ],
-        "line_id": user.line_id if (getattr(user, 'line_id_public', True) or is_kvis) else None,
         "created_at": user.created_at,
-        "education": _edu_list(user, public_only=True),
-        "career": _career_list(user, public_only=True),
+        "education": _edu_list(user, public_only=public_only),
+        "career": _career_list(user, public_only=public_only),
         "google_id": user.google_id if is_kvis else None,
     }
 
@@ -499,7 +507,7 @@ def _user_to_me(user: User) -> dict:
         except Exception:
             hobbies = {}
     return {
-        **_user_to_public(user),
+        **_user_to_public(user, public_only=False, is_kvis=True),
         "email": user.email,
         "expected_grad_year": user.expected_grad_year,
         "line_id": user.line_id,
@@ -527,8 +535,8 @@ def _user_to_me(user: User) -> dict:
             {"type": p.type, "url": p.url}
             for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
         ],
-        "education": _edu_list(user),
-        "career": _career_list(user),
+        "education": _edu_list(user, public_only=False),
+        "career": _career_list(user, public_only=False),
         "interests": user.interests,
         "extra_contacts": [
             {"type": c.type, "value": c.value, "public": c.is_public}
@@ -544,6 +552,7 @@ def _user_to_me(user: User) -> dict:
         ],
     }
 
+
 @router.delete("/me")
 async def delete_account(
     current_user: User = Depends(get_current_user),
@@ -558,4 +567,4 @@ async def delete_account(
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     await invalidate_tags("users", f"user:{user.slug}")
-    return responses
+    return response

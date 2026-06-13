@@ -31,6 +31,7 @@ import { TabEducation } from "./TabEducation";
 import { TabCareer } from "./TabCareer";
 import { TabResearch } from "./TabResearch";
 import { TabPersonal } from "./TabPersonal";
+import { MED_DEGREES } from "./constants";
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -228,12 +229,32 @@ export default function EditPageInner() {
   };
 
   const saveEducation = async () => {
+    for (const edu of education) {
+      if (!edu.uni_name?.trim() || !edu.degree?.trim()) {
+        toast.error("Please fill in University and Degree for all entries.");
+        throw new Error("Validation failed");
+      }
+      if (!MED_DEGREES.includes(edu.degree) && !edu.major?.trim()) {
+        toast.error("Please fill in the Major for all entries.");
+        throw new Error("Validation failed");
+      }
+      if (MED_DEGREES.includes(edu.degree) && !edu.med_school?.trim()) {
+        toast.error("Please select a Medical school for all entries.");
+        throw new Error("Validation failed");
+      }
+    }
     await userApi.updateEducation(education);
     await refetch();
     notify.success("Education saved");
   };
 
   const saveCareer = async () => {
+    for (const job of career) {
+      if (!job.job_title?.trim() || !job.industry_sector?.trim() || !job.role_type?.trim()) {
+        toast.error("Please fill in Job title, Industry, and Role type for all entries.");
+        throw new Error("Validation failed");
+      }
+    }
     await userApi.updateCareer(career);
     await refetch();
     notify.success("Career saved");
@@ -455,9 +476,6 @@ export default function EditPageInner() {
             watchNicknamePublic={watchNicknamePublic}
             watchInterestsPublic={watchInterestsPublic}
             watchContactEmailPublic={watchContactEmailPublic}
-            googleStatus={googleStatus}
-            unlinking={unlinking}
-            handleUnlinkGoogle={handleUnlinkGoogle}
             watchLinkedinPublic={watchLinkedinPublic}
             watchFacebookPublic={watchFacebookPublic}
             watchInstagramPublic={watchInstagramPublic}

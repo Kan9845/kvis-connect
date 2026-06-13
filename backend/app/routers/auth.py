@@ -470,7 +470,7 @@ def password_reset_confirm(body: PasswordResetConfirm, session: Session = Depend
     return {"message": "Password updated successfully."}
 
 @router.post("/change-password")
-async def change_password(
+def change_password(
     body: ChangePasswordBody,
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_session),
@@ -478,7 +478,9 @@ async def change_password(
     user = session.get(User, current_user.id)
     if not user.hashed_password or not verify_password(body.current_password, user.hashed_password):
         raise HTTPException(400, detail="Current password is incorrect.")
+    if len(body.new_password) < 8:
+        raise HTTPException(400, detail="Password must be at least 8 characters.")
     user.hashed_password = hash_password(body.new_password)
     session.add(user)
     session.commit()
-    return {"message": "Password changed"}
+    return {"message": "Password updated."}
