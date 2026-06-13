@@ -38,6 +38,16 @@ import {
   SCHOLARSHIP_BOND,
 } from "./constants";
 
+const FIELDS_OF_STUDY = [
+  "Mathematics & Data Science",
+  "Computer Science & Software Engineering",
+  "Physical Sciences & Engineering",
+  "Chemical Sciences & Engineering",
+  "Life Sciences & Bioengineering",
+  "Earth, Space, & Environmental Sciences",
+  "Non-STEM / Humanities / Social Sciences",
+];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface TabEducationProps {
@@ -48,10 +58,10 @@ interface TabEducationProps {
   saveEducation: () => Promise<void>;
 }
 
-// Per-entry validation errors
 type EduErrors = {
   uni_name?: string;
   degree?: string;
+  field_of_study?: string;
   major?: string;
   med_school?: string;
 };
@@ -62,8 +72,12 @@ function validateEducation(edu: Omit<Education, "id">): EduErrors {
   const errors: EduErrors = {};
   if (!edu.uni_name?.trim()) errors.uni_name = "University is required.";
   if (!edu.degree?.trim()) errors.degree = "Degree is required.";
-  if (!MED_DEGREES.includes(edu.degree) && !edu.major?.trim())
-    errors.major = "Major is required.";
+  if (!MED_DEGREES.includes(edu.degree)) {
+    if (!edu.field_of_study?.trim())
+      errors.field_of_study = "Field of study is required.";
+    if (!edu.major?.trim())
+      errors.major = "Major is required.";
+  }
   if (MED_DEGREES.includes(edu.degree) && !edu.med_school?.trim())
     errors.med_school = "Medical school is required.";
   return errors;
@@ -78,17 +92,10 @@ export function TabEducation({
   setEducation,
   saveEducation,
 }: TabEducationProps) {
-  // Per-entry "Other" scholarship custom name (stored locally, merged on save)
-  const [scholarshipOther, setScholarshipOther] = useState<
-    Record<number, string>
-  >({});
-
-  // Per-entry validation errors (shown after a failed save attempt)
+  const [scholarshipOther, setScholarshipOther] = useState<Record<number, string>>({});
   const [errors, setErrors] = useState<Record<number, EduErrors>>({});
 
-  // ── Validate all entries and call saveEducation ───────────────────────────
   const handleSave = async () => {
-    // Validate
     const newErrors: Record<number, EduErrors> = {};
     let hasError = false;
     education.forEach((edu, i) => {
@@ -101,7 +108,6 @@ export function TabEducation({
     setErrors(newErrors);
     if (hasError) return;
 
-    // Resolve "Other" scholarship names before saving
     if (Object.keys(scholarshipOther).length > 0) {
       setEducation((prev) =>
         prev.map((edu, i) => {
@@ -112,7 +118,6 @@ export function TabEducation({
           return edu;
         }),
       );
-      // Give React one tick to flush state before saving
       await new Promise((r) => setTimeout(r, 0));
     }
 
@@ -120,7 +125,6 @@ export function TabEducation({
     setErrors({});
   };
 
-  // ── Clear error for a specific entry+field when user edits ────────────────
   const clearError = (i: number, field: keyof EduErrors) => {
     setErrors((prev) => {
       if (!prev[i]?.[field]) return prev;
@@ -351,10 +355,7 @@ export function TabEducation({
                 </>
               )}
 
-              <FieldRow
-                label="Hospital / site"
-                hint="Clinical affiliation (optional)."
-              >
+              <FieldRow label="Hospital / site" hint="Clinical affiliation (optional).">
                 <Input
                   placeholder="e.g. Siriraj Hospital"
                   value={edu.med_hospital ?? ""}
@@ -399,10 +400,7 @@ export function TabEducation({
                 )}
               </FieldRow>
 
-              <FieldRow
-                label="Sub-specialty"
-                hint="Specific areas of interest (optional)."
-              >
+              <FieldRow label="Sub-specialty" hint="Specific areas of interest (optional).">
                 <Input
                   placeholder="e.g. Interventional Cardiology"
                   value={edu.med_subspecialty ?? ""}
@@ -421,9 +419,34 @@ export function TabEducation({
             </>
           )}
 
-          {/* ── Non-medical: Major ────────────────────────────────────────── */}
+          {/* ── Non-medical: Field of Study + Major ───────────────────────── */}
           {!MED_DEGREES.includes(edu.degree) && (
             <>
+              <FieldRow label="Field of Study" required error={errors[i]?.field_of_study}>
+                <Select
+                  value={edu.field_of_study ?? ""}
+                  onValueChange={(v) => {
+                    clearError(i, "field_of_study");
+                    setEducation((prev) =>
+                      prev.map((x, j) =>
+                        j === i ? { ...x, field_of_study: v } : x,
+                      ),
+                    );
+                  }}
+                >
+                  <SelectTrigger className={selectTriggerCls}>
+                    <SelectValue placeholder="Select field of study" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FIELDS_OF_STUDY.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {f}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FieldRow>
+
               <FieldRow label="Major (1)" required error={errors[i]?.major}>
                 <MajorCombobox
                   variant="underline"
@@ -603,11 +626,29 @@ export function TabEducation({
             </div>
           </FieldRow>
 
+          {/* ── Is Current ───────────────────────────────────────────────── */}
+          <FieldRow label="Currently here">
+            <label className="inline-flex items-center gap-2.5 text-sm text-foreground cursor-pointer pt-1.5">
+              <input
+                type="checkbox"
+                checked={edu.is_current ?? false}
+                onChange={(e) =>
+                  setEducation((prev) =>
+                    prev.map((x, j) =>
+                      j === i ? { ...x, is_current: e.target.checked } : x,
+                    ),
+                  )
+                }
+                className="h-4 w-4 accent-foreground"
+              />
+              <span>Currently studying here</span>
+            </label>
+          </FieldRow>
+
           {/* ── Scholarship ──────────────────────────────────────────────── */}
           <FieldRow label="Scholarship">
             <Select
               value={
-                // If the stored value isn't in the list, it was a custom "Other" name
                 SCHOLARSHIP_NAMES.includes(edu.scholarship ?? "")
                   ? (edu.scholarship ?? "")
                   : edu.scholarship
@@ -620,7 +661,6 @@ export function TabEducation({
                     j === i ? { ...x, scholarship: v } : x,
                   ),
                 );
-                // Reset custom name when switching away from Other
                 if (v !== "Other") {
                   setScholarshipOther((prev) => {
                     const next = { ...prev };
@@ -628,7 +668,6 @@ export function TabEducation({
                     return next;
                   });
                 } else {
-                  // Pre-fill if the stored value was already a custom name
                   const stored = education[i]?.scholarship;
                   if (stored && !SCHOLARSHIP_NAMES.includes(stored)) {
                     setScholarshipOther((prev) => ({ ...prev, [i]: stored }));
@@ -649,7 +688,6 @@ export function TabEducation({
             </Select>
           </FieldRow>
 
-          {/* "Other" scholarship → specify */}
           {(edu.scholarship === "Other" ||
             (edu.scholarship &&
               !SCHOLARSHIP_NAMES.includes(edu.scholarship))) && (
@@ -669,7 +707,6 @@ export function TabEducation({
             </FieldRow>
           )}
 
-          {/* ── Funding type & Bond (shown when any scholarship selected) ── */}
           {edu.scholarship && (
             <>
               <FieldRow label="Funding type">
