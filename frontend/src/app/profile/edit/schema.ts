@@ -14,7 +14,7 @@ export const generalSchema = z.object({
   current_status: z.string().min(1, "Please select your current status"),
   place: z.string().optional(),
   place_level2: z.string().optional(),
-  country: z.string().optional(),
+  country: z.string().min(1, "Required"),
   bio: z.string().max(500).optional(),
   mbti: z.string().optional(),
   zodiac: z.string().optional(),

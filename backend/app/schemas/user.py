@@ -260,10 +260,15 @@ class UserUpdate(BaseModel):
     interests_public: Optional[bool] = None
     # Socials
     facebook_url: Optional[str] = None
+    facebook_public: Optional[bool] = None
     linkedin_url: Optional[str] = None
+    linkedin_public: Optional[bool] = None
     instagram_url: Optional[str] = None
+    instagram_public: Optional[bool] = None
     line_id: Optional[str] = None
+    line_id_public: Optional[bool] = None
     website_url: Optional[str] = None
+    website_public: Optional[bool] = None
     contact_email: Optional[str] = None
     contact_email_public: Optional[bool] = None
     # Research

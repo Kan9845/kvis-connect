@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { authApi } from "@/lib/api";
+import { toast } from "sonner";
 import {
   Select,
   SelectContent,
@@ -236,7 +237,7 @@ export function TabGeneral({
         </div>
       </section>
 
-      <form onSubmit={handleSubmit(saveGeneral)}>
+      <form onSubmit={handleSubmit(saveGeneral, (errs) => { const msg = Object.values(errs).find(e => e?.message)?.message; toast.error(msg ?? "Please fill in all required fields"); })}>
         {/* Identity */}
         <section>
           <SectionHead
@@ -445,7 +446,7 @@ export function TabGeneral({
         {/* Location */}
         <section>
           <SectionHead numeral="IV." kicker="Location" title="Where you are" />
-          <FieldRow label="Country">
+          <FieldRow label="Country" required error={errors.country?.message}>
             <CountrySelect
               variant="underline"
               value={watch("country") ?? ""}

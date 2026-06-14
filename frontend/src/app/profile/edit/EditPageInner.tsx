@@ -217,16 +217,20 @@ export default function EditPageInner() {
         return;
       }
     }
-    const updated = await userApi.updateMe({
-      ...(picUrl ? { ...data, profile_pic_url: picUrl } : data),
-      is_current_teacher: data.is_current_teacher_str === "true",
-    });
-    await userApi.updateExtraContacts(
-      extraContacts.map((c) => ({ type: c.type, value: c.value, is_public: c.public }))
-    );
-    onMeUpdateSuccess(qc, updated);
-    await refetch();
-    notify.success("Profile updated");
+    try {
+      const updated = await userApi.updateMe({
+        ...(picUrl ? { ...data, profile_pic_url: picUrl } : data),
+        is_current_teacher: data.is_current_teacher_str === "true",
+      });
+      await userApi.updateExtraContacts(
+        extraContacts.map((c) => ({ type: c.type, value: c.value, is_public: c.public }))
+      );
+      onMeUpdateSuccess(qc, updated);
+      await refetch();
+      notify.success("Profile updated");
+    } catch {
+      notify.error("Failed to save profile");
+    }
   };
 
   const saveEducation = async () => {
@@ -244,9 +248,13 @@ export default function EditPageInner() {
         throw new Error("Validation failed");
       }
     }
-    await userApi.updateEducation(education);
-    await refetch();
-    notify.success("Education saved");
+    try {
+      await userApi.updateEducation(education);
+      await refetch();
+      notify.success("Education saved");
+    } catch {
+      notify.error("Failed to save education");
+    }
   };
 
   const saveCareer = async () => {
@@ -256,9 +264,13 @@ export default function EditPageInner() {
         throw new Error("Validation failed");
       }
     }
-    await userApi.updateCareer(career);
-    await refetch();
-    notify.success("Career saved");
+    try {
+      await userApi.updateCareer(career);
+      await refetch();
+      notify.success("Career saved");
+    } catch {
+      notify.error("Failed to save career");
+    }
   };
 
   const saveResearch = async () => {
@@ -578,7 +590,7 @@ export default function EditPageInner() {
 
             const handleSave = async () => {
               try {
-                if (tab === "general") await handleSubmit(saveGeneral)();
+                if (tab === "general") await handleSubmit(saveGeneral, (errs) => { const msg = Object.values(errs).find(e => e?.message)?.message; toast.error(msg ?? "Please fill in all required fields"); })();
                 else if (tab === "education") await saveEducation();
                 else if (tab === "career") await saveCareer();
                 else if (tab === "research") await saveResearch();
