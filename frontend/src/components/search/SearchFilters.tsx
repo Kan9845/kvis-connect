@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -135,13 +135,27 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
   const { register, reset, setValue, watch } = useForm<SearchParams>({ defaultValues: values });
   const formValues = watch();
   const serialized = JSON.stringify(formValues);
+  const externalRef = useRef(JSON.stringify(values));
+
+  // Sync form when parent searchParams change (e.g. other panel instance updated them)
+  useEffect(() => {
+    const incoming = JSON.stringify(values);
+    if (incoming !== externalRef.current) {
+      externalRef.current = incoming;
+      reset(values);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(values)]);
 
   useEffect(() => {
     const t = setTimeout(() => {
       const clean = Object.fromEntries(
         Object.entries(formValues).filter(([, v]) => v !== "" && v !== undefined && v !== null)
       ) as SearchParams;
-      onChange(clean);
+      // Only propagate if form state actually differs from incoming props
+      if (JSON.stringify(clean) !== externalRef.current) {
+        onChange(clean);
+      }
     }, 250);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
