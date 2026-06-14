@@ -12,11 +12,8 @@ import { Separator } from "@/components/ui/separator";
 import { FeedbackSection } from "./FeedbackSection";
 
 const SCHOOL_FACTS = [
-  { label: "Established", value: "2014" },
   { label: "Location", value: "Rayong, Thailand" },
   { label: "Program", value: "M.4 - M.6 (3 years)" },
-  { label: "Annual intake", value: "72 students" },
-  { label: "Scholarship", value: "Full - tuition, housing & meals" },
   { label: "Mascot", value: "Goose" },
 ];
 
