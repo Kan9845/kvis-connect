@@ -69,7 +69,7 @@ interface TabGeneralProps {
   errors: FieldErrors<GeneralForm>;
   isSubmitting: boolean;
   isDirty: boolean;
-  handleSubmit: (fn: (data: GeneralForm) => Promise<void>) => (e?: React.BaseSyntheticEvent) => Promise<void>;
+  handleSubmit: (fn: (data: GeneralForm) => Promise<void>, onInvalid?: (errors: FieldErrors<GeneralForm>) => void) => (e?: React.BaseSyntheticEvent) => Promise<void>;
   saveGeneral: (data: GeneralForm) => Promise<void>;
   cropSrc: string | null;
   setCropSrc: React.Dispatch<React.SetStateAction<string | null>>;

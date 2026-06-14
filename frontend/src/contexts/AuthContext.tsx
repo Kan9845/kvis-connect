@@ -34,6 +34,7 @@ const DEV_MOCK_USER: UserMe = {
   portfolio_links: [],
   languages: [],
   extra_contacts: [],
+  has_password: false,
   created_at: new Date().toISOString(),
 };
 
