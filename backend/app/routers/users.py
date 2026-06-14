@@ -518,6 +518,7 @@ def _user_to_me(user: User) -> dict:
         "contact_email": user.contact_email,
         "contact_email_public": user.contact_email_public,
         "google_id": user.google_id,
+        "has_password": bool(user.hashed_password),
         "hobbies": hobbies,
         "kvis_fav_menu": user.kvis_fav_menu,
         "kvis_fav_event": user.kvis_fav_event,

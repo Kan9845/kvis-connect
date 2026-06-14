@@ -48,3 +48,6 @@ class EmailVerifyBody(BaseModel):
 class ChangePasswordBody(BaseModel):
     current_password: str
     new_password: str
+
+class SetPasswordBody(BaseModel):
+    new_password: str

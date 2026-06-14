@@ -116,6 +116,7 @@ export interface UserMe extends UserPublic {
   contact_email?: string;
   contact_email_public?: boolean;
   google_id?: string | null;
+  has_password: boolean;
   interests_public?: boolean;
   research_interests: string[];
   research_keywords?: string;

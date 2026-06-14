@@ -38,7 +38,7 @@ function ResetInner() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (newPw.length < 8) { setError("Password must be at least 8 characters."); return; }
+    if (newPw.length < 6) { setError("Password must be at least 6 characters."); return; }
     if (newPw !== confirmPw) { setError("Passwords don't match."); return; }
     setSubmitting(true);
     try {
@@ -100,7 +100,7 @@ function ResetInner() {
             <FieldLabel>New password</FieldLabel>
             <input
               type="password"
-              placeholder="Min. 8 characters"
+              placeholder="Min. 6 characters"
               value={newPw}
               onChange={(e) => { setNewPw(e.target.value); setError(""); }}
               required

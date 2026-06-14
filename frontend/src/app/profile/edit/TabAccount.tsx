@@ -37,7 +37,7 @@ export function TabAccount({
   const handleChangePassword = async () => {
     setPwError("");
     if (!currentPw) { setPwError("Enter your current password."); return; }
-    if (newPw.length < 8) { setPwError("New password must be at least 8 characters."); return; }
+    if (newPw.length < 6) { setPwError("New password must be at least 6 characters."); return; }
     if (newPw !== confirmPw) { setPwError("Passwords don't match."); return; }
     setPwLoading(true);
     try {
@@ -47,6 +47,24 @@ export function TabAccount({
       setTimeout(() => setPwSuccess(false), 3000);
     } catch (e: any) {
       setPwError(e?.response?.data?.detail ?? "Failed to change password.");
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
+  const handleSetPassword = async () => {
+    setPwError("");
+    if (newPw.length < 6) { setPwError("Password must be at least 6 characters."); return; }
+    if (newPw !== confirmPw) { setPwError("Passwords don't match."); return; }
+    setPwLoading(true);
+    try {
+      await authApi.setPassword({ new_password: newPw });
+      setPwSuccess(true);
+      setNewPw(""); setConfirmPw("");
+      await refetch();
+      setTimeout(() => setPwSuccess(false), 3000);
+    } catch (e: any) {
+      setPwError(e?.response?.data?.detail ?? "Failed to set password.");
     } finally {
       setPwLoading(false);
     }
@@ -67,7 +85,7 @@ export function TabAccount({
     }
   };
 
-  const hasPassword = !!me.email && !me.google_id;
+  const hasPassword = !!me.has_password;
   const hasGoogle = !!me.google_id;
 
   return (
@@ -156,17 +174,48 @@ export function TabAccount({
       <SectionHead numeral="II." kicker="Security" title="Change password" />
 
       {hasGoogle && !hasPassword ? (
-        <p className="py-5 text-sm text-muted-foreground border-b" style={{ borderColor: "var(--kvis-border)" }}>
-          You signed up with Google — no password is set. You can set one via{" "}
-          <button
-            type="button"
-            onClick={() => router.push("/auth/forgot")}
-            className="underline underline-offset-4 hover:text-foreground transition-colors"
-          >
-            forgot password
-          </button>
-          .
-        </p>
+        <>
+          <FieldRow label="New password">
+            <Input
+              type="password"
+              placeholder="Min. 6 characters"
+              value={newPw}
+              onChange={(e) => { setNewPw(e.target.value); setPwError(""); }}
+              className={inputCls}
+              autoComplete="new-password"
+            />
+          </FieldRow>
+          <FieldRow label="Confirm password">
+            <Input
+              type="password"
+              placeholder="Repeat new password"
+              value={confirmPw}
+              onChange={(e) => { setConfirmPw(e.target.value); setPwError(""); }}
+              className={inputCls}
+              autoComplete="new-password"
+            />
+          </FieldRow>
+          {pwError && (
+            <p className="text-xs font-semibold mt-1 mb-3 text-[var(--kvis-purple)]">{pwError}</p>
+          )}
+          <div className="pt-4 pb-8 border-b" style={{ borderColor: "var(--kvis-border)" }}>
+            <Button
+              type="button"
+              onClick={handleSetPassword}
+              disabled={pwLoading || pwSuccess}
+              className="h-auto rounded-none bg-foreground px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40"
+            >
+              {pwLoading ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : pwSuccess ? (
+                <Check className="h-3.5 w-3.5" />
+              ) : (
+                <KeyRound className="h-3.5 w-3.5" />
+              )}
+              {pwSuccess ? "Password set" : "Set password"}
+            </Button>
+          </div>
+        </>
       ) : (
         <>
           <FieldRow label="Current password">
@@ -182,7 +231,7 @@ export function TabAccount({
           <FieldRow label="New password">
             <Input
               type="password"
-              placeholder="Min. 8 characters"
+              placeholder="Min. 6 characters"
               value={newPw}
               onChange={(e) => { setNewPw(e.target.value); setPwError(""); }}
               className={inputCls}

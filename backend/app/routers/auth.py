@@ -16,7 +16,7 @@ from app.core.mailer import send_email
 from app.core.cache import invalidate_tags
 from app.core.slug import unique_user_slug
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody, ChangePasswordBody
+from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody, ChangePasswordBody, SetPasswordBody
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -367,6 +367,8 @@ async def google_callback(request: Request, session: Session = Depends(get_sessi
         session.commit()
         if is_new_user:
             await invalidate_tags("users")
+        else:
+            await invalidate_tags(f"user:{user.id}")
         session.refresh(user)
 
     response = RedirectResponse(url=f"{settings.FRONTEND_URL}/auth/callback")
@@ -470,6 +472,23 @@ def password_reset_confirm(body: PasswordResetConfirm, session: Session = Depend
     del _reset_store[body.token]
     return {"message": "Password updated successfully."}
 
+@router.post("/set-password")
+def set_password(
+    body: SetPasswordBody,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    if current_user.hashed_password:
+        raise HTTPException(400, detail="Password already set. Use change-password instead.")
+    if len(body.new_password) < 6:
+        raise HTTPException(400, detail="Password must be at least 6 characters.")
+    user = session.get(User, current_user.id)
+    user.hashed_password = hash_password(body.new_password)
+    session.add(user)
+    session.commit()
+    return {"message": "Password set successfully."}
+
+
 @router.post("/change-password")
 def change_password(
     body: ChangePasswordBody,
@@ -479,8 +498,8 @@ def change_password(
     user = session.get(User, current_user.id)
     if not user.hashed_password or not verify_password(body.current_password, user.hashed_password):
         raise HTTPException(400, detail="Current password is incorrect.")
-    if len(body.new_password) < 8:
-        raise HTTPException(400, detail="Password must be at least 8 characters.")
+    if len(body.new_password) < 6:
+        raise HTTPException(400, detail="Password must be at least 6 characters.")
     user.hashed_password = hash_password(body.new_password)
     session.add(user)
     session.commit()
