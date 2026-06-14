@@ -98,7 +98,7 @@ MBTIS = [
     "ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP",
 ]
 COUNTRY_W = [
-    {"w":55,"v":"Thailand"},{"w":9,"v":"USA"},{"w":6,"v":"UK"},
+    {"w":55,"v":"Thailand"},{"w":9,"v":"United States"},{"w":6,"v":"United Kingdom"},
     {"w":5,"v":"Japan"},{"w":5,"v":"Singapore"},{"w":3,"v":"Germany"},
     {"w":3,"v":"Australia"},{"w":2,"v":"Canada"},{"w":2,"v":"Switzerland"},
     {"w":2,"v":"South Korea"},{"w":1,"v":"Netherlands"},{"w":1,"v":"Hong Kong"},
@@ -165,8 +165,8 @@ JOB_TITLES = {
 }
 UNI_BY_COUNTRY = {
     "Thailand": ["Chulalongkorn University","Mahidol University","Kasetsart University","Thammasat University","KMUTT","KMITL","KMUTNB","Chiang Mai University","Khon Kaen University","Prince of Songkla University","Silpakorn University","Srinakharinwirot University","Naresuan University","VISTEC","SIIT, Thammasat","Burapha University"],
-    "USA": ["MIT","Harvard University","Stanford University","Carnegie Mellon University","UC Berkeley","Caltech","Cornell University","Yale University","Princeton University","Columbia University","University of Michigan","University of Washington","Georgia Tech","Johns Hopkins University","UIUC","UCLA","University of Chicago","Purdue University","Brown University"],
-    "UK": ["University of Cambridge","University of Oxford","Imperial College London","UCL","LSE","University of Edinburgh","King's College London","University of Warwick","University of Manchester","University of Bristol"],
+    "United States": ["MIT","Harvard University","Stanford University","Carnegie Mellon University","UC Berkeley","Caltech","Cornell University","Yale University","Princeton University","Columbia University","University of Michigan","University of Washington","Georgia Tech","Johns Hopkins University","UIUC","UCLA","University of Chicago","Purdue University","Brown University"],
+    "United Kingdom": ["University of Cambridge","University of Oxford","Imperial College London","UCL","LSE","University of Edinburgh","King's College London","University of Warwick","University of Manchester","University of Bristol"],
     "Singapore": ["NUS","NTU","SMU","SUTD"],
     "Japan": ["University of Tokyo","Kyoto University","Osaka University","Tokyo Institute of Technology","Tohoku University","Waseda University","Hokkaido University"],
     "Germany": ["TU Munich","RWTH Aachen","TU Berlin","Heidelberg University","LMU Munich","Karlsruhe Institute of Technology"],
@@ -183,35 +183,123 @@ UNI_BY_COUNTRY = {
     "New Zealand": ["University of Auckland","Victoria University of Wellington"],
     "Belgium": ["KU Leuven","Ghent University","Université Libre de Bruxelles"],
 }
+# PLACES format: [city, province/state, lat, lon]
 PLACES = {
-    "Thailand": [["Bangkok, Thailand",13.7563,100.5018],["Chiang Mai, Thailand",18.7883,98.9853],["Khon Kaen, Thailand",16.4419,102.835],["Phuket, Thailand",7.8804,98.3923],["Hat Yai, Thailand",7.0086,100.4747],["Rayong, Thailand",12.6802,101.287],["Pathum Thani, Thailand",14.0208,100.5251],["Nakhon Ratchasima, Thailand",14.9799,102.0978]],
-    "USA": [["Cambridge, USA",42.3736,-71.1097],["Berkeley, USA",37.8715,-122.273],["Stanford, USA",37.4275,-122.1697],["New York, USA",40.7128,-74.006],["Pittsburgh, USA",40.4406,-79.9959],["Seattle, USA",47.6062,-122.3321],["Ann Arbor, USA",42.2808,-83.743],["Atlanta, USA",33.749,-84.388],["Pasadena, USA",34.1478,-118.1445],["Boston, USA",42.3601,-71.0589],["Los Angeles, USA",34.0522,-118.2437]],
-    "UK": [["London, UK",51.5074,-0.1278],["Cambridge, UK",52.2053,0.1218],["Oxford, UK",51.752,-1.2577],["Edinburgh, UK",55.9533,-3.1883],["Manchester, UK",53.4808,-2.2426]],
-    "Singapore": [["Singapore",1.3521,103.8198]],
-    "Japan": [["Tokyo, Japan",35.6762,139.6503],["Kyoto, Japan",35.0116,135.7681],["Osaka, Japan",34.6937,135.5023],["Sendai, Japan",38.2682,140.8694]],
-    "Germany": [["Munich, Germany",48.1351,11.582],["Berlin, Germany",52.52,13.405],["Aachen, Germany",50.7753,6.0839],["Heidelberg, Germany",49.3988,8.6724]],
-    "Canada": [["Toronto, Canada",43.6532,-79.3832],["Vancouver, Canada",49.2827,-123.1207],["Waterloo, Canada",43.4643,-80.5204],["Montreal, Canada",45.5017,-73.5673]],
-    "Australia": [["Melbourne, Australia",-37.8136,144.9631],["Sydney, Australia",-33.8688,151.2093],["Canberra, Australia",-35.2809,149.13],["Brisbane, Australia",-27.4698,153.0251]],
-    "Switzerland": [["Zurich, Switzerland",47.3769,8.5417],["Lausanne, Switzerland",46.5197,6.6323]],
-    "South Korea": [["Seoul, South Korea",37.5665,126.978],["Daejeon, South Korea",36.3504,127.3845]],
-    "Netherlands": [["Delft, Netherlands",52.0116,4.3571],["Amsterdam, Netherlands",52.3676,4.9041],["Eindhoven, Netherlands",51.4416,5.4697]],
-    "Hong Kong": [["Hong Kong",22.3193,114.1694]],
-    "France": [["Paris, France",48.8566,2.3522]],
-    "Taiwan": [["Taipei, Taiwan",25.033,121.5654]],
-    "Sweden": [["Stockholm, Sweden",59.3293,18.0686],["Lund, Sweden",55.7047,13.191]],
-    "China": [["Beijing, China",39.9042,116.4074],["Shanghai, China",31.2304,121.4737]],
-    "New Zealand": [["Auckland, New Zealand",-36.8485,174.7633],["Wellington, New Zealand",-41.2865,174.7762]],
-    "Belgium": [["Leuven, Belgium",50.8798,4.7005],["Brussels, Belgium",50.8503,4.3517],["Ghent, Belgium",51.0543,3.7174]],
+    "Thailand": [
+        ["Bangkok","Bangkok",13.7563,100.5018],
+        ["Chiang Mai","Chiang Mai",18.7883,98.9853],
+        ["Khon Kaen","Khon Kaen",16.4419,102.835],
+        ["Rayong","Rayong",12.6802,101.287],
+        ["Pathum Thani","Pathum Thani",14.0208,100.5251],
+    ],
+    "United States": [
+        ["Cambridge","Massachusetts",42.3736,-71.1097],
+        ["Boston","Massachusetts",42.3601,-71.0589],
+        ["New York","New York",40.7128,-74.006],
+        ["Los Angeles","California",34.0522,-118.2437],
+        ["Berkeley","California",37.8715,-122.273],
+        ["Seattle","Washington",47.6062,-122.3321],
+        ["Pittsburgh","Pennsylvania",40.4406,-79.9959],
+        ["Atlanta","Georgia",33.749,-84.388],
+        ["Ann Arbor","Michigan",42.2808,-83.743],
+    ],
+    "United Kingdom": [
+        ["London","England",51.5074,-0.1278],
+        ["Cambridge","England",52.2053,0.1218],
+        ["Oxford","England",51.752,-1.2577],
+        ["Edinburgh","Scotland",55.9533,-3.1883],
+        ["Manchester","England",53.4808,-2.2426],
+    ],
+    "Singapore": [["Singapore","Central Region",1.3521,103.8198]],
+    "Japan": [
+        ["Tokyo","Tokyo",35.6762,139.6503],
+        ["Kyoto","Kyoto",35.0116,135.7681],
+        ["Osaka","Osaka",34.6937,135.5023],
+    ],
+    "Germany": [
+        ["Munich","Bavaria",48.1351,11.582],
+        ["Berlin","Berlin",52.52,13.405],
+        ["Aachen","North Rhine-Westphalia",50.7753,6.0839],
+    ],
+    "Canada": [
+        ["Toronto","Ontario",43.6532,-79.3832],
+        ["Vancouver","British Columbia",49.2827,-123.1207],
+        ["Waterloo","Ontario",43.4643,-80.5204],
+        ["Montreal","Quebec",45.5017,-73.5673],
+    ],
+    "Australia": [
+        ["Melbourne","Victoria",-37.8136,144.9631],
+        ["Sydney","New South Wales",-33.8688,151.2093],
+        ["Canberra","Australian Capital Territory",-35.2809,149.13],
+    ],
+    "Switzerland": [
+        ["Zurich","Zurich",47.3769,8.5417],
+        ["Lausanne","Vaud",46.5197,6.6323],
+    ],
+    "South Korea": [
+        ["Seoul","Seoul",37.5665,126.978],
+        ["Daejeon","Daejeon",36.3504,127.3845],
+    ],
+    "Netherlands": [
+        ["Delft","South Holland",52.0116,4.3571],
+        ["Amsterdam","North Holland",52.3676,4.9041],
+        ["Eindhoven","North Brabant",51.4416,5.4697],
+    ],
+    "Hong Kong": [["Hong Kong","Kowloon",22.3193,114.1694]],
+    "France": [["Paris","Île-de-France",48.8566,2.3522]],
+    "Taiwan": [["Taipei","Taipei City",25.033,121.5654]],
+    "Sweden": [
+        ["Stockholm","Stockholm County",59.3293,18.0686],
+        ["Lund","Skåne County",55.7047,13.191],
+    ],
+    "China": [
+        ["Beijing","Beijing",39.9042,116.4074],
+        ["Shanghai","Shanghai",31.2304,121.4737],
+    ],
+    "New Zealand": [["Auckland","Auckland",-36.8485,174.7633]],
+    "Belgium": [
+        ["Leuven","Flemish Brabant",50.8798,4.7005],
+        ["Brussels","Brussels",50.8503,4.3517],
+    ],
 }
 SCHOLARSHIPS = [
     None, None, None, None, None, None,
-    "DPST", "DPST", "DPST",
-    "Royal Thai Government", "Royal Thai Government",
-    "MEXT", "ASEAN Scholarship", "Chevening", "Fulbright",
-    "Royal Golden Jubilee", "Anandamahidol", "King's Scholarship",
-    "JPA", "DAAD", "Australia Awards", "KAIST Excellence Award",
-    "Gates Cambridge", "Vanier CGS",
+    "DPST (พสวท.)", "DPST (พสวท.)", "DPST (พสวท.)",
+    "Other Thai Government Scholarship (OCSC / ก.พ.)", "Other Thai Government Scholarship (OCSC / ก.พ.)",
+    "King's Scholarship (เล่าเรียนหลวง)", "Olympiad Scholarship (โอลิมปิกวิชาการ)",
+    "MEXT Scholarship (Embassy Recommendation)", "MEXT Scholarship (University Recommendation)",
+    "ASEAN Scholarship", "Country Scholarship", "Country Scholarship", "Country Scholarship",
+    "University Scholarship", "University Scholarship",
+    "Vidyasirimedhi Scholarship (วิทยสิริเมธี)",
 ]
+
+FIELDS_OF_STUDY_SEED = [
+    "Mathematics & Data Science",
+    "Computer Science & Software Engineering", "Computer Science & Software Engineering",
+    "Physical Sciences & Engineering", "Physical Sciences & Engineering",
+    "Chemical Sciences & Engineering",
+    "Life Sciences & Bioengineering", "Life Sciences & Bioengineering",
+    "Earth, Space, & Environmental Sciences",
+    "Non-STEM / Humanities / Social Sciences",
+]
+
+ROLE_TYPE_BY_JOB_FIELD = {
+    "Technology": ["Software & Systems Development", "Data, AI & Analytics", "Product, Project & Program Management", "Engineering & Technical Operations"],
+    "Engineering": ["Engineering & Technical Operations", "R&D, Science & Laboratory", "Product, Project & Program Management"],
+    "Healthcare": ["Healthcare & Clinical Practice", "R&D, Science & Laboratory", "Quality, Regulatory & Compliance"],
+    "Finance": ["Finance, Accounting & Investment", "Strategy, Consulting & Business Intelligence", "Data, AI & Analytics"],
+    "Research": ["R&D, Science & Laboratory", "Education, Teaching & Academia"],
+    "Government": ["Legal, Policy & Government Affairs", "Strategy, Consulting & Business Intelligence", "Executive & Corporate Leadership"],
+    "Education": ["Education, Teaching & Academia", "R&D, Science & Laboratory"],
+    "Business": ["Strategy, Consulting & Business Intelligence", "Sales & Business Development", "Operations, Supply Chain & Logistics"],
+    "Creative Arts": ["Design, Creative & UX/UI", "Marketing, Communications & Public Relations"],
+    "Law": ["Legal, Policy & Government Affairs", "Strategy, Consulting & Business Intelligence"],
+    "Media": ["Marketing, Communications & Public Relations", "Design, Creative & UX/UI"],
+    "Non-profit": ["Strategy, Consulting & Business Intelligence", "Legal, Policy & Government Affairs"],
+    "Agriculture": ["R&D, Science & Laboratory", "Operations, Supply Chain & Logistics"],
+    "Architecture": ["Design, Creative & UX/UI", "Engineering & Technical Operations"],
+    "Other": ["Other"],
+}
 
 # Sample blog posts (linked to first two seeded users by index 0 and 1)
 RAW_BLOGS = [
@@ -351,10 +439,12 @@ def generate_alumni(per_cohort: int = 72) -> list[dict]:
                 employer_list = EMPLOYERS.get(job_field, EMPLOYERS["Other"])
                 employer = pick(R, employer_list)
                 title = pick(R, JOB_TITLES.get(job_field, JOB_TITLES["Other"]))
+                role_type = pick(R, ROLE_TYPE_BY_JOB_FIELD.get(job_field, ["Other"]))
                 careers = [{
                     "job_title": title,
                     "employer": employer,
                     "job_field": job_field,
+                    "role_type": role_type,
                     "country": country,
                     "state": None,
                     "is_current": True,
@@ -373,8 +463,9 @@ def generate_alumni(per_cohort: int = 72) -> list[dict]:
                 "last_name": last,
                 "kvis_year": cohort,
                 "place": place_data[0],
-                "latitude": place_data[1],
-                "longitude": place_data[2],
+                "place_level2": place_data[1],
+                "latitude": place_data[2],
+                "longitude": place_data[3],
                 "country": country,
                 "bio": None,
                 "mbti": pick(R, MBTIS),
@@ -386,6 +477,7 @@ def generate_alumni(per_cohort: int = 72) -> list[dict]:
                     "uni_name": uni,
                     "degree": degree,
                     "major": major,
+                    "field_of_study": pick(R, FIELDS_OF_STUDY_SEED),
                     "country": country,
                     "state": None,
                     "scholarship": scholarship,
@@ -524,6 +616,7 @@ def seed(db_url: str, clear: bool = False) -> None:
                 hashed_password=test_password if ud["email"] == test_email else None,
                 kvis_year=ud.get("kvis_year"),
                 place=ud.get("place"),
+                place_level2=ud.get("place_level2"),
                 latitude=ud.get("latitude"),
                 longitude=ud.get("longitude"),
                 country=ud.get("country"),
@@ -553,6 +646,7 @@ def seed(db_url: str, clear: bool = False) -> None:
                     uni_name=e["uni_name"],
                     degree=e["degree"],
                     major=e["major"],
+                    field_of_study=e.get("field_of_study"),
                     country=e["country"],
                     state=e.get("state"),
                     scholarship=e.get("scholarship"),
@@ -570,6 +664,7 @@ def seed(db_url: str, clear: bool = False) -> None:
                     job_title=c["job_title"],
                     employer=c["employer"],
                     job_field=c["job_field"],
+                    role_type=c.get("role_type"),
                     country=c["country"],
                     state=c.get("state"),
                     is_current=c.get("is_current", False),

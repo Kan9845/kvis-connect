@@ -136,8 +136,12 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
             {filtered.length === 0
               ? <CommandEmpty>No match</CommandEmpty>
               : <CommandGroup>
+                  <CommandItem value="" onSelect={() => { onChange(""); setOpen(false); setQuery(""); }}>
+                    <Check className={cn("mr-2 h-4 w-4 shrink-0", !value ? "opacity-100" : "opacity-0")} />
+                    Any country
+                  </CommandItem>
                   {filtered.map((c) => (
-                    <CommandItem key={c} value={c} onSelect={() => { onChange(c); setOpen(false); setQuery(""); }}>
+                    <CommandItem key={c} value={c} onSelect={() => { onChange(value === c ? "" : c); setOpen(false); setQuery(""); }}>
                       <Check className={cn("mr-2 h-4 w-4 shrink-0", value === c ? "opacity-100" : "opacity-0")} />
                       {c}
                     </CommandItem>
@@ -273,8 +277,12 @@ export function ProvinceSelect({ country, value, onChange, borderColor, variant 
               </CommandEmpty>
             ) : (
               <CommandGroup>
+                <CommandItem value="" onSelect={() => { onChange(""); setOpen(false); setQuery(""); }}>
+                  <Check className={cn("mr-2 h-4 w-4 shrink-0", !value ? "opacity-100" : "opacity-0")} />
+                  Any province
+                </CommandItem>
                 {filtered.map((s) => (
-                  <CommandItem key={s} value={s} onSelect={() => { onChange(s); setOpen(false); setQuery(""); }}>
+                  <CommandItem key={s} value={s} onSelect={() => { onChange(value === s ? "" : s); setOpen(false); setQuery(""); }}>
                     <Check className={cn("mr-2 h-4 w-4 shrink-0", value === s ? "opacity-100" : "opacity-0")} />
                     {s}
                   </CommandItem>
@@ -420,8 +428,12 @@ export function CitySelect({ country, province, value, onChange, borderColor, va
               </CommandEmpty>
             ) : (
               <CommandGroup>
+                <CommandItem value="" onSelect={() => { onChange(""); setOpen(false); setQuery(""); }}>
+                  <Check className={cn("mr-2 h-4 w-4 shrink-0", !value ? "opacity-100" : "opacity-0")} />
+                  Any city
+                </CommandItem>
                 {filtered.map((c) => (
-                  <CommandItem key={c} value={c} onSelect={() => { onChange(c); setOpen(false); setQuery(""); }}>
+                  <CommandItem key={c} value={c} onSelect={() => { onChange(value === c ? "" : c); setOpen(false); setQuery(""); }}>
                     <Check className={cn("mr-2 h-4 w-4 shrink-0", value === c ? "opacity-100" : "opacity-0")} />
                     {c}
                   </CommandItem>

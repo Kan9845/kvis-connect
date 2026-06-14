@@ -136,7 +136,15 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
           />
           <CommandList className="max-h-60">
             {query.trim().length < 2 ? (
-              <div className="py-5 text-center text-xs text-muted-foreground">Start typing to search</div>
+              value ? (
+                <CommandGroup>
+                  <CommandItem value="" onSelect={() => { onChange(""); onCountryChange?.(""); setQuery(""); setOpen(false); }}>
+                    <span className="ml-6 text-muted-foreground">Clear selection</span>
+                  </CommandItem>
+                </CommandGroup>
+              ) : (
+                <div className="py-5 text-center text-xs text-muted-foreground">Start typing to search</div>
+              )
             ) : results.length === 0 ? (
               <CommandEmpty>
                 No match -{" "}
@@ -151,8 +159,8 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
                     key={u.name}
                     value={u.name}
                     onSelect={() => {
-                      onChange(u.name);
-                      onCountryChange?.(u.country);
+                      onChange(value === u.name ? "" : u.name);
+                      onCountryChange?.(value === u.name ? "" : u.country);
                       setQuery("");
                       setOpen(false);
                     }}

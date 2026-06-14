@@ -75,6 +75,7 @@ def search_users(
     job_title: Optional[str] = Query(default=None),
     employer: Optional[str] = Query(default=None),
     job_field: Optional[str] = Query(default=None),
+    role_type: Optional[str] = Query(default=None),
     sort: str = Query(default="name"),
     order: str = Query(default="asc"),
     limit: int = Query(default=50, le=2000),
@@ -104,7 +105,7 @@ def search_users(
     for user in users:
         if not _matches_education(user.education, uni_name, degree, major, scholarship, field_of_study):
             continue
-        if not _matches_career(user.career, job_title, employer, job_field):
+        if not _matches_career(user.career, job_title, employer, job_field, role_type):
             continue
         result.append(user)
 
@@ -141,8 +142,8 @@ def _matches_education(education, uni_name, degree, major, scholarship, field_of
     return False
 
 
-def _matches_career(career, job_title, employer, job_field) -> bool:
-    if not any([job_title, employer, job_field]):
+def _matches_career(career, job_title, employer, job_field, role_type) -> bool:
+    if not any([job_title, employer, job_field, role_type]):
         return True
     for c in career:
         match = True
@@ -151,6 +152,8 @@ def _matches_career(career, job_title, employer, job_field) -> bool:
         if employer and employer.lower() not in (c.employer or "").lower():
             match = False
         if job_field and c.job_field != job_field:
+            match = False
+        if role_type and c.role_type != role_type:
             match = False
         if match:
             return True

@@ -93,6 +93,52 @@ export const KVIS_DEPARTMENTS = [
   "Other",
 ];
 
+export const FIELDS_OF_STUDY = [
+  "Mathematics & Data Science",
+  "Computer Science & Software Engineering",
+  "Physical Sciences & Engineering",
+  "Chemical Sciences & Engineering",
+  "Life Sciences & Bioengineering",
+  "Earth, Space, & Environmental Sciences",
+  "Non-STEM / Humanities / Social Sciences",
+] as const;
+
+export const SCHOLARSHIP_OPTIONS = [
+  "King's Scholarship (เล่าเรียนหลวง)",
+  "Olympiad Scholarship (โอลิมปิกวิชาการ)",
+  "DPST (พสวท.)",
+  "Vidyasirimedhi Scholarship (วิทยสิริเมธี)",
+  "Other Thai Government Scholarship (OCSC / ก.พ.)",
+  "ASEAN Scholarship",
+  "MEXT Scholarship (Embassy Recommendation)",
+  "MEXT Scholarship (University Recommendation)",
+  "Country Scholarship",
+  "University Scholarship",
+  "Other",
+] as const;
+
+export const ROLE_TYPES = [
+  "Education, Teaching & Academia",
+  "R&D, Science & Laboratory",
+  "Software & Systems Development",
+  "Engineering & Technical Operations",
+  "Data, AI & Analytics",
+  "Healthcare & Clinical Practice",
+  "Product, Project & Program Management",
+  "Strategy, Consulting & Business Intelligence",
+  "Quality, Regulatory & Compliance",
+  "Executive & Corporate Leadership",
+  "Design, Creative & UX/UI",
+  "Finance, Accounting & Investment",
+  "Operations, Supply Chain & Logistics",
+  "Marketing, Communications & Public Relations",
+  "Sales & Business Development",
+  "Legal, Policy & Government Affairs",
+  "Human Resources & People Operations",
+  "Customer Success & Support",
+  "Other",
+] as const;
+
 // ─── Helper functions ─────────────────────────────────────────────────────────
 export function degreeLabel(value: string) {
   return DEGREES.find((d) => d.value === value)?.label ?? value;

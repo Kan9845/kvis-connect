@@ -192,9 +192,11 @@ export interface SearchParams {
   degree?: string;
   major?: string;
   scholarship?: string;
+  field_of_study?: string;
   job_title?: string;
   employer?: string;
   job_field?: string;
+  role_type?: string;
   sort?: "name" | "kvis_year" | "created_at";
   order?: "asc" | "desc";
 }
@@ -237,6 +239,7 @@ export interface DirectoryCard {
   job_title?: string;
   employer?: string;
   job_field?: string;
+  role_type?: string;
   edu_major?: string;
   edu_degree?: string;
   edu_uni?: string;

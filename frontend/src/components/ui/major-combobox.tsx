@@ -143,8 +143,12 @@ export function MajorCombobox({ value, onChange, borderColor, variant = "bordere
               </CommandEmpty>
             ) : (
               <CommandGroup>
+                <CommandItem value="" onSelect={() => { onChange(""); setOpen(false); setQuery(""); }}>
+                  <Check className={cn("mr-2 h-4 w-4 shrink-0", !value ? "opacity-100" : "opacity-0")} />
+                  Any major
+                </CommandItem>
                 {filtered.map((m) => (
-                  <CommandItem key={m} value={m} onSelect={() => { onChange(m); setOpen(false); setQuery(""); }}>
+                  <CommandItem key={m} value={m} onSelect={() => { onChange(value === m ? "" : m); setOpen(false); setQuery(""); }}>
                     <Check className={cn("mr-2 h-4 w-4 shrink-0", value === m ? "opacity-100" : "opacity-0")} />
                     {m}
                   </CommandItem>
