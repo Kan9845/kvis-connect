@@ -11,12 +11,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { FeedbackSection } from "./FeedbackSection";
 
-const SCHOOL_FACTS = [
-  { label: "Location", value: "Rayong, Thailand" },
-  { label: "Program", value: "M.4 - M.6 (3 years)" },
-  { label: "Mascot", value: "Goose" },
-];
-
 const STAT_STRIP = [
   { value: "2014", label: "Year founded", color: "var(--kvis-green-light)" },
   { value: "72", label: "Students per cohort", color: "var(--kvis-purple-light)" },
@@ -125,7 +119,7 @@ export function AboutClient() {
 
           {/* School story */}
           <FadeUp>
-            <section className="py-2xl grid md:grid-cols-[5fr_3fr] gap-2xl">
+            <section className="py-2xl">
               <div>
                 <p
                   className="text-xs font-semibold uppercase tracking-widest mb-5 text-[var(--kvis-green-light)]"
@@ -155,25 +149,6 @@ export function AboutClient() {
                 </div>
               </div>
 
-              <div className="py-lg">
-                <StaggerList>
-                  {SCHOOL_FACTS.map(({ label, value }, index) => (
-                    <StaggerItem key={label}>
-                      <li className={`py-4 flex flex-col gap-0.5 list-none border-b border-[var(--kvis-border)]${index === 0 ? " border-t" : ""}`}>
-                        <span
-                          className="text-xs font-semibold uppercase tracking-wide text-[var(--kvis-text3)]"
-                          style={{ letterSpacing: "0.08em" }}
-                        >
-                          {label}
-                        </span>
-                        <span className="text-sm font-semibold text-[var(--kvis-ink)]">
-                          {value}
-                        </span>
-                      </li>
-                    </StaggerItem>
-                  ))}
-                </StaggerList>
-              </div>
             </section>
           </FadeUp>
 
