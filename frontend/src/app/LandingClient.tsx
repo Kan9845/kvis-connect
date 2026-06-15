@@ -20,7 +20,19 @@ interface Props {
 export function LandingClient({ initialPins }: Props) {
   const [searchParams, setSearchParams] = useState<SearchParams>({});
   const [panelOpen, setPanelOpen] = useState(true);
+  // Mount only ONE SearchFilters instance (desktop OR mobile). Two live
+  // instances bound to the same state create a debounced two-way sync race
+  // where one panel's stale timer echoes an old filter back over the other.
+  const [isDesktop, setIsDesktop] = useState(true);
   const { setVariant } = useNavbarVariant();
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
   const { resolvedTheme } = useTheme();
   const isDarkSky = resolvedTheme !== "light";
 
@@ -79,37 +91,37 @@ export function LandingClient({ initialPins }: Props) {
     <div className={`relative w-full h-full overflow-hidden isolate ${isDarkSky ? "bg-black" : "bg-white"}`}>
       <AlumniGlobe pins={pins} filteredPins={filteredPins} />
 
-      {!panelOpen && (
-        <>
-          {/* Desktop: top-left */}
-          <Button
-            variant="outline"
-            onClick={() => setPanelOpen(true)}
-            className={`hidden md:flex ${filterBtnCls}`}
-            style={{ top: 76, left: 20, borderWidth: "1.5px" }}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            Filter
-          </Button>
-
-          {/* Mobile: bottom-center */}
-          <Button
-            variant="outline"
-            onClick={() => setPanelOpen(true)}
-            className={`md:hidden ${filterBtnCls} bottom-6 left-1/2 -translate-x-1/2`}
-            style={{ borderWidth: "1.5px" }}
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            Filter Alumni
-          </Button>
-        </>
+      {!panelOpen && isDesktop && (
+        /* Desktop: top-left */
+        <Button
+          variant="outline"
+          onClick={() => setPanelOpen(true)}
+          className={`flex ${filterBtnCls}`}
+          style={{ top: 76, left: 20, borderWidth: "1.5px" }}
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Filter
+        </Button>
       )}
 
-      {panelOpen && (
+      {!panelOpen && !isDesktop && (
+        /* Mobile: bottom-center */
+        <Button
+          variant="outline"
+          onClick={() => setPanelOpen(true)}
+          className={`${filterBtnCls} bottom-6 left-1/2 -translate-x-1/2`}
+          style={{ borderWidth: "1.5px" }}
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5" />
+          Filter Alumni
+        </Button>
+      )}
+
+      {panelOpen && isDesktop && (
         <>
           {/* Desktop: side panel */}
           <div
-            className="hidden md:block absolute z-20 w-72 rounded-2xl overflow-y-auto"
+            className="block absolute z-20 w-72 rounded-2xl overflow-y-auto"
             style={{
               top: 76,
               left: 20,
@@ -120,10 +132,14 @@ export function LandingClient({ initialPins }: Props) {
           >
             {panelContent}
           </div>
+        </>
+      )}
 
+      {panelOpen && !isDesktop && (
+        <>
           {/* Mobile: bottom sheet */}
           <div
-            className="md:hidden absolute z-20 inset-x-0 bottom-0 rounded-t-2xl flex flex-col"
+            className="absolute z-20 inset-x-0 bottom-0 rounded-t-2xl flex flex-col"
             style={{
               maxHeight: "72dvh",
               background: isDarkSky ? "rgba(2,6,18,0.92)" : "rgba(255,255,255,0.92)",

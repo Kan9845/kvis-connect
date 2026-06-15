@@ -619,6 +619,7 @@ function KvisianInner() {
     (sortBy === "cohort-asc" || sortBy === "cohort-desc");
 
   const hasRealFilter =
+    personType !== "all" ||
     !!activeCohort ||
     !!activeCountry ||
     !!activeGrade ||

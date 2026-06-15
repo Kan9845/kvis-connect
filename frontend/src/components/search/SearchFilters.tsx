@@ -132,7 +132,7 @@ function OptionsCombobox({ value, onChange, options, placeholder, triggerCls }: 
 }
 
 export function SearchFilters({ values, onChange, dark = false }: Props) {
-  const { register, reset, setValue, watch } = useForm<SearchParams>({ defaultValues: values });
+  const { register, reset, setValue, watch, getValues } = useForm<SearchParams>({ defaultValues: values });
   const formValues = watch();
   const serialized = JSON.stringify(formValues);
   const externalRef = useRef(JSON.stringify(values));
@@ -149,11 +149,14 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
 
   useEffect(() => {
     const t = setTimeout(() => {
+      // Read live form values (not the stale effect closure) so a reset()
+      // triggered by the sibling panel instance can't re-emit an old filter.
       const clean = Object.fromEntries(
-        Object.entries(formValues).filter(([, v]) => v !== "" && v !== undefined && v !== null)
+        Object.entries(getValues()).filter(([, v]) => v !== "" && v !== undefined && v !== null)
       ) as SearchParams;
-      // Only propagate if form state actually differs from incoming props
-      if (JSON.stringify(clean) !== externalRef.current) {
+      const cleanStr = JSON.stringify(clean);
+      if (cleanStr !== externalRef.current) {
+        externalRef.current = cleanStr;
         onChange(clean);
       }
     }, 250);
@@ -162,7 +165,13 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
   }, [serialized]);
 
   const handleClear = () => {
-    reset({});
+    externalRef.current = "{}";
+    // reset({}) leaves values of unmounted fields (collapsed sections) intact
+    // because RHF keeps them by default, so getValues() would still report the
+    // old filter and the debounce would re-emit it. Null every known field.
+    reset(
+      Object.fromEntries(Object.keys(getValues()).map((k) => [k, undefined])) as SearchParams
+    );
     onChange({});
   };
 
@@ -195,7 +204,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
       <div className={cn("h-px", dividerCls)} />
 
       <Section title="KVIS Batch" dark={dark} hasValue={!!formValues.kvis_year}>
-        <Select value={formValues.kvis_year ? String(formValues.kvis_year) : ""} onValueChange={(v) => setValue("kvis_year", v && v !== "__any__" ? parseInt(v) : undefined)}>
+        <Select value={formValues.kvis_year ? String(formValues.kvis_year) : "__any__"} onValueChange={(v) => setValue("kvis_year", v && v !== "__any__" ? parseInt(v) : undefined)}>
           <SelectTrigger className={triggerCls}>
             <SelectValue placeholder="Any batch" />
           </SelectTrigger>
@@ -262,7 +271,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
             onChange={(v) => setValue("uni_name", v || undefined)}
             placeholder="Search university..."
           />
-          <Select value={formValues.degree ?? ""} onValueChange={(v) => setValue("degree", v && v !== "__any__" ? v : undefined)}>
+          <Select value={formValues.degree || "__any__"} onValueChange={(v) => setValue("degree", v && v !== "__any__" ? v : undefined)}>
             <SelectTrigger className={triggerCls}>
               <SelectValue placeholder="Any degree" />
             </SelectTrigger>
@@ -273,7 +282,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
               ))}
             </SelectContent>
           </Select>
-          <Select value={formValues.field_of_study ?? ""} onValueChange={(v) => setValue("field_of_study", v && v !== "__any__" ? v : undefined)}>
+          <Select value={formValues.field_of_study || "__any__"} onValueChange={(v) => setValue("field_of_study", v && v !== "__any__" ? v : undefined)}>
             <SelectTrigger className={triggerCls}>
               <SelectValue placeholder="Any field of study" />
             </SelectTrigger>
@@ -309,7 +318,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
         <div className="space-y-2">
           <Input placeholder="Job title" {...register("job_title")} className={inputCls} />
           <Input placeholder="Employer" {...register("employer")} className={inputCls} />
-          <Select value={formValues.job_field ?? ""} onValueChange={(v) => setValue("job_field", v && v !== "__any__" ? v : undefined)}>
+          <Select value={formValues.job_field || "__any__"} onValueChange={(v) => setValue("job_field", v && v !== "__any__" ? v : undefined)}>
             <SelectTrigger className={triggerCls}>
               <SelectValue placeholder="Industry" />
             </SelectTrigger>

@@ -129,8 +129,11 @@ export const userApi = {
 
 // Search
 export const searchApi = {
+  // The globe overlay needs every matching alumnus (no pagination UI), but the
+  // backend /search defaults to limit=50 and truncates. Request the full set so
+  // counts and pins reflect all matches. Backend caps at le=2000 (>864 total).
   search: (params: SearchParams) =>
-    api.get<UserCard[]>("/api/search", { params }).then((r) => r.data),
+    api.get<UserCard[]>("/api/search", { params: { ...params, limit: 2000 } }).then((r) => r.data),
 };
 
 // Summary
