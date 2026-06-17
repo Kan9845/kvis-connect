@@ -157,6 +157,8 @@ export const blogApi = {
     const res = await api.post<{ url: string }>("/api/upload", formData);
     return res.data;
   },
+  myDrafts: () =>
+    api.get<BlogRead[]>("/api/blogs/my-drafts").then(r => r.data),
   getLike: (slug: string) =>
     api.get<{ likes: number; liked: boolean }>(`/api/blogs/${slug}/like`).then(r => r.data),
   toggleLike: (slug: string) =>

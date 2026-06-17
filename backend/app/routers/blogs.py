@@ -3,6 +3,7 @@ from sqlmodel import Session, select
 from typing import Optional
 from datetime import datetime, timezone
 from slugify import slugify
+import uuid
 
 from app.core.database import get_session
 from app.core.deps import get_current_user
@@ -62,13 +63,32 @@ def list_blogs(
     return [_blog_to_read(b, session) for b in blogs]
 
 
+@router.get("/my-drafts", response_model=list[BlogRead])
+def my_drafts(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    blogs = session.exec(
+        select(Blog)
+        .where(Blog.author_id == current_user.id, Blog.is_published == False)
+        .order_by(Blog.updated_at.desc())
+    ).all()
+    return [_blog_to_read(b, session) for b in blogs]
+
+
 @router.get("/{slug}", response_model=BlogDetail)
-@cached(key=lambda slug, session: f"blogs:slug:{slug}", tags=lambda slug, session: ["blogs", f"blog:{slug}"], ttl=settings.CACHE_TTL_LONG)
-def get_blog(slug: str, session: Session = Depends(get_session)):
+def get_blog(
+    slug: str,
+    session: Session = Depends(get_session),
+    current_user: User | None = Depends(get_optional_user),
+):
     blog = session.exec(select(Blog).where(Blog.slug == slug)).first()
-    if not blog or not blog.is_published:
+    if not blog:
         raise HTTPException(404, detail="Blog not found")
-    return {**_blog_to_read(blog, session), "content": blog.content} 
+    if not blog.is_published:
+        if not current_user or blog.author_id != current_user.id:
+            raise HTTPException(404, detail="Blog not found")
+    return {**_blog_to_read(blog, session), "content": blog.content}
 
 
 @router.post("", response_model=BlogDetail, status_code=201)

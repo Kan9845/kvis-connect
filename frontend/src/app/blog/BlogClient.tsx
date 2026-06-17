@@ -255,6 +255,12 @@ export default function BlogClient() {
     queryFn: () => blogApi.list({ limit: 100 }),
   });
 
+  const { data: drafts = [] } = useQuery({
+    queryKey: ["blogs", "my-drafts"],
+    queryFn: () => blogApi.myDrafts(),
+    enabled: !!user,
+  });
+
   const allTags = useMemo(() => {
     const m = new Map<string, number>();
     blogs.forEach((b) =>
@@ -512,11 +518,19 @@ export default function BlogClient() {
             </FadeUp>
           )}
 
-          {!isLoading && featured && (
-            <FadeUp delay={0.1}>
-              <div className="pt-xl">
-                <FeaturedStory blog={featured} />
-              </div>
+          {!isLoading && user && drafts.length > 0 && (
+            <FadeUp delay={0.08}>
+              <section className="pt-xl">
+                <h2 className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-5 flex items-center gap-2">
+                  <span style={{ color: "var(--kvis-purple-light)" }}>My Drafts</span>
+                  <span className="tabular-nums">({drafts.length})</span>
+                </h2>
+                <div className="divide-y divide-[var(--kvis-border)] border-t border-[var(--kvis-border)]">
+                  {drafts.map((b, i) => (
+                    <StoryRow key={b.id} blog={b} index={i} />
+                  ))}
+                </div>
+              </section>
             </FadeUp>
           )}
 

@@ -1,7 +1,7 @@
 import uuid
 from sqlmodel import SQLModel, Field, Relationship
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.models.user import User
 
@@ -19,8 +19,10 @@ class Blog(SQLModel, table=True):
 
     is_published: bool = False
     published_at: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     author: Optional["User"] = Relationship(back_populates="blogs")
     comments_enabled: bool = Field(default=True)
+
+
