@@ -20,7 +20,7 @@ import {
 } from "@/lib/utils";
 import type { BlogRead } from "@/lib/types";
 import { PageEntrance, FadeUp } from "@/components/ui/motion";
-import { Lock } from "lucide-react";
+import { Lock, MessageSquare } from "lucide-react";
 
 function parseTags(t?: string) {
   return (t ?? "")
@@ -247,6 +247,11 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
           {(blog.likes ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-xs text-[var(--kvis-text3)]">
               <Heart className="h-3 w-3" /> {blog.likes}
+            </span>
+          )}
+          {(blog.comment_count ?? 0) > 0 && (
+            <span className="flex items-center gap-1 text-xs text-[var(--kvis-text3)]">
+              <MessageSquare className="h-3 w-3" /> {blog.comment_count}
             </span>
           )}
           <span className="text-xs tabular-nums text-[var(--kvis-text3)]">

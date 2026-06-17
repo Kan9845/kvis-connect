@@ -20,6 +20,10 @@ import { useState, useEffect, useRef } from "react";
 import type { BlogComment } from "@/lib/types";
 import type { GlobePin } from "@/lib/types";
 
+function renderWithMentions(content: string) {
+  return content.replace(/@([\w-]+)/g, (_, slug) => `[@${slug}](/profile/${slug})`);
+}
+
 function nestComments(flat: BlogComment[]): BlogComment[] {
   const map = new Map<string, BlogComment>();
   const roots: BlogComment[] = [];
@@ -257,7 +261,16 @@ function CommentNode({ comment, slug, user, depth = 0, onDelete, onAdd, onEdit, 
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-foreground leading-relaxed mt-1 whitespace-pre-wrap">{comment.content}</p>
+              <p className="text-sm text-foreground leading-relaxed mt-1 whitespace-pre-wrap">
+                {comment.content.split(/(@[\w-]+)/g).map((part, i) =>
+                  part.match(/^@[\w-]+$/) ? (
+                    <Link key={i} href={`/profile/${part.slice(1)}`}
+                      className="text-[var(--kvis-purple)] font-semibold hover:underline">
+                      {part}
+                    </Link>
+                  ) : part
+                )}
+              </p>
             )}
 
             {!editing && (
@@ -514,7 +527,9 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
         <FadeUp delay={0.2}>
           <article className="prose prose-lg max-w-none break-words">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{blog.content}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {renderWithMentions(blog.content)}
+            </ReactMarkdown>
           </article>
         </FadeUp>
 

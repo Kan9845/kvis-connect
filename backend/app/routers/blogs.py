@@ -26,6 +26,7 @@ def _blog_to_read(blog: Blog, session: Session = None) -> dict:
     likes = 0
     if session:
         likes = len(session.exec(select(BlogLike).where(BlogLike.blog_id == blog.id)).all())
+        comments = len(session.exec(select(BlogCommentModel).where(BlogCommentModel.blog_id == blog.id)).all())
     return {
         "id": blog.id,
         "slug": blog.slug,
@@ -37,6 +38,7 @@ def _blog_to_read(blog: Blog, session: Session = None) -> dict:
         "published_at": blog.published_at,
         "created_at": blog.created_at,
         "likes": likes,
+        "comment_count": comments,
         "comments_enabled": getattr(blog, "comments_enabled", True),
         "author": {
             "id": blog.author.id,

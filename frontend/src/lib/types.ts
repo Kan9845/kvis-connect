@@ -168,6 +168,7 @@ export interface BlogRead {
   created_at: string;
   author: BlogAuthor;
   likes?: number;
+  comment_count?: number;
   visibility?: string;
 }
 
