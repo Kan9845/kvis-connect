@@ -23,6 +23,8 @@ class BlogRead(BaseModel):
     is_published: bool
     published_at: Optional[datetime]
     created_at: datetime
+    likes: int = 0
+    comments_enabled: bool = True
     author: BlogAuthor
 
 

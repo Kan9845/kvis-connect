@@ -23,3 +23,4 @@ class Blog(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     author: Optional["User"] = Relationship(back_populates="blogs")
+    comments_enabled: bool = Field(default=True)
