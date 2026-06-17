@@ -324,6 +324,21 @@ async def add_comment(
     session.add(comment)
     session.commit()
     session.refresh(comment)
+    # Notify parent comment author if replying to someone (and they're not the same as post author or commenter)
+    if parent_id:
+        parent_comment = session.get(BlogCommentModel, uuid.UUID(parent_id))
+        if parent_comment and parent_comment.user_id != current_user.id and parent_comment.user_id != blog.author_id:
+            parent_author = session.get(User, parent_comment.user_id)
+            if parent_author:
+                send_notification(
+                    session,
+                    parent_author,
+                    type="reply",
+                    title=f"{current_user.first_name} replied to your comment",
+                    body=f"{current_user.first_name} {current_user.last_name} replied: \"{content[:80]}\".",
+                    link=f"/blog/{slug}",
+                )
+                session.commit()
     if blog.author_id != current_user.id:
         author = session.get(User, blog.author_id)
         if author:
