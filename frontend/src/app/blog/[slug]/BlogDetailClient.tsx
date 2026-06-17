@@ -365,8 +365,14 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
         <FadeUp delay={0.05}>
           <header className="mb-8 pb-8 border-b border-[var(--sep-strong)]">
-            {tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-5">
+            {tags.length > 0 || blog.visibility === "kvis_only" ? (
+              <div className="flex flex-wrap gap-1.5 mb-5 items-center">
+                {blog.visibility === "kvis_only" && (
+                  <span className="flex items-center gap-1 text-xs font-medium text-[var(--kvis-green-light)] opacity-70">
+                    <Lock className="h-3 w-3" />
+                    KVIS Only
+                  </span>
+                )}
                 {tags.map(tag => (
                   <span key={tag} className="text-xs font-bold uppercase tracking-[0.14em] px-2.5 py-1"
                     style={{ background: "var(--kvis-purple-soft)", color: "var(--kvis-purple)" }}>
@@ -374,7 +380,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
                   </span>
                 ))}
               </div>
-            )}
+            ) : null}
             <h1 className="font-display text-4xl md:text-5xl font-black tracking-[-0.025em] leading-[0.95] text-foreground mb-6">
               {blog.title}
             </h1>

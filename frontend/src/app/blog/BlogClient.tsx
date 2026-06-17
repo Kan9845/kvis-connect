@@ -20,6 +20,7 @@ import {
 } from "@/lib/utils";
 import type { BlogRead } from "@/lib/types";
 import { PageEntrance, FadeUp } from "@/components/ui/motion";
+import { Lock } from "lucide-react";
 
 function parseTags(t?: string) {
   return (t ?? "")
@@ -145,13 +146,7 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
           <CardBanner blog={blog} height={240} showAvatar avatarSize={48} />
           <div className="p-6 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-sm">
-                {blog.visibility === "kvis_only" && (
-                  <span className="text-xs font-bold uppercase tracking-[0.14em] px-2 py-0.5"
-                    style={{ background: "var(--kvis-purple-soft)", color: "var(--kvis-purple)" }}>
-                    KVIS Only
-                  </span>
-                )}
+              <div className="flex items-center gap-2 mb-sm flex-wrap">
                 {badge && (
                   <span
                     className="text-xs font-bold uppercase tracking-[0.14em] py-0.5 rounded-full"
@@ -163,6 +158,12 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
                 {tags[0] && (
                   <span className="text-xs font-semibold uppercase tracking-[0.1em] text-[var(--kvis-text3)]">
                     {tags[0]}
+                  </span>
+                )}
+                {blog.visibility === "kvis_only" && (
+                  <span className="flex items-center gap-1 text-xs font-medium text-[var(--kvis-green-light)] opacity-70">
+                    <Lock className="h-3 w-3" />
+                    KVIS Only
                   </span>
                 )}
               </div>
@@ -227,12 +228,6 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
             <span className="text-xs text-[var(--kvis-text3)]">
               {blog.author.first_name} {blog.author.last_name}
             </span>
-            {blog.visibility === "kvis_only" && (
-              <span className="text-xs font-bold uppercase tracking-[0.14em] px-2 py-0.5"
-                style={{ background: "var(--kvis-purple-soft)", color: "var(--kvis-purple)" }}>
-                KVIS Only
-              </span>
-            )}
             {badge && (
               <span className="text-xs font-bold" style={{ color }}>
                 {badge}
@@ -246,6 +241,9 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0 mt-0.5">
+          {blog.visibility === "kvis_only" && (
+            <Lock className="h-3 w-3 text-[var(--kvis-green-light)] opacity-60" />
+          )}
           {(blog.likes ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-xs text-[var(--kvis-text3)]">
               <Heart className="h-3 w-3" /> {blog.likes}

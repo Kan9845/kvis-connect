@@ -16,6 +16,8 @@ from app.schemas.blog import BlogRead, BlogDetail, BlogCreate, BlogUpdate
 from app.models.blog_interactions import BlogLike, BlogComment as BlogCommentModel
 from app.core.deps import get_optional_user
 
+from app.core.mailer import send_notification
+
 router = APIRouter(prefix="/blogs", tags=["blogs"])
 
 
@@ -246,6 +248,18 @@ async def toggle_like(
     else:
         session.add(BlogLike(blog_id=blog.id, user_id=current_user.id))
     session.commit()
+    if not existing and blog.author_id != current_user.id:
+        author = session.get(User, blog.author_id)
+        if author:
+            send_notification(
+                session,
+                author,
+                type="like",
+                title=f"{current_user.first_name} liked your post",
+                body=f"{current_user.first_name} {current_user.last_name} liked \"{blog.title}\".",
+                link=f"/blog/{slug}",
+            )
+            session.commit()
     likes = session.exec(select(BlogLike).where(BlogLike.blog_id == blog.id)).all()
     await invalidate_tags(f"blog:{slug}")
     return {"likes": len(likes), "liked": not existing}
@@ -310,6 +324,18 @@ async def add_comment(
     session.add(comment)
     session.commit()
     session.refresh(comment)
+    if blog.author_id != current_user.id:
+        author = session.get(User, blog.author_id)
+        if author:
+            send_notification(
+                session,
+                author,
+                type="comment",
+                title=f"{current_user.first_name} commented on your post",
+                body=f"{current_user.first_name} {current_user.last_name} commented: \"{content[:80]}\".",
+                link=f"/blog/{slug}",
+            )
+            session.commit()
     return _comment_to_dict(comment, current_user)
 
 
