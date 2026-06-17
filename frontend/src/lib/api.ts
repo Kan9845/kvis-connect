@@ -167,6 +167,8 @@ export const blogApi = {
     api.get<BlogComment[]>(`/api/blogs/${slug}/comments`).then(r => r.data),
   addComment: (slug: string, content: string, parent_id?: string) =>
     api.post<BlogComment>(`/api/blogs/${slug}/comments`, { content, parent_id: parent_id ?? null }).then(r => r.data),
+  editComment: (slug: string, commentId: string, content: string) =>
+    api.patch<BlogComment>(`/api/blogs/${slug}/comments/${commentId}`, { content }).then(r => r.data),
   deleteComment: (slug: string, commentId: string) =>
     api.delete(`/api/blogs/${slug}/comments/${commentId}`),
   toggleComments: (slug: string) =>

@@ -375,6 +375,29 @@ async def delete_comment(
     session.commit()
 
 
+@router.patch("/{slug}/comments/{comment_id}")
+async def edit_comment(
+    slug: str,
+    comment_id: str,
+    body: dict,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    comment = session.get(BlogCommentModel, uuid.UUID(comment_id))
+    if not comment:
+        raise HTTPException(404, detail="Comment not found")
+    if comment.user_id != current_user.id:
+        raise HTTPException(403, detail="Not your comment")
+    content = (body.get("content") or "").strip()
+    if not content:
+        raise HTTPException(400, detail="Content required")
+    comment.content = content
+    session.add(comment)
+    session.commit()
+    session.refresh(comment)
+    author = session.get(User, comment.user_id)
+    return _comment_to_dict(comment, author)
+
 @router.patch("/{slug}/comments/toggle")
 async def toggle_comments(
     slug: str,

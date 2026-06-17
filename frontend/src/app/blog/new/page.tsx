@@ -282,7 +282,7 @@ export default function NewBlogPage() {
                     ref={(e) => { registerRef(e); (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e; }}
                     onChange={handleContentChange}
                     rows={22}
-                    placeholder={`Start writing your post… Use @slug to mention someone.\n\n## A sub-heading\n\n**Bold** for emphasis, *italics* for asides.\n\n- A bulleted list\n- Of supporting points\n\n> A pulled quote, if it fits.`}
+                    placeholder={`Start writing your post… Use @name to mention someone.\n\n## A sub-heading\n\n**Bold** for emphasis, *italics* for asides.\n\n- A bulleted list\n- Of supporting points\n\n> A pulled quote, if it fits.`}
                     className="block w-full bg-transparent border-0 px-4 md:px-5 py-5 font-serif text-[17px] leading-[1.75] text-foreground placeholder:text-muted-foreground/45 focus:outline-none resize-none"
                   />
                   {mentionResults.length > 0 && mentionPos && (
