@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import boto3
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from sqlmodel import Session, select
 from typing import Optional
 from datetime import datetime, timezone
@@ -14,7 +15,6 @@ from app.models.blog import Blog
 from app.schemas.blog import BlogRead, BlogDetail, BlogCreate, BlogUpdate
 from app.models.blog_interactions import BlogLike, BlogComment as BlogCommentModel
 from app.core.deps import get_optional_user
-
 
 router = APIRouter(prefix="/blogs", tags=["blogs"])
 
@@ -128,6 +128,38 @@ async def create_blog(
     session.refresh(blog)
     await invalidate_tags("blogs")
     return {**_blog_to_read(blog, session), "content": blog.content} 
+
+
+@router.post("/upload")
+async def upload_blog_image(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+):
+    if not settings.S3_ACCESS_KEY:
+        raise HTTPException(503, detail="Storage not configured")
+
+    s3_kwargs = {
+        "aws_access_key_id": settings.S3_ACCESS_KEY,
+        "aws_secret_access_key": settings.S3_SECRET_KEY,
+    }
+    if settings.S3_ENDPOINT_URL:
+        s3_kwargs["endpoint_url"] = settings.S3_ENDPOINT_URL
+    else:
+        s3_kwargs["region_name"] = settings.S3_REGION
+
+    s3 = boto3.client("s3", **s3_kwargs)
+    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
+    key = f"blogs/{current_user.id}/{uuid.uuid4()}.{ext}"
+    s3.upload_fileobj(file.file, settings.S3_BUCKET, key, ExtraArgs={"ContentType": file.content_type})
+
+    if settings.S3_ENDPOINT_URL:
+        url = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET}/{key}"
+    elif settings.S3_REGION:
+        url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION}.amazonaws.com/{key}"
+    else:
+        url = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{key}"
+
+    return {"url": url}
 
 
 @router.patch("/{slug}", response_model=BlogDetail)

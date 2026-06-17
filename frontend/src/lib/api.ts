@@ -154,7 +154,7 @@ export const blogApi = {
   uploadFile: async (file: File): Promise<{ url: string }> => {
     const formData = new FormData();
     formData.append("file", file);
-    const res = await api.post<{ url: string }>("/api/upload", formData);
+    const res = await api.post<{ url: string }>("/api/blogs/upload", formData);
     return res.data;
   },
   myDrafts: () =>
