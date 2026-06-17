@@ -106,11 +106,11 @@ function MentionTextarea({ value, onChange, placeholder, rows = 3, autoFocus = f
         onChange={handleChange}
         placeholder={placeholder}
         rows={rows}
-        className="w-full bg-transparent border border-[var(--kvis-border)] rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[var(--kvis-purple)] transition-colors resize-none"
+        className="w-full bg-transparent border border-[var(--kvis-border)] rounded-lg px-3 py-2.5 text-base md:text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-[var(--kvis-purple)] transition-colors resize-none"
       />
       {mentionResults.length > 0 && mentionPos && (
-        <div className="absolute z-50 bg-background border border-[var(--kvis-border)] shadow-lg min-w-[200px] rounded-lg overflow-hidden"
-          style={{ top: mentionPos.top, left: mentionPos.left }}>
+        <div className="absolute z-50 bg-background border border-[var(--kvis-border)] shadow-lg w-[calc(100vw-3rem)] max-w-[280px] rounded-lg overflow-hidden"
+          style={{ top: mentionPos.top, left: 0 }}>
           {mentionResults.map(p => (
             <button key={p.user_id} type="button" onMouseDown={() => insertMention(p)}
               className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[var(--kvis-purple-soft)] transition-colors text-left">
@@ -159,9 +159,9 @@ function CommentInput({ slug, parentId, onDone, autoFocus = false, pins }: {
         autoFocus={autoFocus}
         pins={pins}
       />
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-2 justify-end mt-2">
         <Button type="button" onClick={submit} disabled={submitting || !text.trim()}
-          className="h-auto rounded-none bg-foreground px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-background hover:bg-foreground/90 disabled:opacity-40">
+          className="w-full sm:w-auto h-auto rounded-none bg-foreground px-4 py-3 text-xs font-bold uppercase tracking-[0.22em] text-background hover:bg-foreground/90 disabled:opacity-40">
           {submitting ? "Posting..." : parentId ? "Reply" : "Post"}
         </Button>
       </div>
@@ -308,7 +308,7 @@ function CommentNode({ comment, slug, user, depth = 0, onDelete, onAdd, onEdit, 
         </div>
 
         {replying && (
-          <div className="mt-2 mb-3 ml-8">
+          <div className="mt-2 mb-3 ml-4 md:ml-8">
             <CommentInput slug={slug} parentId={comment.id} autoFocus pins={pins}
               onDone={(c) => { onAdd(c); setReplying(false); }} />
           </div>
@@ -433,11 +433,39 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
   if (isLoading) {
     return (
       <PageEntrance>
-        <div className="container mx-auto px-4 py-8 max-w-3xl">
-          <Skeleton className="h-64 w-full rounded-xl mb-8" />
-          <Skeleton className="h-8 w-2/3 mb-4" />
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-3/4" />
+        <div className="mx-auto max-w-3xl px-6 lg:px-8 py-xl lg:py-layout">
+          {/* Back link */}
+          <Skeleton className="h-3 w-20 mb-10" />
+          {/* Tags */}
+          <div className="flex gap-2 mb-5">
+            <Skeleton className="h-5 w-16" />
+            <Skeleton className="h-5 w-20" />
+          </div>
+          {/* Title */}
+          <Skeleton className="h-12 w-3/4 mb-3" />
+          <Skeleton className="h-12 w-1/2 mb-6" />
+          {/* Author row */}
+          <div className="flex items-center gap-3 mb-8 pb-8 border-b border-[var(--kvis-border)]">
+            <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          {/* Cover image */}
+          <Skeleton className="h-72 w-full mb-8" />
+          {/* Content lines */}
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <div className="pt-2" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
         </div>
       </PageEntrance>
     );
