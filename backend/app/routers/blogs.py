@@ -55,6 +55,7 @@ def list_blogs(
     session: Session = Depends(get_session),
     current_user: User | None = Depends(get_optional_user),
     tag: Optional[str] = Query(default=None),
+    search: Optional[str] = Query(default=None),
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0),
 ):
@@ -64,7 +65,16 @@ def list_blogs(
     if tag:
         blogs = [b for b in blogs if b.tags and tag.lower() in b.tags.lower()]
 
-    # Filter kvis_only posts for non-verified users
+    if search:
+        q = search.lower()
+        blogs = [b for b in blogs if
+            q in b.title.lower() or
+            (b.tags and q in b.tags.lower()) or
+            q in b.content.lower() or
+            (b.excerpt and q in b.excerpt.lower()) or
+            f"{b.author.first_name} {b.author.last_name}".lower().__contains__(q)
+        ]
+
     if not current_user or not current_user.is_verified:
         blogs = [b for b in blogs if getattr(b, "visibility", "public") == "public"]
 

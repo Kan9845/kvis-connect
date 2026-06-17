@@ -143,7 +143,7 @@ export const summaryApi = {
 
 // Blogs
 export const blogApi = {
-  list: (params?: { tag?: string; limit?: number; offset?: number }) =>
+  list: (params?: { tag?: string; limit?: number; offset?: number; search?: string }) =>
     api.get<BlogRead[]>("/api/blogs", { params }).then((r) => r.data),
   get: (slug: string) => api.get<BlogDetail>(`/api/blogs/${slug}`).then((r) => r.data),
   create: (data: { title: string; content: string; excerpt?: string; cover_image_url?: string; tags?: string; is_published: boolean; visibility?: string }) =>

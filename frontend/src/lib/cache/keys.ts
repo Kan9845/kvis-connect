@@ -14,8 +14,8 @@ export const keys = {
 
   blog: {
     all: () => ["blogs"] as const,
-    list: (params?: { tag?: string; limit?: number; offset?: number }) =>
-      params ? (["blogs", "list", params] as const) : (["blogs", "list"] as const),
+    list: (params?: { tag?: string; limit?: number; offset?: number; search?: string }) =>
+      ["blogs", "list", params] as const,
     detail: (slug: string) => ["blog", slug] as const,
   },
 

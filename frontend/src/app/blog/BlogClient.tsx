@@ -1,5 +1,5 @@
 ﻿"use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
@@ -265,9 +265,15 @@ export default function BlogClient() {
   const [sortBy, setSortBy] = useState("popular");
   const [sortOpen, setSortOpen] = useState(false);
 
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchQ), 400);
+    return () => clearTimeout(t);
+  }, [searchQ]);
+
   const { data: blogs = [], isLoading } = useQuery({
-    queryKey: keys.blog.list({ limit: 100 }),
-    queryFn: () => blogApi.list({ limit: 100 }),
+    queryKey: keys.blog.list({ limit: 100, search: debouncedSearch || undefined }),
+    queryFn: () => blogApi.list({ limit: 100, search: debouncedSearch || undefined }),
     staleTime: 0,
   });
 
@@ -289,18 +295,6 @@ export default function BlogClient() {
     let result = activeTag
       ? blogs.filter((b) => parseTags(b.tags).includes(activeTag))
       : blogs;
-    if (searchQ.trim()) {
-      const q = searchQ.trim().toLowerCase();
-      result = result.filter(
-        (b) =>
-          b.title.toLowerCase().includes(q) ||
-          parseTags(b.tags).some((t) => t.toLowerCase().includes(q)) ||
-          `${b.author.first_name} ${b.author.last_name}`
-            .toLowerCase()
-            .includes(q) ||
-          b.excerpt?.toLowerCase().includes(q),
-      );
-    }
     return [...result].sort((a, b) => {
       if (sortBy === "popular") return (b.likes ?? 0) - (a.likes ?? 0);
       if (sortBy === "oldest")
@@ -313,7 +307,7 @@ export default function BlogClient() {
         new Date(a.published_at ?? a.created_at ?? 0).getTime()
       );
     });
-  }, [activeTag, searchQ, sortBy, blogs]);
+  }, [activeTag, sortBy, blogs]);
 
   const [featured, ...rest] = filtered;
   const now = new Date();
