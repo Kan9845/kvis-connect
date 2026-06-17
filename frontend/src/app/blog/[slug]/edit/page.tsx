@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { blogApi } from "@/lib/api";
+import { blogApi, userApi } from "@/lib/api";
 import { onBlogMutationSuccess } from "@/lib/cache/invalidate";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { keys } from "@/lib/cache/keys";
+import type { GlobePin } from "@/lib/types";
 
 const P = {
   purple: "var(--kvis-purple)",
@@ -49,6 +50,16 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
   const [tab, setTab] = useState<"write" | "preview">("write");
   const coverImageRef = useRef<HTMLInputElement>(null);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionPos, setMentionPos] = useState<{ top: number; left: number } | null>(null);
+  const [mentionResults, setMentionResults] = useState<GlobePin[]>([]);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const { data: pins = [] } = useQuery({
+    queryKey: keys.globe.pins(),
+    queryFn: userApi.getGlobePins,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const { data: blog, isLoading: blogLoading } = useQuery({
     queryKey: keys.blog.detail(slug),
@@ -111,9 +122,9 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
   const title = watch("title") ?? "";
   const content = watch("content") ?? "";
   const tags = watch("tags") ?? "";
+
   const wordCount = useMemo(() => {
     if (!content.trim()) return 0;
-    // Check if content contains Thai characters
     const hasThai = /[\u0E00-\u0E7F]/.test(content);
     if (hasThai) {
       try {
@@ -121,14 +132,51 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
         const segments = Array.from(segmenter.segment(content));
         return segments.filter(s => s.isWordLike).length;
       } catch {
-        // Fallback if Intl.Segmenter not supported
         return content.replace(/\s+/g, "").length;
       }
     }
     return content.trim().split(/\s+/).length;
   }, [content]);
+
   const charCount = content.length;
   const readMins = Math.max(1, Math.round(wordCount / 220));
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setValue("content", val, { shouldValidate: true });
+    const cursor = e.target.selectionStart;
+    const textBefore = val.slice(0, cursor);
+    const match = textBefore.match(/@([\w-]*)$/);
+    if (match) {
+      const query = match[1].toLowerCase();
+      setMentionQuery(query);
+      const results = pins.filter(p =>
+        `${p.first_name} ${p.last_name}`.toLowerCase().includes(query) ||
+        p.slug.toLowerCase().includes(query)
+      ).slice(0, 5);
+      setMentionResults(results);
+      const ta = textareaRef.current;
+      if (ta) setMentionPos({ top: ta.offsetTop + 20, left: ta.offsetLeft + 10 });
+    } else {
+      setMentionResults([]);
+      setMentionPos(null);
+    }
+  };
+
+  const insertMention = (pin: GlobePin) => {
+    const val = watch("content");
+    const cursor = textareaRef.current?.selectionStart ?? val.length;
+    const textBefore = val.slice(0, cursor);
+    const textAfter = val.slice(cursor);
+    const replaced = textBefore.replace(/@[\w-]*$/, `@${pin.slug} `);
+    setValue("content", replaced + textAfter, { shouldValidate: true });
+    setMentionResults([]);
+    setMentionPos(null);
+    textareaRef.current?.focus();
+  };
+
+  const { ref: registerRef, ...registerRest } = register("content");
+  const contentWithMentions = content.replace(/@([\w-]+)/g, (_, s) => `[@${s}](/profile/${s})`);
 
   if (loading || blogLoading || !user) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
@@ -146,9 +194,7 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
           <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 flex items-center gap-1" style={{ color: P.purple }}>
             KVIS Connect <Dot className="h-3 w-3 shrink-0" /> Edit post
           </p>
-          <h1 className="font-display text-5xl md:text-6xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">
-            Edit post
-          </h1>
+          <h1 className="font-display text-5xl md:text-6xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">Edit post</h1>
           <div className="flex items-center gap-3 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap" style={{ color: P.text3 }}>
             <span>By {user.first_name} {user.last_name}</span>
             <Dot className="h-3 w-3 shrink-0" />
@@ -209,7 +255,8 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
               </div>
               <div className="flex items-center gap-5">
                 {(["write", "preview"] as const).map(t => (
-                  <button key={t} type="button" onClick={() => setTab(t)} className="text-xs font-bold uppercase tracking-[0.26em] transition-colors" style={{ color: tab === t ? P.purple : P.text3, textDecoration: tab === t ? "underline" : "none", textDecorationThickness: 2, textUnderlineOffset: 8 }}>
+                  <button key={t} type="button" onClick={() => setTab(t)} className="text-xs font-bold uppercase tracking-[0.26em] transition-colors"
+                    style={{ color: tab === t ? P.purple : P.text3, textDecoration: tab === t ? "underline" : "none", textDecorationThickness: 2, textUnderlineOffset: 8 }}>
                     {t === "write" ? "Write" : "Preview"}
                   </button>
                 ))}
@@ -222,13 +269,39 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
                 <span>{wordCount.toLocaleString()} words <Dot className="inline h-3 w-3" /> {charCount.toLocaleString()} chars</span>
               </div>
               {tab === "write" ? (
-                <textarea {...register("content")} rows={22} placeholder="Start writing…" className="block w-full bg-transparent border-0 px-5 py-5 font-serif text-[17px] leading-[1.75] text-foreground placeholder:text-muted-foreground/45 focus:outline-none resize-none" />
+                <div className="relative">
+                  <textarea
+                    {...registerRest}
+                    ref={(e) => { registerRef(e); (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e; }}
+                    onChange={handleContentChange}
+                    rows={22}
+                    placeholder="Start writing… Use @name to mention someone."
+                    className="block w-full bg-transparent border-0 px-5 py-5 font-serif text-[17px] leading-[1.75] text-foreground placeholder:text-muted-foreground/45 focus:outline-none resize-none"
+                  />
+                  {mentionResults.length > 0 && mentionPos && (
+                    <div className="absolute z-50 bg-background border border-[var(--kvis-border)] shadow-lg min-w-[200px]"
+                      style={{ top: mentionPos.top, left: mentionPos.left }}>
+                      {mentionResults.map(p => (
+                        <button key={p.user_id} type="button" onMouseDown={() => insertMention(p)}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[var(--kvis-purple-soft)] transition-colors text-left">
+                          <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold text-white" style={{ background: "var(--kvis-purple)" }}>
+                            {p.first_name[0]}{p.last_name[0]}
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold">{p.first_name} {p.last_name}</p>
+                            <p className="text-xs text-muted-foreground">@{p.slug}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="px-5 py-6 min-h-[500px]">
                   {content.trim() ? (
                     <article className="prose prose-lg max-w-none">
                       {title && <h1 className="font-display text-5xl font-black tracking-[-0.03em] leading-[0.95]">{title}</h1>}
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{contentWithMentions}</ReactMarkdown>
                     </article>
                   ) : (
                     <p className="text-center text-xs uppercase tracking-[0.28em] py-20" style={{ color: P.text3 }}>Nothing to preview yet.</p>
@@ -241,22 +314,13 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
 
           <footer className="mt-12 pt-7 border-t-2 border-[var(--sep-strong)] flex items-center justify-between flex-wrap gap-4">
             <p className="text-xs uppercase tracking-[0.22em]" style={{ color: P.text3 }}>Drafts stay private until you publish.</p>
-            {/* Visibility */}
             <div className="flex items-center gap-3">
               {(["public", "kvis_only"] as const).map((v) => {
                 const selected = watch("visibility") === v;
                 return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setValue("visibility", v)}
+                  <button key={v} type="button" onClick={() => setValue("visibility", v)}
                     className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] px-3 py-2 border transition-colors"
-                    style={{
-                      borderColor: selected ? "var(--kvis-purple)" : "var(--kvis-border)",
-                      color: selected ? "var(--kvis-purple)" : "var(--kvis-text3)",
-                      background: selected ? "var(--kvis-purple-soft)" : "transparent",
-                    }}
-                  >
+                    style={{ borderColor: selected ? "var(--kvis-purple)" : "var(--kvis-border)", color: selected ? "var(--kvis-purple)" : "var(--kvis-text3)", background: selected ? "var(--kvis-purple-soft)" : "transparent" }}>
                     {v === "public" ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
                     {v === "public" ? "Public" : "KVIS Only"}
                   </button>

@@ -5,6 +5,7 @@ from typing import Optional
 from datetime import datetime, timezone
 from slugify import slugify
 import uuid
+import re
 
 from app.core.database import get_session
 from app.core.deps import get_current_user
@@ -128,6 +129,8 @@ async def create_blog(
     session.add(blog)
     session.commit()
     session.refresh(blog)
+    if blog.is_published:
+        _notify_mentions(session, blog.content, blog, current_user, slug)
     await invalidate_tags("blogs")
     return {**_blog_to_read(blog, session), "content": blog.content} 
 
@@ -186,6 +189,8 @@ async def update_blog(
     session.add(blog)
     session.commit()
     session.refresh(blog)
+    if blog.is_published:
+        _notify_mentions(session, blog.content, blog, current_user, slug)
     await invalidate_tags("blogs", f"blog:{slug}")
     return {**_blog_to_read(blog, session), "content": blog.content} 
 
@@ -386,3 +391,24 @@ async def toggle_comments(
     session.commit()
     await invalidate_tags(f"blog:{slug}", "blogs")
     return {"comments_enabled": blog.comments_enabled}
+
+
+def _notify_mentions(session, content: str, blog, current_user: User, slug: str):
+    mentions = re.findall(r'@([\w-]+)', content)
+    notified = set()
+    for mention_slug in mentions:
+        if mention_slug in notified:
+            continue
+        mentioned = session.exec(select(User).where(User.slug == mention_slug)).first()
+        if mentioned and mentioned.id != current_user.id:
+            send_notification(
+                session,
+                mentioned,
+                type="mention",
+                title=f"{current_user.first_name} mentioned you in a post",
+                body=f"{current_user.first_name} {current_user.last_name} mentioned you in \"{blog.title}\".",
+                link=f"/blog/{slug}",
+            )
+            notified.add(mention_slug)
+    if notified:
+        session.commit()
