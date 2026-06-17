@@ -442,7 +442,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
         )}
 
         <FadeUp delay={0.2}>
-          <article className="prose">
+          <article className="prose prose-lg max-w-none break-words">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{blog.content}</ReactMarkdown>
           </article>
         </FadeUp>

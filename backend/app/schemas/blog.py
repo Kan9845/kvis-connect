@@ -26,6 +26,7 @@ class BlogRead(BaseModel):
     likes: int = 0
     comments_enabled: bool = True
     author: BlogAuthor
+    visibility: str = "public"
 
 
 class BlogDetail(BlogRead):
@@ -39,6 +40,7 @@ class BlogCreate(BaseModel):
     cover_image_url: Optional[str] = None
     tags: Optional[str] = None
     is_published: bool = False
+    visibility: str = "public"
 
 
 class BlogUpdate(BaseModel):
@@ -48,3 +50,4 @@ class BlogUpdate(BaseModel):
     cover_image_url: Optional[str] = None
     tags: Optional[str] = None
     is_published: Optional[bool] = None
+    visibility: str = "public"

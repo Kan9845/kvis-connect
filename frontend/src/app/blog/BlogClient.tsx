@@ -146,6 +146,12 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
           <div className="p-6 flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-sm">
+                {blog.visibility === "kvis_only" && (
+                  <span className="text-xs font-bold uppercase tracking-[0.14em] px-2 py-0.5"
+                    style={{ background: "var(--kvis-purple-soft)", color: "var(--kvis-purple)" }}>
+                    KVIS Only
+                  </span>
+                )}
                 {badge && (
                   <span
                     className="text-xs font-bold uppercase tracking-[0.14em] py-0.5 rounded-full"
@@ -221,6 +227,12 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
             <span className="text-xs text-[var(--kvis-text3)]">
               {blog.author.first_name} {blog.author.last_name}
             </span>
+            {blog.visibility === "kvis_only" && (
+              <span className="text-xs font-bold uppercase tracking-[0.14em] px-2 py-0.5"
+                style={{ background: "var(--kvis-purple-soft)", color: "var(--kvis-purple)" }}>
+                KVIS Only
+              </span>
+            )}
             {badge && (
               <span className="text-xs font-bold" style={{ color }}>
                 {badge}
@@ -258,6 +270,7 @@ export default function BlogClient() {
   const { data: blogs = [], isLoading } = useQuery({
     queryKey: keys.blog.list({ limit: 100 }),
     queryFn: () => blogApi.list({ limit: 100 }),
+    staleTime: 0,
   });
 
   const { data: drafts = [] } = useQuery({

@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { userApi, authApi } from "@/lib/api";
 import type { UserMe } from "@/lib/types";
 import { toast } from "sonner";
-
+import { clearPersistedCache } from "@/lib/cache/persister";
 interface AuthContextValue {
   user: UserMe | null;
   loading: boolean;
@@ -78,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (AUTH_DISABLED) return;
     await authApi.logout();
     setUser(null);
+    clearPersistedCache("anon");
   };
 
   return (

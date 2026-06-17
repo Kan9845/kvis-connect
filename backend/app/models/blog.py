@@ -17,6 +17,7 @@ class Blog(SQLModel, table=True):
     cover_image_url: Optional[str] = None
     tags: Optional[str] = None            # comma-separated
 
+    visibility: str = Field(default="public")  # "public" or "kvis_only"
     is_published: bool = False
     published_at: Optional[datetime] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

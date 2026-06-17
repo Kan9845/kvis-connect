@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,7 +8,7 @@ import { blogApi } from "@/lib/api";
 import { onBlogMutationSuccess } from "@/lib/cache/invalidate";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { Loader2, Send, Dot } from "lucide-react";
+import { Loader2, Send, Dot, Globe, Lock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -28,6 +28,7 @@ const schema = z.object({
   excerpt: z.string().optional(),
   cover_image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   tags: z.string().optional(),
+  visibility: z.enum(["public", "kvis_only"]).default("public"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -67,6 +68,7 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
         excerpt: blog.excerpt ?? "",
         cover_image_url: blog.cover_image_url ?? "",
         tags: blog.tags ?? "",
+        visibility: (blog.visibility as "public" | "kvis_only") ?? "public",
       });
     }
   }, [blog, reset]);
@@ -109,7 +111,21 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
   const title = watch("title") ?? "";
   const content = watch("content") ?? "";
   const tags = watch("tags") ?? "";
-  const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const wordCount = useMemo(() => {
+    if (!content.trim()) return 0;
+    // Check if content contains Thai characters
+    const hasThai = /[\u0E00-\u0E7F]/.test(content);
+    if (hasThai) {
+      try {
+        const segmenter = new Intl.Segmenter("th", { granularity: "word" });
+        return [...segmenter.segment(content)].filter(s => s.isWordLike).length;
+      } catch {
+        // Fallback if Intl.Segmenter not supported
+        return content.replace(/\s+/g, "").length;
+      }
+    }
+    return content.trim().split(/\s+/).length;
+  }, [content]);
   const charCount = content.length;
   const readMins = Math.max(1, Math.round(wordCount / 220));
 
@@ -224,6 +240,28 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
 
           <footer className="mt-12 pt-7 border-t-2 border-[var(--sep-strong)] flex items-center justify-between flex-wrap gap-4">
             <p className="text-xs uppercase tracking-[0.22em]" style={{ color: P.text3 }}>Drafts stay private until you publish.</p>
+            {/* Visibility */}
+            <div className="flex items-center gap-3">
+              {(["public", "kvis_only"] as const).map((v) => {
+                const selected = watch("visibility") === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setValue("visibility", v)}
+                    className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] px-3 py-2 border transition-colors"
+                    style={{
+                      borderColor: selected ? "var(--kvis-purple)" : "var(--kvis-border)",
+                      color: selected ? "var(--kvis-purple)" : "var(--kvis-text3)",
+                      background: selected ? "var(--kvis-purple-soft)" : "transparent",
+                    }}
+                  >
+                    {v === "public" ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                    {v === "public" ? "Public" : "KVIS Only"}
+                  </button>
+                );
+              })}
+            </div>
             <div className="flex items-center gap-4">
               <button type="button" disabled={mutation.isPending || isSubmitting}
                 onClick={handleSubmit(d => mutation.mutate({ ...d, is_published: false }))}

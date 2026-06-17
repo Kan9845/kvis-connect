@@ -43,13 +43,14 @@ def _blog_to_read(blog: Blog, session: Session = None) -> dict:
             "profile_pic_url": blog.author.profile_pic_url,
             "kvis_year": blog.author.kvis_year,
         },
+        "visibility": getattr(blog, "visibility", "public"),
     }
 
 
 @router.get("", response_model=list[BlogRead])
-@cached(key="blogs:list:<args>", tags=["blogs"], ttl=settings.CACHE_TTL_SHORT)
 def list_blogs(
     session: Session = Depends(get_session),
+    current_user: User | None = Depends(get_optional_user),
     tag: Optional[str] = Query(default=None),
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0),
@@ -59,6 +60,10 @@ def list_blogs(
 
     if tag:
         blogs = [b for b in blogs if b.tags and tag.lower() in b.tags.lower()]
+
+    # Filter kvis_only posts for non-verified users
+    if not current_user or not current_user.is_verified:
+        blogs = [b for b in blogs if getattr(b, "visibility", "public") == "public"]
 
     return [_blog_to_read(b, session) for b in blogs]
 
@@ -88,6 +93,9 @@ def get_blog(
     if not blog.is_published:
         if not current_user or blog.author_id != current_user.id:
             raise HTTPException(404, detail="Blog not found")
+    if getattr(blog, "visibility", "public") == "kvis_only":
+        if not current_user or not current_user.is_verified:
+            raise HTTPException(403, detail="This post is for KVIS members only")
     return {**_blog_to_read(blog, session), "content": blog.content}
 
 
