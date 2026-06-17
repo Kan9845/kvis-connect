@@ -70,10 +70,11 @@ def notify_expected_graduates():
             send_notification(
                 session,
                 u,
-                type="profile_update_reminder",
-                title="Time to update your profile",
-                body=f"You set {this_year} as your expected graduation year. Let us know what's next — or update if your plans changed.",
+                type="graduated",
+                title=f"Welcome to the K{new_kvis_year} alumni network!",
+                body=f"...",
                 link="/profile/edit",
+                send_email_notification=True,
             )
 
         session.commit()

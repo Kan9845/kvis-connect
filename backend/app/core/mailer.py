@@ -72,19 +72,21 @@ def send_notification(
     title: str,
     body: str,
     link: Optional[str] = None,
+    send_email_notification: bool = False,
 ) -> None:
     from app.models.notification import Notification
 
     notif = Notification(user_id=user.id, type=type, title=title, body=body, link=link)
     session.add(notif)
 
-    try:
-        send_email(
-            user.email,
-            f"KVIS Connect - {title}",
-            f"Hi {user.first_name},\n\n{body}\n\n"
-            + (f"Open: {settings.FRONTEND_URL}{link}\n\n" if link else "")
-            + "- KVIS Connect",
-        )
-    except Exception as e:
-        logger.warning("Failed to send notification email to %s: %s", user.email, e)
+    if send_email_notification:  # only send email if explicitly requested
+        try:
+            send_email(
+                user.email,
+                f"KVIS Connect - {title}",
+                f"Hi {user.first_name},\n\n{body}\n\n"
+                + (f"Open: {settings.FRONTEND_URL}{link}\n\n" if link else "")
+                + "- KVIS Connect",
+            )
+        except Exception as e:
+            logger.warning("Failed to send notification email to %s: %s", user.email, e)
