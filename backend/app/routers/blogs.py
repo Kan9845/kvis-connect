@@ -356,6 +356,28 @@ async def add_comment(
                 link=f"/blog/{slug}",
             )
             session.commit()
+    # Notify mentioned users
+    mentions = re.findall(r'@([\w-]+)', content)
+    notified = set()
+    notified.add(str(current_user.id))  # don't notify self
+    if blog.author_id != current_user.id:
+        notified.add(str(blog.author_id))  # already notified above
+
+    for mention_slug in mentions:
+        mentioned = session.exec(select(User).where(User.slug == mention_slug)).first()
+        if mentioned and str(mentioned.id) not in notified:
+            send_notification(
+                session,
+                mentioned,
+                type="mention",
+                title=f"{current_user.first_name} mentioned you in a comment",
+                body=f"{current_user.first_name} {current_user.last_name} mentioned you: \"{content[:80]}\".",
+                link=f"/blog/{slug}",
+            )
+            notified.add(str(mentioned.id))
+
+    if mentions:
+        session.commit()
     return _comment_to_dict(comment, current_user)
 
 
@@ -373,6 +395,24 @@ async def delete_comment(
         raise HTTPException(403, detail="Not your comment")
     session.delete(comment)
     session.commit()
+
+
+@router.patch("/{slug}/comments/toggle")
+async def toggle_comments(
+    slug: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    blog = session.exec(select(Blog).where(Blog.slug == slug)).first()
+    if not blog:
+        raise HTTPException(404, detail="Blog not found")
+    if blog.author_id != current_user.id:
+        raise HTTPException(403, detail="Not your blog")
+    blog.comments_enabled = not blog.comments_enabled
+    session.add(blog)
+    session.commit()
+    await invalidate_tags(f"blog:{slug}", "blogs")
+    return {"comments_enabled": blog.comments_enabled}
 
 
 @router.patch("/{slug}/comments/{comment_id}")
@@ -397,23 +437,6 @@ async def edit_comment(
     session.refresh(comment)
     author = session.get(User, comment.user_id)
     return _comment_to_dict(comment, author)
-
-@router.patch("/{slug}/comments/toggle")
-async def toggle_comments(
-    slug: str,
-    session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
-):
-    blog = session.exec(select(Blog).where(Blog.slug == slug)).first()
-    if not blog:
-        raise HTTPException(404, detail="Blog not found")
-    if blog.author_id != current_user.id:
-        raise HTTPException(403, detail="Not your blog")
-    blog.comments_enabled = not blog.comments_enabled
-    session.add(blog)
-    session.commit()
-    await invalidate_tags(f"blog:{slug}", "blogs")
-    return {"comments_enabled": blog.comments_enabled}
 
 
 def _notify_mentions(session, content: str, blog, current_user: User, slug: str):
