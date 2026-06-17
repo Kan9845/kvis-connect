@@ -81,7 +81,7 @@ export function LandingClient({ initialPins }: Props) {
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <div className="px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-[env(safe-area-inset-bottom)]">
         <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />
       </div>
     </>
@@ -139,7 +139,7 @@ export function LandingClient({ initialPins }: Props) {
         <>
           {/* Mobile: bottom sheet */}
           <div
-            className="absolute z-20 inset-x-0 bottom-0 rounded-t-2xl flex flex-col"
+            className="fixed z-50 inset-x-0 bottom-0 rounded-t-2xl flex flex-col"
             style={{
               maxHeight: "72dvh",
               background: isDarkSky ? "rgba(2,6,18,0.92)" : "rgba(255,255,255,0.92)",
@@ -164,7 +164,7 @@ export function LandingClient({ initialPins }: Props) {
                 </Button>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="flex-1 overflow-y-auto px-4 py-4 pb-[env(safe-area-inset-bottom)]">
               <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />
             </div>
           </div>
@@ -172,7 +172,7 @@ export function LandingClient({ initialPins }: Props) {
       )}
 
       {hasFilter && filteredPins?.length === 0 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 pointer-events-none">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
           <div
             className="px-5 py-3 rounded-xl text-center text-sm text-white"
             style={{ background: "rgba(4,10,30,0.9)", border: "1px solid rgba(239,68,68,0.3)", boxShadow: "0 8px 24px rgba(0,0,0,0.6)" }}
