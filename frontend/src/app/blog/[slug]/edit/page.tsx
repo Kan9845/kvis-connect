@@ -118,12 +118,8 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
     if (hasThai) {
       try {
         const segmenter = new Intl.Segmenter("th", { granularity: "word" });
-        const segments = segmenter.segment(content);
-        let count = 0;
-        for (const s of segments) {
-          if (s.isWordLike) count++;
-        }
-        return count;
+        const segments = Array.from(segmenter.segment(content));
+        return segments.filter(s => s.isWordLike).length;
       } catch {
         // Fallback if Intl.Segmenter not supported
         return content.replace(/\s+/g, "").length;
