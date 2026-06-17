@@ -135,7 +135,7 @@ export function AboutClient() {
                 </h2>
                 <div
                   className="text-sm font-medium space-y-5 text-[var(--kvis-text2)]"
-                  style={{ lineHeight: 1.85, maxWidth: "62ch" }}
+                  style={{ lineHeight: 1.85 }}
                 >
                   <p>
                     Founded in 2014 through the support of the PTT Group, Kamnoetvidya Science Academy (KVIS) is a private boarding high school (Grades 10–12) located in Rayong as part of the Eastern Economic Corridor of Innovation (EECi) project. The school was established to support upper secondary students who show a strong aptitude for mathematics and science, providing an education with English as the main language of instruction. To ensure that talented students from various backgrounds can access these opportunities, the school provides 100% scholarships to its students.
