@@ -9,7 +9,7 @@ class BlogLike(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     blog_id: uuid.UUID = Field(foreign_key="blog.id", index=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
-    created_at: datetime = Field(default_factory=datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class BlogComment(SQLModel, table=True):
@@ -19,4 +19,4 @@ class BlogComment(SQLModel, table=True):
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     parent_id: Optional[uuid.UUID] = Field(default=None, foreign_key="blog_comment.id", index=True)
     content: str
-    created_at: datetime = Field(default_factory=datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
