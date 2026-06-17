@@ -352,59 +352,42 @@ export default function BlogClient() {
               </div>
 
               {/* Tag pills + sort */}
-              <div className="flex items-center justify-between gap-4 mt-5">
-                {/* Popular tags - top 5 only */}
-                <div className="flex items-center flex-wrap gap-2">
+              <div className="mt-5 flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setActiveTag("")}
+                  className="px-3 py-2 rounded-full text-xs font-semibold transition-colors"
+                  style={{
+                    background: !activeTag ? "var(--kvis-purple)" : "transparent",
+                    color: !activeTag ? "white" : "var(--kvis-text3)",
+                    border: !activeTag ? "none" : "0.5px solid var(--kvis-border)",
+                  }}
+                >
+                  All
+                </button>
+                
+                {allTags.slice(0, 5).map(([t]) => (
                   <button
-                    onClick={() => setActiveTag("")}
-                    className="px-3 py-2 rounded-full text-xs font-semibold transition-colors"
+                    key={t}
+                    onClick={() => setActiveTag(activeTag === t ? "" : t)}
+                    className="px-3 py-2 rounded-full text-xs font-semibold transition-colors flex items-center gap-1"
                     style={{
-                      background: !activeTag
-                        ? "var(--kvis-purple)"
-                        : "transparent",
-                      color: !activeTag ? "white" : "var(--kvis-text3)",
-                      border: !activeTag
-                        ? "none"
-                        : "0.5px solid var(--kvis-border)",
+                      background: activeTag === t ? "var(--kvis-purple)" : "transparent",
+                      color: activeTag === t ? "white" : "var(--kvis-text3)",
+                      border: activeTag === t ? "none" : "0.5px solid var(--kvis-border)",
                     }}
                   >
-                    All
-                  </button>
-                  {allTags.slice(0, 5).map(([t]) => (
-                    <button
-                      key={t}
-                      onClick={() => setActiveTag(activeTag === t ? "" : t)}
-                      className="px-3 py-2 rounded-full text-xs font-semibold transition-colors flex items-center gap-1"
-                      style={{
-                        background:
-                          activeTag === t
-                            ? "var(--kvis-purple)"
-                            : "transparent",
-                        color: activeTag === t ? "white" : "var(--kvis-text3)",
-                        border:
-                          activeTag === t
-                            ? "none"
-                            : "0.5px solid var(--kvis-border)",
-                      }}
+                    <span
+                      className="font-normal text-sm leading-none"
+                      style={{ color: activeTag === t ? "rgba(255,255,255,0.7)" : "var(--kvis-purple)" }}
                     >
-                      <span
-                        className="font-normal text-sm leading-none"
-                        style={{
-                          color:
-                            activeTag === t
-                              ? "rgba(255,255,255,0.7)"
-                              : "var(--kvis-purple)",
-                        }}
-                      >
-                        #
-                      </span>
-                      {t}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Sort - always purple, right side */}
-                <div className="relative shrink-0">
+                      #
+                    </span>
+                    {t}
+                  </button>
+                ))}
+              
+                {/* Sort — sits at end of the same flex-wrap row */}
+                <div className="relative ml-auto shrink-0">
                   <button
                     type="button"
                     onClick={() => setSortOpen((v) => !v)}
@@ -412,11 +395,7 @@ export default function BlogClient() {
                     style={{ background: "var(--kvis-purple)", color: "white" }}
                   >
                     <ArrowUpDown className="h-3 w-3" />
-                    {sortBy === "newest"
-                      ? "Newest"
-                      : sortBy === "oldest"
-                        ? "Oldest"
-                        : "Most liked"}
+                    {sortBy === "newest" ? "Newest" : sortBy === "oldest" ? "Oldest" : "Most liked"}
                   </button>
                   {sortOpen && (
                     <div
@@ -431,17 +410,9 @@ export default function BlogClient() {
                         <button
                           key={o.value}
                           type="button"
-                          onClick={() => {
-                            setSortBy(o.value);
-                            setSortOpen(false);
-                          }}
+                          onClick={() => { setSortBy(o.value); setSortOpen(false); }}
                           className="w-full text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] hover:bg-[var(--kvis-purple-soft)] transition-colors"
-                          style={{
-                            color:
-                              sortBy === o.value
-                                ? "var(--kvis-purple)"
-                                : "var(--kvis-text3)",
-                          }}
+                          style={{ color: sortBy === o.value ? "var(--kvis-purple)" : "var(--kvis-text3)" }}
                         >
                           {o.label}
                         </button>
