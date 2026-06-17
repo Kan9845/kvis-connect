@@ -159,6 +159,16 @@ async def delete_blog(
         raise HTTPException(404, detail="Blog not found")
     if blog.author_id != current_user.id:
         raise HTTPException(403, detail="Not your blog")
+
+    # Delete likes and comments first
+    likes = session.exec(select(BlogLike).where(BlogLike.blog_id == blog.id)).all()
+    for l in likes:
+        session.delete(l)
+
+    comments = session.exec(select(BlogCommentModel).where(BlogCommentModel.blog_id == blog.id)).all()
+    for c in comments:
+        session.delete(c)
+
     session.delete(blog)
     session.commit()
     await invalidate_tags("blogs", f"blog:{slug}")

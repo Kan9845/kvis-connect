@@ -25,11 +25,10 @@ const P = {
 
 const schema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
-  content: z.string().min(50, "Content must be at least 50 characters"),
+  content: z.string().min(1, "Content is required"),
   excerpt: z.string().optional(),
   cover_image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
   tags: z.string().optional(),
-  is_published: z.boolean(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -99,7 +98,7 @@ export default function NewBlogPage() {
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { is_published: false, content: "" },
+    defaultValues: { content: "" },
   });
 
   const title = watch("title") ?? "";
@@ -109,18 +108,18 @@ export default function NewBlogPage() {
   const charCount = content.length;
 
   const mutation = useMutation({
-    mutationFn: (data: FormData) => blogApi.create({
+    mutationFn: (data: FormData & { is_published: boolean }) => blogApi.create({
       ...data,
       cover_image_url: data.cover_image_url || undefined,
       excerpt: data.excerpt || undefined,
     }),
     onSuccess: (blog) => {
       onBlogMutationSuccess(qc, blog);
-      toast.success("Posted.");
+      toast.success(blog.is_published ? "Published!" : "Draft saved.");
       router.push(`/blog/${blog.slug}`);
     },
     onError: () => {
-      toast.error("Couldn't post - try again.");
+      toast.error("Couldn't save - try again.");
     },
   });
 
@@ -187,7 +186,7 @@ export default function NewBlogPage() {
           </div>
         </header>
 
-        <form onSubmit={handleSubmit((d) => mutation.mutate(d))}>
+        <form>
           {/* I - Headline */}
           <section className={sectionGrid} style={{ borderColor: P.ruleHeavy }}>
             <SectionHead
@@ -405,17 +404,23 @@ export default function NewBlogPage() {
             </p>
             <div className="flex items-center gap-4">
               <button
-                type="submit"
+                type="button"
                 disabled={mutation.isPending || isSubmitting}
-                onClick={() => setValue("is_published", false)}
+                onClick={handleSubmit((d) => mutation.mutate({ ...d, is_published: false }))}
                 className="text-xs font-bold uppercase tracking-[0.26em] px-5 py-3 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40"
               >
                 Save draft
               </button>
               <button
-                type="submit"
+                type="button"
                 disabled={mutation.isPending || isSubmitting}
-                onClick={() => setValue("is_published", true)}
+                onClick={handleSubmit((d) => {
+                  if (d.content.trim().length < 50) {
+                    toast.error("Content must be at least 50 characters to publish");
+                    return;
+                  }
+                  mutation.mutate({ ...d, is_published: true });
+                })}
                 className="text-xs font-bold uppercase tracking-[0.26em] px-6 py-3 bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 inline-flex items-center gap-2"
               >
                 {mutation.isPending ? (

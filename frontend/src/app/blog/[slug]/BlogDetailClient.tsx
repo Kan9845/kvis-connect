@@ -6,7 +6,7 @@ import { onBlogDeleteSuccess } from "@/lib/cache/invalidate";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Trash2, Heart, MessageSquare, Lock, Unlock, ChevronDown, ChevronUp, CornerDownRight, Dot } from "lucide-react";
+import { ArrowLeft, Trash2, Heart, MessageSquare, Lock, Unlock, ChevronDown, ChevronUp, CornerDownRight, Dot, Pencil } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
@@ -402,6 +402,12 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
               </span>
               {isAuthor && (
                 <div className="ml-auto flex items-center gap-1">
+                  <Link
+                    href={`/blog/${slug}/edit`}
+                    className="h-7 gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-[var(--kvis-text3)] hover:text-foreground px-2 inline-flex items-center"
+                  >
+                    <Pencil className="h-3 w-3" /> Edit
+                  </Link>
                   <Button
                     variant="ghost"
                     size="sm"

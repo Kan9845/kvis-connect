@@ -201,8 +201,8 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
 
   return (
     <Link href={`/blog/${blog.slug}`} className="group block">
-      <div className="py-4 flex items-baseline gap-4 border-b border-[var(--kvis-border)]">
-        <span className="text-xs tabular-nums font-bold text-[var(--kvis-text3)] w-5 shrink-0">
+      <div className="py-4 flex items-start gap-4 border-b border-[var(--kvis-border)]">
+        <span className="text-xs tabular-nums font-bold text-[var(--kvis-text3)] w-5 shrink-0 mt-0.5">
           {String(index + 1).padStart(2, "0")}
         </span>
         <div className="flex-1 min-w-0">
@@ -212,7 +212,12 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
           >
             {blog.title}
           </h3>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {blog.excerpt && (
+            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-0.5">
+              {blog.excerpt}
+            </p>
+          )}
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="text-xs text-[var(--kvis-text3)]">
               {blog.author.first_name} {blog.author.last_name}
             </span>
@@ -228,7 +233,7 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 mt-0.5">
           {(blog.likes ?? 0) > 0 && (
             <span className="flex items-center gap-1 text-xs text-[var(--kvis-text3)]">
               <Heart className="h-3 w-3" /> {blog.likes}
@@ -531,6 +536,14 @@ export default function BlogClient() {
                   ))}
                 </div>
               </section>
+            </FadeUp>
+          )}
+
+          {!isLoading && featured && (
+            <FadeUp delay={0.1}>
+              <div className="pt-xl">
+                <FeaturedStory blog={featured} />
+              </div>
             </FadeUp>
           )}
 
