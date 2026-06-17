@@ -60,8 +60,8 @@ export function NotificationBell() {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-30 w-80 border border-[var(--kvis-border)] bg-background shadow-xl rounded-sm overflow-hidden">
+          <div className="fixed inset-0 z-[59]" onClick={() => setOpen(false)} />
+          <div className="fixed right-3 top-16 z-[60] w-[calc(100vw-1.5rem)] max-w-80 border border-[var(--kvis-border)] bg-background shadow-xl rounded-sm overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--kvis-border)]">
               <span className="text-xs font-bold uppercase tracking-[0.24em] text-foreground">
