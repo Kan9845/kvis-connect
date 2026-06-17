@@ -528,7 +528,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
         <FadeUp delay={0.2}>
           <article className="prose prose-lg max-w-none break-words">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {renderWithMentions(blog.content)}
+              {blog.content.replace(/@([\w-]+)/g, (_, s) => `[@${s}](/profile/${s})`)}
             </ReactMarkdown>
           </article>
         </FadeUp>
