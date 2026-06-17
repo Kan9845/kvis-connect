@@ -219,14 +219,24 @@ async def delete_blog(
     if blog.author_id != current_user.id:
         raise HTTPException(403, detail="Not your blog")
 
-    # Delete likes and comments first
-    likes = session.exec(select(BlogLike).where(BlogLike.blog_id == blog.id)).all()
-    for l in likes:
-        session.delete(l)
+    # Delete replies first (child comments), then top-level comments
+    all_comments = session.exec(
+        select(BlogCommentModel).where(BlogCommentModel.blog_id == blog.id)
+    ).all()
+    # Delete replies first
+    for c in all_comments:
+        if c.parent_id is not None:
+            session.delete(c)
+    session.flush()
+    # Then delete top-level comments
+    for c in all_comments:
+        if c.parent_id is None:
+            session.delete(c)
+    session.flush()
 
-    comments = session.exec(select(BlogCommentModel).where(BlogCommentModel.blog_id == blog.id)).all()
-    for c in comments:
-        session.delete(c)
+    # Delete likes
+    for l in session.exec(select(BlogLike).where(BlogLike.blog_id == blog.id)).all():
+        session.delete(l)
 
     session.delete(blog)
     session.commit()
