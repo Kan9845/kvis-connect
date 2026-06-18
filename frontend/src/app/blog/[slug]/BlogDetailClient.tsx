@@ -511,7 +511,9 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
                 ))}
               </div>
             ) : null}
-            <h1 className="font-display text-4xl md:text-5xl font-black tracking-[-0.025em] leading-[0.95] text-foreground mb-6">{blog.title}</h1>
+            <h1 className="font-display text-4xl md:text-5xl font-black tracking-[-0.025em] leading-[0.95] text-foreground mb-6 break-words">
+              {blog.title}
+            </h1>
             <div className="flex items-center gap-3 flex-wrap">
               <Link href={`/profile/${blog.author.slug}`} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
                 <Avatar className="h-8 w-8" style={{ outline: `2px solid ${ringColor}`, outlineOffset: "2px" }}>
