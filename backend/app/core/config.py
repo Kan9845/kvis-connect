@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     S3_SECRET_KEY: str = ""
     S3_BUCKET: str = "kvis-connect"
     S3_REGION: str = ""
+    S3_PUBLIC_URL: str = ""
 
     FRONTEND_URL: str = "http://localhost:3000"
 

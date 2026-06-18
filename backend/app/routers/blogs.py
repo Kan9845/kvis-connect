@@ -169,7 +169,10 @@ async def upload_blog_image(
     key = f"blogs/{current_user.id}/{uuid.uuid4()}.{ext}"
     s3.upload_fileobj(file.file, settings.S3_BUCKET, key, ExtraArgs={"ContentType": file.content_type})
 
-    if settings.S3_ENDPOINT_URL:
+    public_url = getattr(settings, "S3_PUBLIC_URL", "")
+    if public_url:
+        url = f"{public_url}/{key}"
+    elif settings.S3_ENDPOINT_URL:
         url = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET}/{key}"
     elif settings.S3_REGION:
         url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION}.amazonaws.com/{key}"

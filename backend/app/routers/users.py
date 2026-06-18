@@ -165,12 +165,16 @@ async def upload_profile_pic(
     key = f"profiles/{current_user.id}/{uuid.uuid4()}.{ext}"
     s3.upload_fileobj(file.file, settings.S3_BUCKET, key, ExtraArgs={"ContentType": file.content_type})
 
-    if settings.S3_ENDPOINT_URL:
+    public_url = getattr(settings, "S3_PUBLIC_URL", "")
+    if public_url:
+        url = f"{public_url}/{key}"
+    elif settings.S3_ENDPOINT_URL:
         url = f"{settings.S3_ENDPOINT_URL}/{settings.S3_BUCKET}/{key}"
     elif settings.S3_REGION:
         url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION}.amazonaws.com/{key}"
     else:
         url = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{key}"
+        
     user = session.get(User, current_user.id)
     user.profile_pic_url = url
     user.updated_at = datetime.utcnow()
