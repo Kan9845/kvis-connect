@@ -146,9 +146,9 @@ export const blogApi = {
   list: (params?: { tag?: string; limit?: number; offset?: number; search?: string }) =>
     api.get<BlogRead[]>("/api/blogs", { params }).then((r) => r.data),
   get: (slug: string) => api.get<BlogDetail>(`/api/blogs/${slug}`).then((r) => r.data),
-  create: (data: { title: string; content: string; excerpt?: string; cover_image_url?: string; tags?: string; is_published: boolean; visibility?: string }) =>
+  create: (data: { title: string; content: string; excerpt?: string; cover_image_url?: string | null; tags?: string; is_published: boolean; visibility?: string }) =>
     api.post<BlogDetail>("/api/blogs", data).then((r) => r.data),
-  update: (slug: string, data: Partial<{ title: string; content: string; excerpt: string; cover_image_url: string; tags: string; is_published: boolean; visibility: string }>) =>
+  update: (slug: string, data: Partial<{ title: string; content: string; excerpt: string; cover_image_url: string | null; tags: string; is_published: boolean; visibility: string }>) =>
     api.patch<BlogDetail>(`/api/blogs/${slug}`, data).then(r => r.data),
   delete: (slug: string) => api.delete(`/api/blogs/${slug}`),
   uploadFile: async (file: File): Promise<{ url: string }> => {

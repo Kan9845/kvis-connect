@@ -28,7 +28,7 @@ const schema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   content: z.string().min(1, "Content is required"),
   excerpt: z.string().optional(),
-  cover_image_url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  cover_image_url: z.string().url("Must be a valid URL").nullable().optional().or(z.literal("")),
   tags: z.string().optional(),
   visibility: z.enum(["public", "kvis_only"]).default("public"),
 });
@@ -95,7 +95,7 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
     mutationFn: (data: FormData & { is_published: boolean }) =>
       blogApi.update(slug, {
         ...data,
-        cover_image_url: data.cover_image_url || undefined,
+        cover_image_url: data.cover_image_url || null,
         excerpt: data.excerpt || undefined,
       }),
     onSuccess: (blog) => {
@@ -242,14 +242,14 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
                 {watch("cover_image_url") && (
                   <div className="relative mb-4 group w-full aspect-[2/1] overflow-hidden border" style={{ borderColor: P.rule }}>
                     <img
-                      src={watch("cover_image_url")}
+                      src={watch("cover_image_url") ?? ""}
                       alt="Cover preview"
                       className="w-full h-full object-cover"
                     />
                     <button
                       type="button"
                       onClick={() => setValue("cover_image_url", "", { shouldValidate: true })}
-                      className="absolute top-2 right-2 bg-background/90 border border-[var(--sep-strong)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.22em] hover:bg-destructive hover:text-white hover:border-destructive transition-colors opacity-100"
+                      className="absolute top-2 right-2 bg-background/90 border border-[var(--sep-strong)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.22em] hover:bg-destructive hover:text-white hover:border-destructive transition-colors"
                     >
                       Remove
                     </button>
