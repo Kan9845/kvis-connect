@@ -131,10 +131,13 @@ async def update_me(
             user.place_level2,
             user.country,
         ]))
+        coords = None
         if geo_query:
             coords = await _geocode(geo_query, user.country)
-            if coords:
-                user.latitude, user.longitude = coords
+        if not coords and user.country:
+            coords = await _geocode(user.country, user.country)
+        if coords:
+            user.latitude, user.longitude = coords
     user.updated_at = datetime.utcnow()
     session.add(user)
     session.commit()
@@ -174,7 +177,7 @@ async def upload_profile_pic(
         url = f"https://{settings.S3_BUCKET}.s3.{settings.S3_REGION}.amazonaws.com/{key}"
     else:
         url = f"https://{settings.S3_BUCKET}.s3.amazonaws.com/{key}"
-        
+
     user = session.get(User, current_user.id)
     user.profile_pic_url = url
     user.updated_at = datetime.utcnow()
