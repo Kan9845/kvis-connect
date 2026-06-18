@@ -233,11 +233,42 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
             </section>
 
             <section className={sectionGrid} style={{ borderColor: P.rule }}>
-              <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>03</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Cover image</p></div>
               <div>
-                <input {...register("cover_image_url")} placeholder="https://…" className={`${inputBare} font-mono text-sm`} style={{ borderColor: P.rule }} />
+                <p className="font-mono text-2xl font-black" style={{ color: P.purple }}>03</p>
+                <p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Cover image</p>
+              </div>
+              <div>
+                {/* Preview + remove */}
+                {watch("cover_image_url") && (
+                  <div className="relative mb-4 group w-full aspect-[2/1] overflow-hidden border" style={{ borderColor: P.rule }}>
+                    <img
+                      src={watch("cover_image_url")}
+                      alt="Cover preview"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setValue("cover_image_url", "", { shouldValidate: true })}
+                      className="absolute top-2 right-2 bg-background/90 border border-[var(--sep-strong)] px-3 py-1.5 text-xs font-bold uppercase tracking-[0.22em] hover:bg-destructive hover:text-white hover:border-destructive transition-colors opacity-100"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+
+                <input
+                  {...register("cover_image_url")}
+                  placeholder="https://…"
+                  className={`${inputBare} font-mono text-sm`}
+                  style={{ borderColor: P.rule }}
+                />
                 <div className="flex items-center gap-3 mt-3">
-                  <button type="button" onClick={() => coverImageRef.current?.click()} disabled={coverUploading} className="text-xs font-bold uppercase tracking-[0.26em] px-4 py-2 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40 inline-flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => coverImageRef.current?.click()}
+                    disabled={coverUploading}
+                    className="text-xs font-bold uppercase tracking-[0.26em] px-4 py-2 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40 inline-flex items-center gap-2"
+                  >
                     {coverUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
                     {coverUploading ? "Uploading…" : "Upload image"}
                   </button>
