@@ -147,13 +147,13 @@ function FeaturedStory({ blog }: { blog: BlogRead }) {
                 )}
               </div>
               <h2
-                className="text-xl font-bold leading-[1.2] tracking-[-0.01em] text-foreground mb-2 line-clamp-3 group-hover:underline decoration-2 underline-offset-[4px]"
+                className="text-xl font-bold leading-[1.2] tracking-[-0.01em] text-foreground mb-2 line-clamp-3 group-hover:underline decoration-2 underline-offset-[4px] break-words"
                 style={{ textDecorationColor: color }}
               >
                 {blog.title}
               </h2>
               {blog.excerpt && (
-                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 break-words">
                   {blog.excerpt}
                 </p>
               )}
@@ -193,13 +193,13 @@ function StoryRow({ blog, index }: { blog: BlogRead; index: number }) {
         </span>
         <div className="flex-1 min-w-0">
           <h3
-            className="text-sm font-bold text-foreground leading-snug line-clamp-1 group-hover:underline decoration-2 underline-offset-[4px]"
+            className="text-sm font-bold text-foreground leading-snug line-clamp-1 group-hover:underline decoration-2 underline-offset-[4px] break-words"
             style={{ textDecorationColor: color }}
           >
             {blog.title}
           </h3>
           {blog.excerpt && (
-            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-0.5">
+            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mt-0.5 break-words">
               {blog.excerpt}
             </p>
           )}
