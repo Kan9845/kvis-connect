@@ -70,65 +70,36 @@ function CardBanner({
   avatarSize?: number;
 }) {
   const colorHex = cohortColorHex(blog.author.kvis_year);
-  const name = `${blog.author.first_name} ${blog.author.last_name}`;
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-  const textColor = cohortTextColor(blog.author.kvis_year);
-  const ringColor = cohortColor(blog.author.kvis_year);
 
   return (
-    <div
-      style={{
-        height,
-        position: "relative",
-        overflow: "hidden",
-        background: "var(--kvis-bg)",
-      }}
-    >
+    <div style={{ height, position: "relative", overflow: "hidden" }}>
       {blog.cover_image_url ? (
-        <Image
-          src={blog.cover_image_url}
-          alt={blog.title}
-          fill
-          className="object-cover"
-        />
+        <Image src={blog.cover_image_url} alt={blog.title} fill className="object-cover" />
       ) : (
-        showAvatar && (
-          <div
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `linear-gradient(135deg, ${colorHex}40 0%, ${colorHex}15 100%)`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <img
+            src="/favicon.png"
+            alt=""
             style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              width: 64,
+              height: 64,
+              opacity: 0.3,
+              userSelect: "none",
+              filter: "grayscale(1)",
+              mixBlendMode: "luminosity",
             }}
-          >
-            <Avatar
-              style={{
-                width: avatarSize,
-                height: avatarSize,
-                outline: `2px solid ${ringColor}`,
-                outlineOffset: "2px",
-              }}
-            >
-              <AvatarImage src={blog.author.profile_pic_url} alt={name} />
-              <AvatarFallback
-                style={{
-                  background: colorHex,
-                  color: textColor,
-                  fontSize: avatarSize * 0.35,
-                }}
-              >
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        )
+            draggable={false}
+          />
+        </div>
       )}
     </div>
   );
