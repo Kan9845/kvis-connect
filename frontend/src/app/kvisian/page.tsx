@@ -578,16 +578,14 @@ function KvisianInner() {
   const byCohort = useMemo(() => {
     const m = new Map<number, DirectoryCard[]>();
     filtered
-      .filter((u) => !isFaculty(u) && !u.current_grade)
+      .filter((u) => !isFaculty(u) && !u.current_grade && !!u.kvis_year)
       .forEach((a) => {
-        const k = a.kvis_year ?? 0;
+        const k = a.kvis_year!;
         if (!m.has(k)) m.set(k, []);
         m.get(k)!.push(a);
       });
     m.forEach((arr) =>
-      arr.sort((x, y) =>
-        (x.first_name || "").localeCompare(y.first_name || ""),
-      ),
+      arr.sort((x, y) => (x.first_name || "").localeCompare(y.first_name || "")),
     );
     return m;
   }, [filtered]);
