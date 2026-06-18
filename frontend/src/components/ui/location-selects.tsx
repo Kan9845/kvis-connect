@@ -8,6 +8,7 @@ import {
   CommandItem, CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { COUNTRIES } from "@/lib/constants/countries";
 
 const BASE = "https://countriesnow.space/api/v0.1";
 
@@ -26,12 +27,8 @@ const citiesCache: Record<string, Record<string, string[]>> = {};
 
 async function fetchCountries(): Promise<string[]> {
   if (countriesCache) return countriesCache;
-  const res = await fetch(`${BASE}/countries/iso`);
-  const json = await res.json();
-  countriesCache = (json.data as { name: string }[])
-    .map((c) => c.name)
-    .sort();
-  return countriesCache!;
+  countriesCache = COUNTRIES.map((c) => c.label).sort();
+  return countriesCache;
 }
 
 async function fetchStates(country: string): Promise<string[]> {
