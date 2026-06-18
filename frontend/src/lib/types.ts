@@ -109,6 +109,7 @@ export interface UserMe extends UserPublic {
   line_id?: string;
   email_verified: boolean;
   kvis_email?: string;
+  personal_email?: string | null;
   profile_setup_done: boolean;
   zodiac?: string;
   chronotype?: string;
