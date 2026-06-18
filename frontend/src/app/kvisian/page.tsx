@@ -129,7 +129,7 @@ function Portrait({ u }: { u: DirectoryCard }) {
     <Link href={`/profile/${u.slug ?? u.id}`} className="group block">
       {/* Photo - 1:1 square, circle for goose profiles */}
       <div
-        className={`relative w-full overflow-hidden ${isGoose ? "rounded-full" : ""}`}
+        className={`relative w-full overflow-hidden rounded-full`}
         style={{
           aspectRatio: "1 / 1",
           background: isGoose ? "var(--kvis-green)" : "var(--kvis-rule)",
