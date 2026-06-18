@@ -60,9 +60,7 @@ function AuthorAvatar({ blog, size = 26 }: { blog: BlogRead; size?: number }) {
 
 function CardBanner({
   blog,
-  height = 120,
-  showAvatar = false,
-  avatarSize = 40,
+  height = 240,
 }: {
   blog: BlogRead;
   height?: number;
@@ -72,7 +70,15 @@ function CardBanner({
   const colorHex = cohortColorHex(blog.author.kvis_year);
 
   return (
-    <div style={{ height, position: "relative", overflow: "hidden" }}>
+    <div
+      style={{
+        height,
+        position: "relative",
+        overflow: "hidden",
+        background: "var(--kvis-bg)",
+        width: "100%",
+      }}
+    >
       {blog.cover_image_url ? (
         <Image src={blog.cover_image_url} alt={blog.title} fill className="object-cover" />
       ) : (
@@ -84,6 +90,8 @@ function CardBanner({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            width: "100%",
+            height: "100%",
           }}
         >
           <img
