@@ -266,7 +266,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                 style={{ gridTemplateColumns: "auto 1fr" }}>
 
                 {/* Avatar */}
-                <div className={`relative overflow-hidden shrink-0 w-20 sm:w-28 md:w-40 ${user.goose_config ? "rounded-full" : ""}`}>
+                <div className="relative overflow-hidden shrink-0 w-20 sm:w-28 md:w-40 rounded-full">
                   {user.goose_config ? (
                     <AvatarCanvas config={(() => { try { return JSON.parse(user.goose_config); } catch { return {}; } })()} backgroundColor="var(--kvis-green)" />
                   ) : (

@@ -93,7 +93,13 @@ function captionStudent(u: DirectoryCard): React.ReactNode {
   return "KVIS Student";
 }
 
-function captionFaculty(u: DirectoryCard): string {
+function captionFaculty(u: any): React.ReactNode {
+  if (u.edu_major) {
+    return [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean).join(" • ");
+  }
+  if (u.job_title) {
+    return [u.job_title, u.employer && `@ ${u.employer}`].filter(Boolean).join(" ");
+  }
   return facultyPeriodLabel(u);
 }
 
@@ -533,6 +539,7 @@ function KvisianInner() {
         const hay = [
           u.first_name,
           u.last_name,
+          u.nickname,
           u.country,
           u.place,
           u.mbti,

@@ -63,7 +63,7 @@ function AlumniSearch({
       : pins
           .filter((p) => {
             const q = query.toLowerCase();
-            const name = `${p.first_name} ${p.last_name}`.toLowerCase();
+            const name = `${p.first_name} ${p.last_name} ${p.nickname ?? ""}`.toLowerCase();
             return (
               name.includes(q) ||
               p.country?.toLowerCase().includes(q) ||

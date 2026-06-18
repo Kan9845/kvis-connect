@@ -5,7 +5,7 @@ export const generalSchema = z.object({
   last_name: z.string().min(1, "Required"),
   nickname: z.string().optional(),
   nickname_public: z.boolean().optional(),
-  kvis_year: z.number({ required_error: "KVIS cohort is required" }).min(1).max(20),
+  kvis_year: z.number().min(1).max(20).optional(),
   expected_grad_year: z.coerce.number().optional(),
   teach_department: z.string().optional(),
   teach_start_year: z.coerce.number().optional(),

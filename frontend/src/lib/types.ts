@@ -137,6 +137,7 @@ export interface GlobePin {
   slug: string;
   first_name: string;
   last_name: string;
+  nickname?: string;
   latitude?: number | null;
   longitude?: number | null;
   place?: string;
@@ -225,6 +226,7 @@ export interface DirectoryCard {
   slug: string;
   first_name: string;
   last_name: string;
+  nickname?: string;
   kvis_year?: number;
   expected_grad_year?: number;
   current_grade?: number;

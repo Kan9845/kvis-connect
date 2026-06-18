@@ -266,7 +266,7 @@ export function TabGeneral({
               />
             </div>
           </FieldRow>
-          {(isAlumni || isFacultyUser) && (
+          {isAlumni && (
             <FieldRow label="KVIS cohort" required>
               <Select
                 defaultValue={me.kvis_year ? String(me.kvis_year) : undefined}

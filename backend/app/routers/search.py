@@ -21,7 +21,7 @@ def directory_list(session: Session = Depends(get_session)):
     """Lean endpoint for the Kvisian directory page — no nested arrays."""
     rows = session.exec(text("""
         SELECT
-            u.id::text, u.slug, u.first_name, u.last_name, u.kvis_year,
+            u.id::text, u.slug, u.first_name, u.last_name, u.nickname, u.kvis_year,
             u.current_grade,
             u.hobbies,
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
@@ -90,6 +90,7 @@ def search_users(
         query = query.where(
             (User.first_name.ilike(term)) |
             (User.last_name.ilike(term)) |
+            (User.nickname.ilike(term)) |
             (func.concat(User.first_name, " ", User.last_name).ilike(term))
         )
     if kvis_year:
