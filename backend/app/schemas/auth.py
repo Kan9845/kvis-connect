@@ -45,6 +45,15 @@ class EmailVerifyBody(BaseModel):
     email: EmailStr
     otp: str
 
+
+class PersonalEmailRequestBody(BaseModel):
+    email: EmailStr
+
+
+class PersonalEmailVerifyBody(BaseModel):
+    email: EmailStr
+    otp: str
+
 class ChangePasswordBody(BaseModel):
     current_password: str
     new_password: str

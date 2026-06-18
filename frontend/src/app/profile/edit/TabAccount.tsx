@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Check, KeyRound, Trash2, Link2Off } from "lucide-react";
+import { Loader2, Check, KeyRound, Trash2, Link2Off, Mail, X } from "lucide-react";
 import { authApi, userApi } from "@/lib/api";
 import { toast } from "sonner";
 import type { UserMe } from "@/lib/types";
@@ -82,6 +82,58 @@ export function TabAccount({
     } catch {
       toast.error("Failed to delete account. Try again.");
       setDeleteLoading(false);
+    }
+  };
+
+  // ── Personal email (secondary login) ──────────────────────
+  const [peEmail, setPeEmail] = useState("");
+  const [peOtp, setPeOtp] = useState("");
+  const [pePhase, setPePhase] = useState<"idle" | "otp">("idle");
+  const [peLoading, setPeLoading] = useState(false);
+  const [peError, setPeError] = useState("");
+
+  const handleRequestPe = async () => {
+    setPeError("");
+    const email = peEmail.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { setPeError("Enter a valid email address."); return; }
+    setPeLoading(true);
+    try {
+      await authApi.requestPersonalEmail(email);
+      setPePhase("otp");
+      toast.success("Verification code sent.");
+    } catch (e: any) {
+      setPeError(e?.response?.data?.detail ?? "Failed to send code.");
+    } finally {
+      setPeLoading(false);
+    }
+  };
+
+  const handleVerifyPe = async () => {
+    setPeError("");
+    if (peOtp.trim().length < 6) { setPeError("Enter the 6-digit code."); return; }
+    setPeLoading(true);
+    try {
+      await authApi.verifyPersonalEmail(peEmail.trim().toLowerCase(), peOtp.trim());
+      toast.success("Personal email added.");
+      setPeEmail(""); setPeOtp(""); setPePhase("idle");
+      await refetch();
+    } catch (e: any) {
+      setPeError(e?.response?.data?.detail ?? "Invalid code.");
+    } finally {
+      setPeLoading(false);
+    }
+  };
+
+  const handleRemovePe = async () => {
+    setPeLoading(true);
+    try {
+      await authApi.removePersonalEmail();
+      toast.success("Personal email removed.");
+      await refetch();
+    } catch {
+      toast.error("Failed to remove personal email.");
+    } finally {
+      setPeLoading(false);
     }
   };
 
@@ -168,6 +220,105 @@ export function TabAccount({
             That Google account is already linked to another user.
           </p>
         )}
+      </div>
+
+      {/* Personal email row */}
+      <div
+        className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-5 border-b"
+        style={{ borderColor: "var(--kvis-border)" }}
+      >
+        <div className="md:pt-2">
+          <span className="text-xs uppercase tracking-[0.24em] font-bold text-[var(--kvis-text3)]">
+            Personal email
+          </span>
+        </div>
+        <div>
+          {me.personal_email ? (
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <span className="text-sm text-foreground font-mono">{me.personal_email}</span>
+              <button
+                type="button"
+                onClick={handleRemovePe}
+                disabled={peLoading}
+                className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.22em] text-[var(--kvis-text3)] hover:text-foreground transition-colors disabled:opacity-40"
+              >
+                {peLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <X className="h-3 w-3" />}
+                Remove
+              </button>
+            </div>
+          ) : pePhase === "idle" ? (
+            <div className="flex flex-col gap-3 max-w-md">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Add a secondary email (any domain). Once verified, you can use it to log in with your existing password.
+              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={peEmail}
+                  onChange={(e) => { setPeEmail(e.target.value); setPeError(""); }}
+                  className={inputCls}
+                  autoComplete="email"
+                />
+                <Button
+                  type="button"
+                  onClick={handleRequestPe}
+                  disabled={peLoading}
+                  className="h-auto rounded-none bg-foreground px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 shrink-0"
+                >
+                  {peLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                  Send code
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 max-w-md">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Enter the 6-digit code sent to <span className="font-mono text-foreground">{peEmail.trim().toLowerCase()}</span>.
+              </p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <Input
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={peOtp}
+                  onChange={(e) => { setPeOtp(e.target.value.replace(/\D/g, "")); setPeError(""); }}
+                  className={inputCls}
+                  autoComplete="one-time-code"
+                />
+                <Button
+                  type="button"
+                  onClick={handleVerifyPe}
+                  disabled={peLoading}
+                  className="h-auto rounded-none bg-foreground px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 shrink-0"
+                >
+                  {peLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                  Verify
+                </Button>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  type="button"
+                  onClick={handleRequestPe}
+                  disabled={peLoading}
+                  className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--kvis-text3)] hover:text-foreground transition-colors disabled:opacity-40"
+                >
+                  Resend code
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setPePhase("idle"); setPeOtp(""); setPeError(""); }}
+                  className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+          {peError && (
+            <p className="text-xs font-semibold mt-2 text-[var(--kvis-purple)]">{peError}</p>
+          )}
+        </div>
       </div>
 
       {/* ── II. Password ──────────────────────────────────────────────────── */}

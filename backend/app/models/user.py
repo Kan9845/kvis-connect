@@ -135,6 +135,8 @@ class User(SQLModel, table=True):
     email_verified: bool = False
     is_verified: bool = False
     kvis_email: Optional[str] = None
+    # Secondary login email (any domain), verified via OTP
+    personal_email: Optional[str] = Field(default=None, unique=True, index=True)
 
     is_deleted: bool = False
     is_deleted_at: Optional[datetime] = None

@@ -221,6 +221,7 @@ class UserMe(UserPublic):
     email_verified: bool
     is_verified: bool
     kvis_email: Optional[str] = None
+    personal_email: Optional[str] = None
     google_id: Optional[str] = None
     has_password: bool
     profile_setup_done: bool

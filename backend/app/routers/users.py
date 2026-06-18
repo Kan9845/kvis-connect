@@ -518,6 +518,7 @@ def _user_to_me(user: User) -> dict:
         "email_verified": user.email_verified,
         "is_verified": user.is_verified,
         "kvis_email": user.kvis_email,
+        "personal_email": user.personal_email,
         "profile_setup_done": user.profile_setup_done,
         "contact_email": user.contact_email,
         "contact_email_public": user.contact_email_public,

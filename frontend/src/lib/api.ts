@@ -94,6 +94,12 @@ export const authApi = {
     api.post("/api/auth/set-password", data),
   changePassword: (data: { current_password: string; new_password: string }) =>
     api.post("/api/auth/change-password", data),
+  requestPersonalEmail: (email: string) =>
+    api.post("/api/auth/personal-email/request", { email }),
+  verifyPersonalEmail: (email: string, otp: string) =>
+    api.post("/api/auth/personal-email/verify", { email, otp }),
+  removePersonalEmail: () =>
+    api.post("/api/auth/personal-email/remove"),
 };
 
 // Users

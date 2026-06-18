@@ -16,7 +16,7 @@ from app.core.mailer import send_email
 from app.core.cache import invalidate_tags
 from app.core.slug import unique_user_slug
 from app.models.user import User
-from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody, ChangePasswordBody, SetPasswordBody
+from app.schemas.auth import RegisterRequest, LoginRequest, OTPRequestBody, OTPVerifyBody, PasswordResetRequest, PasswordResetConfirm, KvisVerifyBody, EmailVerifyBody, ChangePasswordBody, SetPasswordBody, PersonalEmailRequestBody, PersonalEmailVerifyBody
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -175,7 +175,12 @@ async def verify_registration_email(body: EmailVerifyBody, response: Response, s
 
 @router.post("/login")
 def login(body: LoginRequest, response: Response, session: Session = Depends(get_session)):
-    user = session.exec(select(User).where(User.email == body.email)).first()
+    login_email = body.email.strip().lower()
+    user = session.exec(
+        select(User).where(
+            (User.email == login_email) | (User.personal_email == login_email)
+        )
+    ).first()
     if not user or not user.hashed_password or not verify_password(body.password, user.hashed_password):
         raise HTTPException(401, detail="Invalid credentials")
     if user.is_deleted:                                          # 👈 add here
@@ -315,6 +320,86 @@ async def verify_kvis_email(
     return {"message": "KVIS email verified"}
 
 
+# Personal (secondary) email — any domain, OTP-verified, usable to log in
+@router.post("/personal-email/request")
+def request_personal_email(
+    body: PersonalEmailRequestBody,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    email = str(body.email).strip().lower()
+    if email.endswith(f"@{KVIS_DOMAIN}"):
+        raise HTTPException(400, detail="Use a non-@kvis.ac.th address for your personal email.")
+    if email in {(current_user.email or "").lower(), (current_user.personal_email or "").lower()}:
+        raise HTTPException(400, detail="That email is already on your account.")
+    taken = session.exec(
+        select(User)
+        .where((User.email == email) | (User.personal_email == email))
+        .where(User.id != current_user.id)
+    ).first()
+    if taken:
+        raise HTTPException(400, detail="That email is already in use by another account.")
+
+    otp = _generate_otp()
+    _otp_store[email] = {
+        "otp": otp,
+        "expires_at": datetime.now(timezone.utc) + timedelta(minutes=OTP_TTL_MINUTES),
+    }
+    try:
+        _send_otp_email(email, otp)
+    except Exception:
+        del _otp_store[email]
+        raise HTTPException(500, detail="Failed to send OTP email. Check SMTP configuration.")
+    return {"message": f"OTP sent to {email}"}
+
+
+@router.post("/personal-email/verify")
+async def verify_personal_email(
+    body: PersonalEmailVerifyBody,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    email = str(body.email).strip().lower()
+    record = _otp_store.get(email)
+    if not record:
+        raise HTTPException(400, detail="No OTP requested for this email")
+    if datetime.now(timezone.utc) > record["expires_at"]:
+        del _otp_store[email]
+        raise HTTPException(400, detail="OTP has expired. Please request a new one.")
+    if record["otp"] != body.otp:
+        raise HTTPException(400, detail="Invalid OTP")
+
+    del _otp_store[email]
+
+    taken = session.exec(
+        select(User)
+        .where((User.email == email) | (User.personal_email == email))
+        .where(User.id != current_user.id)
+    ).first()
+    if taken:
+        raise HTTPException(400, detail="That email is already in use by another account.")
+
+    user = session.get(User, current_user.id)
+    user.personal_email = email
+    session.add(user)
+    session.commit()
+    await invalidate_tags(f"user:{user.slug}")
+    return {"message": "Personal email verified"}
+
+
+@router.post("/personal-email/remove")
+async def remove_personal_email(
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    user = session.get(User, current_user.id)
+    user.personal_email = None
+    session.add(user)
+    session.commit()
+    await invalidate_tags(f"user:{user.slug}")
+    return {"message": "Personal email removed"}
+
+
 # Google OAuth
 @router.get("/google")
 async def google_login(request: Request):
@@ -424,24 +509,31 @@ async def unlink_google(
 # Password Reset
 @router.post("/password-reset/request")
 def password_reset_request(body: PasswordResetRequest, session: Session = Depends(get_session)):
-    # Always return 200 to avoid leaking whether an email is registered
-    user = session.exec(select(User).where(User.email == body.email)).first()
+    # Always return 200 to avoid leaking whether an email is registered.
+    # Accept either the primary or the verified personal login email.
+    reset_email = body.email.strip().lower()
+    user = session.exec(
+        select(User).where(
+            (User.email == reset_email) | (User.personal_email == reset_email)
+        )
+    ).first()
     if not user or not user.hashed_password:
         return {"message": "If that email is registered, a reset link has been sent."}
 
-    # Invalidate any existing token for this email
+    # Invalidate any existing token for this user. The token always maps to the
+    # primary email so /confirm (which looks up by User.email) keeps working.
     for t, data in list(_reset_store.items()):
-        if data["email"] == body.email:
+        if data["email"] == user.email:
             del _reset_store[t]
 
     token = secrets.token_urlsafe(32)
     _reset_store[token] = {
-        "email": body.email,
+        "email": user.email,
         "expires_at": datetime.now(timezone.utc) + timedelta(minutes=RESET_TTL_MINUTES),
     }
 
     try:
-        _send_reset_email(body.email, token)
+        _send_reset_email(reset_email, token)  # send to the address the user typed
     except Exception as e:
         reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
         logger.warning("Failed to send reset email to %s (%s). Reset URL: %s", body.email, e, reset_url)
