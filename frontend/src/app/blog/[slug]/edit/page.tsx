@@ -14,6 +14,7 @@ import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { keys } from "@/lib/cache/keys";
 import type { GlobePin } from "@/lib/types";
+import { CoverImageCropper } from "@/components/blog/CoverImageCropper";
 
 const P = {
   purple: "var(--kvis-purple)",
@@ -54,6 +55,8 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
   const [mentionPos, setMentionPos] = useState<{ top: number; left: number } | null>(null);
   const [mentionResults, setMentionResults] = useState<GlobePin[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [coverCropSrc, setCoverCropSrc] = useState<string | null>(null);
 
   const { data: pins = [] } = useQuery({
     queryKey: keys.globe.pins(),
@@ -106,6 +109,12 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setCoverCropSrc(URL.createObjectURL(file));
+    e.target.value = "";
+  };
+
+  const handleCoverCropDone = async (file: File) => {
+    setCoverCropSrc(null);
     setCoverUploading(true);
     try {
       const { url } = await blogApi.uploadFile(file);
@@ -115,7 +124,6 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
       toast.error("Upload failed");
     } finally {
       setCoverUploading(false);
-      e.target.value = "";
     }
   };
 
@@ -188,164 +196,171 @@ export default function EditBlogPage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <div className="min-h-full bg-background">
-      <div className="mx-auto max-w-4xl px-6 lg:px-10 py-xl lg:py-layout">
-        <header className="pb-8 border-b-2 border-[var(--sep-strong)]">
-          <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 flex items-center gap-1" style={{ color: P.purple }}>
-            KVIS Connect <Dot className="h-3 w-3 shrink-0" /> Edit post
-          </p>
-          <h1 className="font-display text-5xl md:text-6xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">Edit post</h1>
-          <div className="flex items-center gap-3 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap" style={{ color: P.text3 }}>
-            <span>By {user.first_name} {user.last_name}</span>
-            <Dot className="h-3 w-3 shrink-0" />
-            <span>{wordCount} {wordCount === 1 ? "word" : "words"}</span>
-            <Dot className="h-3 w-3 shrink-0" />
-            <span>~ {readMins} min read</span>
-          </div>
-        </header>
-
-        <form>
-          <section className={sectionGrid} style={{ borderColor: P.ruleHeavy }}>
-            <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>01</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Title</p></div>
-            <div>
-              <input {...register("title")} placeholder="What's the post about?" className="w-full bg-transparent border-0 text-3xl md:text-5xl font-black tracking-[-0.02em] text-foreground placeholder:text-muted-foreground/35 focus:outline-none" />
-              <FieldError msg={errors.title?.message} />
+    <>
+      <CoverImageCropper
+        cropSrc={coverCropSrc}
+        onClose={() => setCoverCropSrc(null)}
+        onDone={handleCoverCropDone}
+      />
+      <div className="min-h-full bg-background">
+        <div className="mx-auto max-w-4xl px-6 lg:px-10 py-xl lg:py-layout">
+          <header className="pb-8 border-b-2 border-[var(--sep-strong)]">
+            <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 flex items-center gap-1" style={{ color: P.purple }}>
+              KVIS Connect <Dot className="h-3 w-3 shrink-0" /> Edit post
+            </p>
+            <h1 className="font-display text-5xl md:text-6xl font-black tracking-[-0.03em] leading-[0.95] text-foreground">Edit post</h1>
+            <div className="flex items-center gap-3 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap" style={{ color: P.text3 }}>
+              <span>By {user.first_name} {user.last_name}</span>
+              <Dot className="h-3 w-3 shrink-0" />
+              <span>{wordCount} {wordCount === 1 ? "word" : "words"}</span>
+              <Dot className="h-3 w-3 shrink-0" />
+              <span>~ {readMins} min read</span>
             </div>
-          </section>
+          </header>
 
-          <section className={sectionGrid} style={{ borderColor: P.rule }}>
-            <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>02</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Summary</p></div>
-            <textarea {...register("excerpt")} rows={2} placeholder="A short summary." className="w-full bg-transparent border-0 text-lg leading-relaxed text-foreground/80 placeholder:text-muted-foreground/45 focus:outline-none resize-none" />
-          </section>
-
-          <section className={sectionGrid} style={{ borderColor: P.rule }}>
-            <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>03</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Cover image</p></div>
-            <div>
-              <input {...register("cover_image_url")} placeholder="https://…" className={`${inputBare} font-mono text-sm`} style={{ borderColor: P.rule }} />
-              <div className="flex items-center gap-3 mt-3">
-                <button type="button" onClick={() => coverImageRef.current?.click()} disabled={coverUploading} className="text-xs font-bold uppercase tracking-[0.26em] px-4 py-2 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40 inline-flex items-center gap-2">
-                  {coverUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-                  {coverUploading ? "Uploading…" : "Upload image"}
-                </button>
+          <form>
+            <section className={sectionGrid} style={{ borderColor: P.ruleHeavy }}>
+              <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>01</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Title</p></div>
+              <div>
+                <input {...register("title")} placeholder="What's the post about?" className="w-full bg-transparent border-0 text-3xl md:text-5xl font-black tracking-[-0.02em] text-foreground placeholder:text-muted-foreground/35 focus:outline-none" />
+                <FieldError msg={errors.title?.message} />
               </div>
-              <input ref={coverImageRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
-              <FieldError msg={errors.cover_image_url?.message} />
-            </div>
-          </section>
+            </section>
 
-          <section className={sectionGrid} style={{ borderColor: P.rule }}>
-            <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>04</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Tags</p></div>
-            <div>
-              <input {...register("tags")} placeholder="Career, Research, Life" className={`${inputBare} text-sm`} style={{ borderColor: P.rule }} />
-              {tags.trim() && (
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {tags.split(",").map(t => t.trim()).filter(Boolean).map(t => (
-                    <span key={t} className="text-xs font-bold uppercase tracking-[0.22em] px-2 py-1" style={{ background: P.purpleSoft, color: P.purple }}>{t}</span>
+            <section className={sectionGrid} style={{ borderColor: P.rule }}>
+              <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>02</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Summary</p></div>
+              <textarea {...register("excerpt")} rows={2} placeholder="A short summary." className="w-full bg-transparent border-0 text-lg leading-relaxed text-foreground/80 placeholder:text-muted-foreground/45 focus:outline-none resize-none" />
+            </section>
+
+            <section className={sectionGrid} style={{ borderColor: P.rule }}>
+              <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>03</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Cover image</p></div>
+              <div>
+                <input {...register("cover_image_url")} placeholder="https://…" className={`${inputBare} font-mono text-sm`} style={{ borderColor: P.rule }} />
+                <div className="flex items-center gap-3 mt-3">
+                  <button type="button" onClick={() => coverImageRef.current?.click()} disabled={coverUploading} className="text-xs font-bold uppercase tracking-[0.26em] px-4 py-2 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40 inline-flex items-center gap-2">
+                    {coverUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                    {coverUploading ? "Uploading…" : "Upload image"}
+                  </button>
+                </div>
+                <input ref={coverImageRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                <FieldError msg={errors.cover_image_url?.message} />
+              </div>
+            </section>
+
+            <section className={sectionGrid} style={{ borderColor: P.rule }}>
+              <div><p className="font-mono text-2xl font-black" style={{ color: P.purple }}>04</p><p className="text-xs font-bold uppercase tracking-[0.26em] mt-3">Tags</p></div>
+              <div>
+                <input {...register("tags")} placeholder="Career, Research, Life" className={`${inputBare} text-sm`} style={{ borderColor: P.rule }} />
+                {tags.trim() && (
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {tags.split(",").map(t => t.trim()).filter(Boolean).map(t => (
+                      <span key={t} className="text-xs font-bold uppercase tracking-[0.22em] px-2 py-1" style={{ background: P.purpleSoft, color: P.purple }}>{t}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+            <section className="pt-10 lg:pt-12 border-t-2" style={{ borderColor: P.ruleHeavy }}>
+              <div className="flex items-end justify-between gap-6 flex-wrap mb-5">
+                <div className="flex items-baseline gap-4">
+                  <span className="font-mono text-2xl font-black" style={{ color: P.purple }}>05</span>
+                  <h2 className="text-xs font-bold uppercase tracking-[0.26em]">Body</h2>
+                </div>
+                <div className="flex items-center gap-5">
+                  {(["write", "preview"] as const).map(t => (
+                    <button key={t} type="button" onClick={() => setTab(t)} className="text-xs font-bold uppercase tracking-[0.26em] transition-colors"
+                      style={{ color: tab === t ? P.purple : P.text3, textDecoration: tab === t ? "underline" : "none", textDecorationThickness: 2, textUnderlineOffset: 8 }}>
+                      {t === "write" ? "Write" : "Preview"}
+                    </button>
                   ))}
                 </div>
-              )}
-            </div>
-          </section>
+              </div>
 
-          <section className="pt-10 lg:pt-12 border-t-2" style={{ borderColor: P.ruleHeavy }}>
-            <div className="flex items-end justify-between gap-6 flex-wrap mb-5">
-              <div className="flex items-baseline gap-4">
-                <span className="font-mono text-2xl font-black" style={{ color: P.purple }}>05</span>
-                <h2 className="text-xs font-bold uppercase tracking-[0.26em]">Body</h2>
-              </div>
-              <div className="flex items-center gap-5">
-                {(["write", "preview"] as const).map(t => (
-                  <button key={t} type="button" onClick={() => setTab(t)} className="text-xs font-bold uppercase tracking-[0.26em] transition-colors"
-                    style={{ color: tab === t ? P.purple : P.text3, textDecoration: tab === t ? "underline" : "none", textDecorationThickness: 2, textUnderlineOffset: 8 }}>
-                    {t === "write" ? "Write" : "Preview"}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="border" style={{ borderColor: P.rule }}>
-              <div className="flex items-center justify-between px-5 py-2 border-b text-xs uppercase tracking-[0.22em]" style={{ borderColor: P.rule, color: P.text3 }}>
-                <span>{tab === "write" ? "Markdown" : "Preview"}</span>
-                <span>{wordCount.toLocaleString()} words <Dot className="inline h-3 w-3" /> {charCount.toLocaleString()} chars</span>
-              </div>
-              {tab === "write" ? (
-                <div className="relative">
-                  <textarea
-                    {...registerRest}
-                    ref={(e) => { registerRef(e); (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e; }}
-                    onChange={handleContentChange}
-                    rows={22}
-                    placeholder="Start writing… Use @name to mention someone."
-                    className="block w-full bg-transparent border-0 px-5 py-5 font-serif text-[17px] leading-[1.75] text-foreground placeholder:text-muted-foreground/45 focus:outline-none resize-none"
-                  />
-                  {mentionResults.length > 0 && mentionPos && (
-                    <div className="absolute z-50 bg-background border border-[var(--kvis-border)] shadow-lg min-w-[200px]"
-                      style={{ top: mentionPos.top, left: mentionPos.left }}>
-                      {mentionResults.map(p => (
-                        <button key={p.user_id} type="button" onMouseDown={() => insertMention(p)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[var(--kvis-purple-soft)] transition-colors text-left">
-                          <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold text-white" style={{ background: "var(--kvis-purple)" }}>
-                            {p.first_name[0]}{p.last_name[0]}
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold">{p.first_name} {p.last_name}</p>
-                            <p className="text-xs text-muted-foreground">@{p.slug}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
+              <div className="border" style={{ borderColor: P.rule }}>
+                <div className="flex items-center justify-between px-5 py-2 border-b text-xs uppercase tracking-[0.22em]" style={{ borderColor: P.rule, color: P.text3 }}>
+                  <span>{tab === "write" ? "Markdown" : "Preview"}</span>
+                  <span>{wordCount.toLocaleString()} words <Dot className="inline h-3 w-3" /> {charCount.toLocaleString()} chars</span>
                 </div>
-              ) : (
-                <div className="px-5 py-6 min-h-[500px]">
-                  {content.trim() ? (
-                    <article className="prose prose-lg max-w-none">
-                      {title && <h1 className="font-display text-5xl font-black tracking-[-0.03em] leading-[0.95]">{title}</h1>}
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{contentWithMentions}</ReactMarkdown>
-                    </article>
-                  ) : (
-                    <p className="text-center text-xs uppercase tracking-[0.28em] py-20" style={{ color: P.text3 }}>Nothing to preview yet.</p>
-                  )}
-                </div>
-              )}
-            </div>
-            <FieldError msg={errors.content?.message} />
-          </section>
+                {tab === "write" ? (
+                  <div className="relative">
+                    <textarea
+                      {...registerRest}
+                      ref={(e) => { registerRef(e); (textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>).current = e; }}
+                      onChange={handleContentChange}
+                      rows={22}
+                      placeholder="Start writing… Use @name to mention someone."
+                      className="block w-full bg-transparent border-0 px-5 py-5 font-serif text-[17px] leading-[1.75] text-foreground placeholder:text-muted-foreground/45 focus:outline-none resize-none"
+                    />
+                    {mentionResults.length > 0 && mentionPos && (
+                      <div className="absolute z-50 bg-background border border-[var(--kvis-border)] shadow-lg min-w-[200px]"
+                        style={{ top: mentionPos.top, left: mentionPos.left }}>
+                        {mentionResults.map(p => (
+                          <button key={p.user_id} type="button" onMouseDown={() => insertMention(p)}
+                            className="flex items-center gap-2 w-full px-3 py-2 text-sm hover:bg-[var(--kvis-purple-soft)] transition-colors text-left">
+                            <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-xs font-bold text-white" style={{ background: "var(--kvis-purple)" }}>
+                              {p.first_name[0]}{p.last_name[0]}
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold">{p.first_name} {p.last_name}</p>
+                              <p className="text-xs text-muted-foreground">@{p.slug}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="px-5 py-6 min-h-[500px]">
+                    {content.trim() ? (
+                      <article className="prose prose-lg max-w-none">
+                        {title && <h1 className="font-display text-5xl font-black tracking-[-0.03em] leading-[0.95]">{title}</h1>}
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{contentWithMentions}</ReactMarkdown>
+                      </article>
+                    ) : (
+                      <p className="text-center text-xs uppercase tracking-[0.28em] py-20" style={{ color: P.text3 }}>Nothing to preview yet.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <FieldError msg={errors.content?.message} />
+            </section>
 
-          <footer className="mt-12 pt-7 border-t-2 border-[var(--sep-strong)] flex items-center justify-between flex-wrap gap-4">
-            <p className="text-xs uppercase tracking-[0.22em]" style={{ color: P.text3 }}>Drafts stay private until you publish.</p>
-            <div className="flex items-center gap-3">
-              {(["public", "kvis_only"] as const).map((v) => {
-                const selected = watch("visibility") === v;
-                return (
-                  <button key={v} type="button" onClick={() => setValue("visibility", v)}
-                    className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] px-3 py-2 border transition-colors"
-                    style={{ borderColor: selected ? "var(--kvis-purple)" : "var(--kvis-border)", color: selected ? "var(--kvis-purple)" : "var(--kvis-text3)", background: selected ? "var(--kvis-purple-soft)" : "transparent" }}>
-                    {v === "public" ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
-                    {v === "public" ? "Public" : "KVIS Only"}
-                  </button>
-                );
-              })}
-            </div>
-            <div className="flex items-center gap-4">
-              <button type="button" disabled={mutation.isPending || isSubmitting}
-                onClick={handleSubmit(d => mutation.mutate({ ...d, is_published: false }))}
-                className="text-xs font-bold uppercase tracking-[0.26em] px-5 py-3 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40">
-                Save draft
-              </button>
-              <button type="button" disabled={mutation.isPending || isSubmitting}
-                onClick={handleSubmit(d => {
-                  if (d.content.trim().length < 50) { toast.error("Content must be at least 50 characters to publish"); return; }
-                  mutation.mutate({ ...d, is_published: true });
+            <footer className="mt-12 pt-7 border-t-2 border-[var(--sep-strong)] flex items-center justify-between flex-wrap gap-4">
+              <p className="text-xs uppercase tracking-[0.22em]" style={{ color: P.text3 }}>Drafts stay private until you publish.</p>
+              <div className="flex items-center gap-3">
+                {(["public", "kvis_only"] as const).map((v) => {
+                  const selected = watch("visibility") === v;
+                  return (
+                    <button key={v} type="button" onClick={() => setValue("visibility", v)}
+                      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] px-3 py-2 border transition-colors"
+                      style={{ borderColor: selected ? "var(--kvis-purple)" : "var(--kvis-border)", color: selected ? "var(--kvis-purple)" : "var(--kvis-text3)", background: selected ? "var(--kvis-purple-soft)" : "transparent" }}>
+                      {v === "public" ? <Globe className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                      {v === "public" ? "Public" : "KVIS Only"}
+                    </button>
+                  );
                 })}
-                className="text-xs font-bold uppercase tracking-[0.26em] px-6 py-3 bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 inline-flex items-center gap-2">
-                {mutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-                Publish
-              </button>
-            </div>
-          </footer>
-        </form>
+              </div>
+              <div className="flex items-center gap-4">
+                <button type="button" disabled={mutation.isPending || isSubmitting}
+                  onClick={handleSubmit(d => mutation.mutate({ ...d, is_published: false }))}
+                  className="text-xs font-bold uppercase tracking-[0.26em] px-5 py-3 border border-[var(--sep-strong)] hover:bg-foreground/5 transition-colors disabled:opacity-40">
+                  Save draft
+                </button>
+                <button type="button" disabled={mutation.isPending || isSubmitting}
+                  onClick={handleSubmit(d => {
+                    if (d.content.trim().length < 50) { toast.error("Content must be at least 50 characters to publish"); return; }
+                    mutation.mutate({ ...d, is_published: true });
+                  })}
+                  className="text-xs font-bold uppercase tracking-[0.26em] px-6 py-3 bg-foreground text-background hover:bg-foreground/90 transition-colors disabled:opacity-40 inline-flex items-center gap-2">
+                  {mutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  Publish
+                </button>
+              </div>
+            </footer>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
