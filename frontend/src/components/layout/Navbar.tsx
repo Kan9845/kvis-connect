@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
+  Home,
   Search,
   Newspaper,
   BarChart2,
@@ -180,6 +181,7 @@ function ThemeToggle({ dark }: { dark: boolean }) {
 
 
 const NAV_LINKS = [
+  { href: "/", icon: Home, label: "Home" },
   { href: "/about", icon: Info, label: "About" },
   { href: "/blog", icon: Newspaper, label: "Blog" },
   { href: "/stats", icon: BarChart2, label: "Stats" },
@@ -606,6 +608,16 @@ export function Navbar() {
               }}
             >
               <NavLink
+                href="/"
+                icon={Home}
+                label="Home"
+                pathname={pathname}
+                dark={dark}
+              />
+              <div
+                className={`w-px h-4 ${dark ? "bg-white/40" : "bg-gray-200"}`}
+              />
+              <NavLink
                 href="/about"
                 icon={Info}
                 label="About"
@@ -729,6 +741,14 @@ export function Navbar() {
             <AlumniSearch solid />
           </div>
           <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-hidden shrink-0">
+            <NavLink
+              href="/"
+              icon={Home}
+              label="Home"
+              pathname={pathname}
+              dark={false}
+            />
+            <div className="w-px h-4 bg-border" />
             <NavLink
               href="/about"
               icon={Info}
