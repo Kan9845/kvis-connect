@@ -79,8 +79,9 @@ export function MajorCombobox({ value, onChange, borderColor, variant = "bordere
 
   const triggerCls = cn(
     variant === "underline"
-      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors bg-transparent"
-      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors bg-transparent",
+      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors"
+      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors",
+    !className && "bg-transparent", // only add bg-transparent if no className override
     className
   );
 
@@ -121,10 +122,10 @@ export function MajorCombobox({ value, onChange, borderColor, variant = "bordere
           role="combobox"
           aria-expanded={open}
           className={triggerCls}
-          style={{ borderColor: variant === "bordered" ? (borderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
+          style={!className ? { borderColor: variant === "bordered" ? (borderColor ?? "var(--sep-input)") : "var(--sep-input)" } : undefined}
           onClick={() => setOpen((o) => !o)}
         >
-          <span className={cn(value ? "text-foreground" : "text-foreground/40")}>
+          <span className={cn("truncate", !value && "opacity-40")}>
             {value || "Select major..."}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />

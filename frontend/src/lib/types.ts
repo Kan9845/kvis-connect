@@ -30,7 +30,6 @@ export interface Career {
   id: string;
   job_title: string;
   employer: string;
-  job_field?: string;
   country: string;
   state?: string;
   city?: string;
@@ -180,7 +179,7 @@ export interface Summary {
   total: number;
   by_kvis_year: Record<string, number>;
   by_country: Record<string, number>;
-  by_job_field: Record<string, number>;
+  by_industry_sector: Record<string, number>;
   by_degree: Record<string, number>;
   by_mbti: Record<string, number>;
 }
@@ -198,7 +197,7 @@ export interface SearchParams {
   field_of_study?: string;
   job_title?: string;
   employer?: string;
-  job_field?: string;
+  industry_sector?: string;
   role_type?: string;
   sort?: "name" | "kvis_year" | "created_at";
   order?: "asc" | "desc";
@@ -241,7 +240,7 @@ export interface DirectoryCard {
   // Flat career/edu fields from the directory SQL query
   job_title?: string;
   employer?: string;
-  job_field?: string;
+  industry_sector?: string;
   role_type?: string;
   edu_major?: string;
   edu_degree?: string;

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select
 from sqlalchemy.orm import selectinload
-from sqlalchemy import text
+from sqlalchemy import func, text
 from typing import Optional
 
 from app.core.cache import cached
@@ -35,9 +35,9 @@ def directory_list(session: Session = Depends(get_session)):
         (SELECT employer FROM career
          WHERE user_id = u.id 
          ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS employer,
-        (SELECT job_field FROM career
+        (SELECT industry_sector FROM career
          WHERE user_id = u.id 
-         ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_field,
+         ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS industry_sector,
         (SELECT start_year FROM career
          WHERE user_id = u.id 
          ORDER BY is_current DESC, start_year DESC NULLS LAST LIMIT 1) AS job_start_year,
@@ -74,7 +74,7 @@ def search_users(
     scholarship: Optional[str] = Query(default=None),
     job_title: Optional[str] = Query(default=None),
     employer: Optional[str] = Query(default=None),
-    job_field: Optional[str] = Query(default=None),
+    industry_sector: Optional[str] = Query(default=None),
     role_type: Optional[str] = Query(default=None),
     sort: str = Query(default="name"),
     order: str = Query(default="asc"),
@@ -88,7 +88,9 @@ def search_users(
     if name:
         term = f"%{name}%"
         query = query.where(
-            (User.first_name.ilike(term)) | (User.last_name.ilike(term))
+            (User.first_name.ilike(term)) |
+            (User.last_name.ilike(term)) |
+            (func.concat(User.first_name, " ", User.last_name).ilike(term))
         )
     if kvis_year:
         query = query.where(User.kvis_year == kvis_year)
@@ -105,7 +107,7 @@ def search_users(
     for user in users:
         if not _matches_education(user.education, uni_name, degree, major, scholarship, field_of_study):
             continue
-        if not _matches_career(user.career, job_title, employer, job_field, role_type):
+        if not _matches_career(user.career, job_title, employer, industry_sector, role_type):
             continue
         result.append(user)
 
@@ -142,8 +144,8 @@ def _matches_education(education, uni_name, degree, major, scholarship, field_of
     return False
 
 
-def _matches_career(career, job_title, employer, job_field, role_type) -> bool:
-    if not any([job_title, employer, job_field, role_type]):
+def _matches_career(career, job_title, employer, industry_sector, role_type) -> bool:
+    if not any([job_title, employer, industry_sector, role_type]):
         return True
     for c in career:
         match = True
@@ -151,7 +153,7 @@ def _matches_career(career, job_title, employer, job_field, role_type) -> bool:
             match = False
         if employer and employer.lower() not in (c.employer or "").lower():
             match = False
-        if job_field and c.job_field != job_field:
+        if industry_sector and c.industry_sector != industry_sector:
             match = False
         if role_type and c.role_type != role_type:
             match = False
@@ -194,7 +196,7 @@ def _to_card(user: User) -> dict:
         "career": [
             {
                 "id": c.id, "job_title": c.job_title, "employer": c.employer,
-                "job_field": c.job_field, "country": c.country, "state": c.state,
+                "industry_sector": c.industry_sector, "country": c.country, "state": c.state,
                 "is_current": c.is_current, "start_year": c.start_year,
                 "end_year": c.end_year, "is_public": getattr(c, "is_public", True),
                 "company_type": getattr(c, "company_type", None),

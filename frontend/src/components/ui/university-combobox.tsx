@@ -74,8 +74,9 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
 
   const triggerCls = cn(
     variant === "underline"
-      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors bg-transparent"
-      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors bg-transparent",
+      ? "w-full border-0 border-b px-0 py-2 flex items-center justify-between text-sm transition-colors"
+      : "w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm transition-colors",
+    !className && "bg-transparent", // only add bg-transparent if no className override
     className
   );
 
@@ -119,9 +120,9 @@ export function UniversityCombobox({ value, onChange, onCountryChange, placehold
         <button
           type="button"
           className={triggerCls}
-          style={{ borderColor: variant === "bordered" ? (inputBorderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
+          style={!className ? { borderColor: variant === "bordered" ? (inputBorderColor ?? "var(--sep-input)") : "var(--sep-input)" } : undefined}
         >
-          <span className={cn(displayValue ? "text-foreground" : "text-foreground/40")}>
+          <span className={cn("truncate", displayValue ? "" : "opacity-40")}>
             {displayValue || placeholder}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />

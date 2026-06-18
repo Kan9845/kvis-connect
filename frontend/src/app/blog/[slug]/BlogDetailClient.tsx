@@ -155,7 +155,7 @@ function CommentInput({ slug, parentId, onDone, autoFocus = false, pins }: {
       <MentionTextarea
         value={text}
         onChange={setText}
-        placeholder={parentId ? "Write a reply... Use @slug to mention someone." : "Write a comment... Use @slug to mention someone."}
+        placeholder={parentId ? "Write a reply... Use @name to mention someone." : "Write a comment... Use @name to mention someone."}
         autoFocus={autoFocus}
         pins={pins}
       />

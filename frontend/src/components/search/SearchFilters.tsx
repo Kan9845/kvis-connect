@@ -2,9 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from "react";
 import { Check, ChevronDown, ChevronsUpDown, X } from "lucide-react";
-import { DEGREES, FIELDS_OF_STUDY, JOB_FIELDS, KVIS_YEARS, ROLE_TYPES, SCHOLARSHIP_OPTIONS } from "@/lib/constants/options";
+import { DEGREES, FIELDS_OF_STUDY, KVIS_YEARS, ROLE_TYPES, SCHOLARSHIP_OPTIONS } from "@/lib/constants/options";
 import {
   Command, CommandEmpty, CommandGroup, CommandInput,
   CommandItem, CommandList,
@@ -15,6 +16,8 @@ import { UniversityCombobox } from "@/components/ui/university-combobox";
 import { MajorCombobox } from "@/components/ui/major-combobox";
 import type { SearchParams } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { INDUSTRY_SECTORS } from "@/app/profile/edit/constants";
+
 
 interface Props {
   values: SearchParams;
@@ -97,10 +100,10 @@ function OptionsCombobox({ value, onChange, options, placeholder, triggerCls }: 
           type="button"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm bg-transparent", triggerCls)}
+          className={cn("w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm", triggerCls)}
           onClick={() => setOpen((o) => !o)}
         >
-          <span className={cn("truncate min-w-0", value ? "" : "opacity-40")}>{value || placeholder}</span>
+          <span className={cn("truncate min-w-0", !value && "opacity-40")}>{value || placeholder}</span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
         </button>
       </PopoverTrigger>
@@ -182,8 +185,12 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
     : "h-9 rounded-md border-[var(--sep-input)] focus-visible:border-[var(--sep-input-focus)]";
 
   const triggerCls = dark
-    ? "h-9 rounded-md bg-white/5 border-white/20 text-white data-[placeholder]:text-white/40 [&_svg]:text-white/40"
+    ? "h-9 rounded-md bg-white/5 border-white/20 text-white [&_svg]:text-white/40"
     : "h-9 rounded-md border-[var(--sep-input)]";
+
+  const selectCls = (val: string | undefined) => dark
+    ? `h-9 rounded-md bg-white/5 border-white/20 [&_svg]:text-white/40 ${val ? "text-white" : "text-white/40"}`
+    : `h-9 rounded-md border-[var(--sep-input)] ${val ? "" : "[&>span]:opacity-40"}`;
 
   const comboCls = dark
     ? "bg-white/5 border-white/20 text-white"
@@ -205,7 +212,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
 
       <Section title="KVIS Batch" dark={dark} hasValue={!!formValues.kvis_year}>
         <Select value={formValues.kvis_year ? String(formValues.kvis_year) : "__any__"} onValueChange={(v) => setValue("kvis_year", v && v !== "__any__" ? parseInt(v) : undefined)}>
-          <SelectTrigger className={triggerCls}>
+          <SelectTrigger className={selectCls(formValues.kvis_year?.toString())}>
             <SelectValue placeholder="Any batch" />
           </SelectTrigger>
           <SelectContent>
@@ -267,12 +274,12 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
         <div className="space-y-2">
           <UniversityCombobox
             value={formValues.uni_name ?? ""}
-            className={comboCls}
+            className={dark ? "bg-white/5 border-white/20 text-white" : ""}
             onChange={(v) => setValue("uni_name", v || undefined)}
             placeholder="Search university..."
           />
           <Select value={formValues.degree || "__any__"} onValueChange={(v) => setValue("degree", v && v !== "__any__" ? v : undefined)}>
-            <SelectTrigger className={triggerCls}>
+            <SelectTrigger className={selectCls(formValues.degree)}>
               <SelectValue placeholder="Any degree" />
             </SelectTrigger>
             <SelectContent>
@@ -283,7 +290,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
             </SelectContent>
           </Select>
           <Select value={formValues.field_of_study || "__any__"} onValueChange={(v) => setValue("field_of_study", v && v !== "__any__" ? v : undefined)}>
-            <SelectTrigger className={triggerCls}>
+            <SelectTrigger className={selectCls(formValues.field_of_study)}>
               <SelectValue placeholder="Any field of study" />
             </SelectTrigger>
             <SelectContent>
@@ -313,19 +320,28 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
       <Section
         title="Career"
         dark={dark}
-        hasValue={!!(formValues.job_title || formValues.employer || formValues.job_field || formValues.role_type)}
+        hasValue={!!(formValues.job_title || formValues.employer || formValues.industry_sector || formValues.role_type)}
       >
         <div className="space-y-2">
           <Input placeholder="Job title" {...register("job_title")} className={inputCls} />
           <Input placeholder="Employer" {...register("employer")} className={inputCls} />
-          <Select value={formValues.job_field || "__any__"} onValueChange={(v) => setValue("job_field", v && v !== "__any__" ? v : undefined)}>
-            <SelectTrigger className={triggerCls}>
-              <SelectValue placeholder="Industry" />
+          <Select value={formValues.industry_sector || "__any__"} 
+            onValueChange={(v) => setValue("industry_sector", v && v !== "__any__" ? v : undefined)}>
+            <SelectTrigger className={selectCls(formValues.industry_sector)}>
+              <SelectValue placeholder="Any industry" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__any__">Any industry</SelectItem>
-              {JOB_FIELDS.map((j) => (
-                <SelectItem key={j.value} value={j.value}>{j.label}</SelectItem>
+              {INDUSTRY_SECTORS.map((g, index) => (
+                <React.Fragment key={g.group}>
+                  {index > 0 && <SelectSeparator />}
+                  <SelectGroup>
+                    <SelectLabel>{g.group}</SelectLabel>
+                    {g.options.map((o) => (
+                      <SelectItem key={o} value={o}>{o}</SelectItem>
+                    ))}
+                  </SelectGroup>
+                </React.Fragment>
               ))}
             </SelectContent>
           </Select>
