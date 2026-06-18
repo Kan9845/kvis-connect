@@ -500,7 +500,7 @@ export function BentoSection({ summary, posts }: Props) {
       : [];
 
     const fieldSegments = summary
-      ? Object.entries(summary.by_job_field)
+      ? Object.entries(summary.by_industry_sector)
           .sort(([, a], [, b]) => b - a)
           .map(([field, count]) => ({
             field,

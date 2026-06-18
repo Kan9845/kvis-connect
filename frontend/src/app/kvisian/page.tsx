@@ -523,7 +523,7 @@ function KvisianInner() {
       if (activeGrade && u.current_grade !== parseInt(activeGrade))
         return false;
       if (activeField) {
-        if (u.job_field !== activeField) return false;
+        if (u.industry_sector !== activeField) return false;
       }
       if (activeUni) {
         if (u.edu_uni !== activeUni) return false;
@@ -539,7 +539,7 @@ function KvisianInner() {
           u.interests,
           u.job_title,
           u.employer,
-          u.job_field,
+          u.industry_sector,
           u.edu_major,
           u.edu_uni,
           u.hobbies ? (typeof u.hobbies === 'string' ? u.hobbies : JSON.stringify(u.hobbies)) : null,

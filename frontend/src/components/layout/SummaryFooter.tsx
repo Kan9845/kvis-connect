@@ -42,7 +42,7 @@ export function SummaryFooter({ summary }: Props) {
     .map(([code, count]) => [COUNTRY_MAP.get(code)?.label ?? code, count] as [string, number])
     .sort((a, b) => b[1] - a[1]);
 
-  const jobItems = Object.entries(summary.by_job_field)
+  const jobItems = Object.entries(summary.by_industry_sector)
     .map(([code, count]) => [jobFieldLabel(code), count] as [string, number])
     .sort((a, b) => b[1] - a[1]);
 
@@ -64,7 +64,7 @@ export function SummaryFooter({ summary }: Props) {
             <StatCard icon={Users} label="Alumni" value={summary.total} />
             <StatCard icon={Globe} label="Countries" value={countriesCount} />
             <StatCard icon={GraduationCap} label="Generations" value={yearsCount} />
-            <StatCard icon={Briefcase} label="Industries" value={Object.keys(summary.by_job_field).length} />
+            <StatCard icon={Briefcase} label="Industries" value={Object.keys(summary.by_industry_sector).length} />
           </div>
         </div>
       </div>
