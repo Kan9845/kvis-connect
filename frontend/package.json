@@ -49,14 +49,14 @@
     "remark-gfm": "^4.0.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.4.0",
-    "three": "^0.167.1",
+    "three": "^0.179.1",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@types/three": "^0.167.0",
+    "@types/three": "^0.179.0",
     "autoprefixer": "^10",
     "axios-mock-adapter": "^2.1.0",
     "eslint": "^8",

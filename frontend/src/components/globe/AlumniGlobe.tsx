@@ -6,7 +6,9 @@ import type { GlobePin } from "@/lib/types";
 import { hasValidGlobeCoords } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-const Globe = dynamic(() => import("react-globe.gl"), { ssr: false });
+// Loaded via a wrapper because next/dynamic does not forward refs; the wrapper
+// takes the ref as a `globeRef` prop so the imperative API stays reachable.
+const Globe = dynamic(() => import("./GlobeWrapper"), { ssr: false });
 
 // Editorial palette - matches /blog, /stats, /kvisian.
 const P = {
@@ -651,15 +653,32 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   }, []);
 
 
+  // Center the camera on Thailand once the globe has mounted. The Globe is
+  // dynamically imported, so globeRef populates asynchronously and a one-shot
+  // effect can fire before it exists — poll briefly until the instance is
+  // ready, point at Thailand a single time, then stop.
+  useEffect(() => {
+    let tries = 0;
+    const id = window.setInterval(() => {
+      tries += 1;
+      const g = globeRef.current;
+      if (g) {
+        g.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
+        clearInterval(id);
+      } else if (tries > 100) {
+        clearInterval(id);
+      }
+    }, 50);
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     if (!globeRef.current) return;
     const controls = globeRef.current.controls();
-    
-    // Set initial view to Thailand before enabling rotation
-    globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
-    
+
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.35;
+
     let rafId = 0;
     const handler = () => {
       if (rafId) return;
@@ -762,7 +781,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   return (
     <div ref={containerRef} className="relative w-full h-full isolate" style={{ zIndex: 0 }}>
       <Globe
-        ref={globeRef}
+        globeRef={globeRef}
         width={size.w}
         height={size.h}
         globeImageUrl={GLOBE_IMG}
