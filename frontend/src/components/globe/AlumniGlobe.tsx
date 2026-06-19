@@ -651,17 +651,16 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   }, []);
 
   useEffect(() => {
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
+    const timeout = setTimeout(() => {
       if (globeRef.current) {
-        globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
-        clearInterval(interval);
-      } else if (attempts > 50) {
-        clearInterval(interval);
+        console.log('Setting POV to Thailand');
+        globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 });
+        console.log('Current POV after set:', globeRef.current.pointOfView());
+      } else {
+        console.log('globeRef.current is null');
       }
-    }, 100);
-    return () => clearInterval(interval);
+    }, 1000);
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
