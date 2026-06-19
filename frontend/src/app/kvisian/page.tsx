@@ -23,6 +23,8 @@ import {
 import { motion } from "framer-motion";
 import { AvatarCanvas } from "@/components/avatar/AvatarCanvas";
 import type { AvatarConfig } from "@/lib/avatarTypes";
+import ProfileClient from "@/app/profile/[id]/ProfileClient";
+const { currentRole, currentEdu } = (ProfileClient as any) || {};
 
 const staggerContainer = {
   animate: { transition: { staggerChildren: 0.04 } },
@@ -63,10 +65,10 @@ function initials(u: DirectoryCard) {
 }
 
 function captionAlumni(u: any): React.ReactNode {
-  if (u.edu_major) {
+  if (u.edu_major && currentEdu(u)) {
     return [u.edu_major || u.edu_degree, u.edu_uni].filter(Boolean).join(" • ");
   }
-  if (u.job_title) {
+  if (u.job_title && currentRole(u)) {
     return [u.job_title, u.employer && `@ ${u.employer}`].filter(Boolean).join(" ");
   }
   return "Profile pending";

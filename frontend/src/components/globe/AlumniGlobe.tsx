@@ -632,47 +632,39 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   }, []);
 
   useEffect(() => {
-    const setup = () => {
-      const controls = globeRef.current?.controls();
-      if (!controls) return false;
-
-      // Set initial view to Thailand before enabling rotation
-      globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
-
-      // Run the same logic the zoom handler would run, so clustering
-      // reflects the initial altitude immediately instead of waiting
-      // for the user's first drag/zoom.
-      const pov = globeRef.current.pointOfView();
-      if (pov) {
-        const initialTier = altitudeToTier(pov.altitude);
-        tierRef.current = initialTier;
-        if (initialTier >= 1) loadProvinces();
-        if (initialTier >= 2) loadCities();
-        setTier(initialTier);
-        const precision = pov.altitude > 2 ? 0 : pov.altitude > 1 ? 1 : pov.altitude > 0.5 ? 2 : 4;
-        setClusterPrecision(precision);
-      }
-
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.35;
-      return true;
-    };
-
-    // Try immediately; if the internal Three.js scene isn't ready yet,
-    // retry on the next frame until it is.
+    if (!containerRef.current) return;
     let rafId = 0;
-    const tryUntilReady = () => {
-      if (!setup()) {
-        rafId = requestAnimationFrame(tryUntilReady);
-      }
+    let pending: { w: number; h: number } | null = null;
+    const ro = new ResizeObserver(([e]) => {
+      pending = { w: e.contentRect.width, h: e.contentRect.height };
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        if (pending) setSize(pending);
+      });
+    });
+    ro.observe(containerRef.current);
+    return () => {
+      ro.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
     };
-    tryUntilReady();
+  }, []);
 
-    let handlerRafId = 0;
+
+  useEffect(() => {
+    if (!globeRef.current) return;
+    const controls = globeRef.current.controls();
+    
+    // Set initial view to Thailand before enabling rotation
+    globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
+    
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.35;
+    let rafId = 0;
     const handler = () => {
-      if (handlerRafId) return;
-      handlerRafId = requestAnimationFrame(() => {
-        handlerRafId = 0;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
         const pov = globeRef.current?.pointOfView();
         if (!pov) return;
         const next = altitudeToTier(pov.altitude);
@@ -682,20 +674,17 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
           if (next >= 2) loadCities();
           setTier(next);
         }
+        // Update cluster precision based on zoom
         const precision = pov.altitude > 2 ? 0 : pov.altitude > 1 ? 1 : pov.altitude > 0.5 ? 2 : 4;
         setClusterPrecision(precision);
       });
     };
-
-    const controls = globeRef.current?.controls();
-    controls?.addEventListener("change", handler);
-
+    controls.addEventListener("change", handler);
     return () => {
+      controls.removeEventListener("change", handler);
       if (rafId) cancelAnimationFrame(rafId);
-      if (handlerRafId) cancelAnimationFrame(handlerRafId);
-      controls?.removeEventListener("change", handler);
     };
-  }, [loadProvinces, loadCities]);
+  }, [loadProvinces, loadCities, size.w, size.h]);
 
   useEffect(() => {
     if (!globeRef.current) return;
