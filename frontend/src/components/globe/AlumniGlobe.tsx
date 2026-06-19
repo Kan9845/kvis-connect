@@ -447,7 +447,7 @@ function makePinEl(
     font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;
     box-shadow:${baseShadow};
     transition:transform 0.16s ease-out,box-shadow 0.16s ease-out;
-    user-select:none;
+    user-select:none;will-change:transform;
   `;
   if (first.profile_pic_url) {
     const img = document.createElement("img");
@@ -676,29 +676,10 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     if (!globeRef.current) return;
     const controls = globeRef.current.controls();
 
-    controls.autoRotate = false;
-
-    // Render at a lower resolution while the user is actively dragging/zooming,
-    // then restore full sharpness once the gesture settles. Re-rasterizing the
-    // globe at native DPR every frame is what stalls weaker GPUs (notably
-    // Windows via ANGLE/DirectX) during interaction; macOS/Metal hides the cost.
-    // The render path goes through an EffectComposer, so both the renderer and
-    // the composer's offscreen targets must be resized for it to take effect.
-    const renderer = globeRef.current.renderer?.();
-    const composer = globeRef.current.postProcessingComposer?.();
-    const fullDpr = Math.min(2, window.devicePixelRatio);
-    const dragDpr = Math.min(1, window.devicePixelRatio);
-    const setDpr = (pr: number) => {
-      renderer?.setPixelRatio(pr);
-      composer?.setPixelRatio(pr);
-    };
-    const onStart = () => setDpr(dragDpr);
-    const onEnd = () => setDpr(fullDpr);
-    controls.addEventListener("start", onStart);
-    controls.addEventListener("end", onEnd);
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.35;
 
     let rafId = 0;
-    let precisionTimer = 0;
     const handler = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
@@ -712,21 +693,15 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
           if (next >= 2) loadCities();
           setTier(next);
         }
-        // Changing precision re-clusters and rebuilds every pin's DOM node, so
-        // defer it until movement settles — otherwise the pins tear down and
-        // rebuild mid-gesture and the drag visibly hitches.
+        // Update cluster precision based on zoom
         const precision = pov.altitude > 2 ? 0 : pov.altitude > 1 ? 1 : pov.altitude > 0.5 ? 2 : 4;
-        if (precisionTimer) clearTimeout(precisionTimer);
-        precisionTimer = window.setTimeout(() => setClusterPrecision(precision), 150);
+        setClusterPrecision(precision);
       });
     };
     controls.addEventListener("change", handler);
     return () => {
       controls.removeEventListener("change", handler);
-      controls.removeEventListener("start", onStart);
-      controls.removeEventListener("end", onEnd);
       if (rafId) cancelAnimationFrame(rafId);
-      if (precisionTimer) clearTimeout(precisionTimer);
     };
   }, [loadProvinces, loadCities, size.w, size.h]);
 
@@ -734,7 +709,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     if (!globeRef.current) return;
     if (!filteredPins || filteredPins.length === 0) {
       if (filteredPins !== undefined) return;
-      globeRef.current.controls().autoRotate = false;
+      globeRef.current.controls().autoRotate = true;
       return;
     }
     const validPins = filteredPins.filter(hasValidGlobeCoords);
