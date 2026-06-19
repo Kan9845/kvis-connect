@@ -651,6 +651,20 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   }, []);
 
   useEffect(() => {
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (globeRef.current) {
+        globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
+        clearInterval(interval);
+      } else if (attempts > 50) {
+        clearInterval(interval);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     if (!globeRef.current) return;
     const controls = globeRef.current.controls();
     
