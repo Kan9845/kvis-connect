@@ -654,6 +654,10 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   useEffect(() => {
     if (!globeRef.current) return;
     const controls = globeRef.current.controls();
+    
+    // Set initial view to Thailand before enabling rotation
+    globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
+    
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.35;
     let rafId = 0;
