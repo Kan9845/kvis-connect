@@ -32,12 +32,11 @@ interface PinCluster {
 // Pins for users at the same (country, state) are geocoded to identical
 // coordinates by the backend. Group them so a single visual represents the
 // whole location, with a count badge instead of stacked invisible duplicates.
-function clusterPins(pins: GlobePin[]): PinCluster[] {
+function clusterPins(pins: GlobePin[], precision: number): PinCluster[] {
   const map = new Map<string, PinCluster>();
   for (const p of pins) {
     if (!hasValidGlobeCoords(p)) continue;
-    // 4dp ≈ 11m - only merges true coincident points, not nearby cities.
-    const key = `${p.latitude.toFixed(4)},${p.longitude.toFixed(4)}`;
+    const key = `${p.latitude.toFixed(precision)},${p.longitude.toFixed(precision)}`;
     const existing = map.get(key);
     if (existing) {
       existing.members.push(p);
@@ -54,7 +53,6 @@ function clusterPins(pins: GlobePin[]): PinCluster[] {
       });
     }
   }
-  // Sort members within each cluster by KVIS year then name for stable display.
   const clusters = Array.from(map.values());
   clusters.forEach((c) => {
     c.members.sort((a: GlobePin, b: GlobePin) => {
@@ -571,6 +569,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   const [countryLabels, setCountryLabels] = useState<LabelPoint[]>([]);
   const [provinceLabels, setProvinceLabels] = useState<LabelPoint[]>([]);
   const [cityLabels, setCityLabels] = useState<LabelPoint[]>([]);
+  const [clusterPrecision, setClusterPrecision] = useState(2);
   const provincesLoadedRef = useRef(false);
   const citiesLoadedRef = useRef(false);
   const tierRef = useRef<Tier>(0);
@@ -674,6 +673,9 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
           if (next >= 2) loadCities();
           setTier(next);
         }
+        // Update cluster precision based on zoom
+        const precision = pov.altitude > 2 ? 0 : pov.altitude > 1 ? 1 : pov.altitude > 0.5 ? 2 : 4;
+        setClusterPrecision(precision);
       });
     };
     controls.addEventListener("change", handler);
@@ -714,7 +716,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   }, [tier, countryLabels, provinceLabels, cityLabels]);
 
   const displayPins = filteredPins !== undefined ? filteredPins : pins;
-  const clusters = useMemo(() => clusterPins(displayPins), [displayPins]);
+  const clusters = useMemo(() => clusterPins(displayPins, clusterPrecision), [displayPins, clusterPrecision]);
 
   const handleNavigate = useCallback((slug: string) => {
     routerRef.current.push(`/profile/${slug}`);
