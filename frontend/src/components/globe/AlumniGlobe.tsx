@@ -650,21 +650,6 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     };
   }, []);
 
-  useEffect(() => {
-    let attempts = 0;
-    const interval = setInterval(() => {
-      attempts++;
-      console.log('Attempt', attempts, 'globeRef.current:', globeRef.current);
-      if (globeRef.current) {
-        globeRef.current.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 });
-        clearInterval(interval);
-      } else if (attempts > 100) {
-        clearInterval(interval);
-        console.log('Gave up waiting for globeRef');
-      }
-    }, 200);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (!globeRef.current) return;
@@ -699,7 +684,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
       controls.removeEventListener("change", handler);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [loadProvinces, loadCities]);
+  }, [loadProvinces, loadCities, size.w, size.h]);
 
   useEffect(() => {
     if (!globeRef.current) return;
