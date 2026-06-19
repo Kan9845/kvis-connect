@@ -14,3 +14,6 @@ venv/
 *.log
 .DS_Store
 context/
+
+# This is a pnpm project — never commit the npm lockfile
+package-lock.json
