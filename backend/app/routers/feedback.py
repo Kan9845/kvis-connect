@@ -26,6 +26,34 @@ TYPE_COLORS = {
     "kind_words": 0x3182CE,
 }
 
+GITHUB_LABELS = {
+    "bug": ["bug"],
+    "feature": ["enhancement"],
+    "suggestion": ["enhancement"],
+}
+
+def _notify_github(fb: Feedback, submitter_name: str | None) -> None:
+    if not settings.GITHUB_TOKEN or fb.type == "kind_words":
+        return
+    def _send():
+        try:
+            title = fb.message.splitlines()[0][:72] or fb.type.replace("_", " ").title()
+            body_parts = [fb.message]
+            if submitter_name:
+                body_parts.append(f"\n- Submitted by: {submitter_name}")
+            if fb.contact_email:
+                body_parts.append(f"- Contact: {fb.contact_email}")
+            httpx.post(
+                f"https://api.github.com/repos/{settings.GITHUB_REPO}/issues",
+                headers={"Authorization": f"Bearer {settings.GITHUB_TOKEN}", "Accept": "application/vnd.github+json"},
+                json={"title": title, "body": "\n".join(body_parts), "labels": GITHUB_LABELS.get(fb.type, [])},
+                timeout=5,
+            )
+        except Exception:
+            pass
+    threading.Thread(target=_send, daemon=True).start()
+
+
 def _notify_discord(fb: Feedback, submitter_name: str | None) -> None:
     if not settings.DISCORD_FEEDBACK_WEBHOOK:
         return
@@ -69,6 +97,7 @@ def submit_feedback(
 
     name = f"{current_user.first_name} {current_user.last_name}".strip() if current_user else None
     _notify_discord(fb, name)
+    _notify_github(fb, name)
 
     return fb
 

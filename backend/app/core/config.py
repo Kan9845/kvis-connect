@@ -45,4 +45,7 @@ class Settings(BaseSettings):
 
     DISCORD_FEEDBACK_WEBHOOK: str = ""
 
+    GITHUB_TOKEN: str = ""
+    GITHUB_REPO: str = "l2holV4l2u/KVIS-Connect"
+
 settings = Settings()
