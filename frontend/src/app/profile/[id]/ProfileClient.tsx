@@ -19,7 +19,12 @@ function parseInterests(t?: string) {
 }
 
 function hostname(url: string) {
-  try { return new URL(url).hostname.replace(/^www\./, ""); }
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    const path = u.pathname.replace(/\/$/, "");
+    return path ? host + path : host;
+  }
   catch { return url; }
 }
 
