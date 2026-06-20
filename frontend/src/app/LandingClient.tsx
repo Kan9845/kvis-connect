@@ -380,7 +380,7 @@ export function LandingClient({ initialPins }: Props) {
           <div
             ref={collapsedMeasureRef}
             aria-hidden="true"
-            className="fixed inset-x-0 bottom-0 -z-10 flex flex-col overflow-hidden opacity-0 pointer-events-none"
+            className="invisible fixed inset-x-0 bottom-0 -z-10 flex flex-col overflow-hidden pointer-events-none"
             style={{
               maxHeight: "calc(100dvh - 84px)",
               background: isDarkSky
