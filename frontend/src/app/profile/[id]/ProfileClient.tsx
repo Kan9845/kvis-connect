@@ -669,7 +669,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     if (!byYear.has(k)) byYear.set(k, []);
                     byYear.get(k)!.push(a);
                   });
-                  const sorted = [...byYear.entries()].sort(([a], [b]) => {
+                  const sorted = Array.from(byYear.entries()).sort(([a], [b]) => {
                     if (!a) return 1;
                     if (!b) return -1;
                     return Number(b) - Number(a);
