@@ -577,7 +577,7 @@ const CLUSTER_LNG_FN = (c: object) => (c as PinCluster).longitude;
 // Grid cell size per zoom level: heavy merge when far out, one pin per city up
 // close. Same-city alumni share identical coords so they always land in one
 // cell - one pin, never fanned apart. Re-clustering runs only on level change.
-const CELL_DEG = [40, 15, 5, 1.5, 0.4, 0.15];
+const CELL_DEG = [30, 5, 2, 1.5, 0.4, 0.15];
 
 function zoomLevelForAltitude(alt: number): number {
   if (alt > 2.0) return 0;
