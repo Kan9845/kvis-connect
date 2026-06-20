@@ -233,7 +233,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] overflow-y-auto bg-background">
-      <div className="mx-auto max-w-6xl px-6 lg:px-12 py-12 lg:py-20">
+      <div className="mx-auto max-w-6xl px-4 md:px-6 py-12 lg:py-20">
         <div className="grid lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24 items-start">
           {/* Left - static hero */}
           <div className="lg:sticky lg:top-20 lg:border-r lg:pr-10" style={{ borderColor: P.border }}>

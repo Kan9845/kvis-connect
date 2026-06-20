@@ -140,6 +140,8 @@ export const searchApi = {
   // counts and pins reflect all matches. Backend caps at le=2000 (>864 total).
   search: (params: SearchParams) =>
     api.get<UserCard[]>("/api/search", { params: { ...params, limit: 2000 } }).then((r) => r.data),
+  autocomplete: (field: string, q: string): Promise<string[]> =>
+    api.get("/api/search/autocomplete", { params: { field, q } }).then((r) => r.data),
 };
 
 // Summary

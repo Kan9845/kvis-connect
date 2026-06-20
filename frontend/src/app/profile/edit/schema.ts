@@ -12,6 +12,7 @@ export const generalSchema = z.object({
   teach_end_year: z.coerce.number().optional(),
   is_current_teacher_str: z.string().optional(),
   current_status: z.string().min(1, "Please select your current status"),
+  province_of_origin: z.string().optional(),
   place: z.string().optional(),
   place_level2: z.string().optional(),
   country: z.string().min(1, "Required"),

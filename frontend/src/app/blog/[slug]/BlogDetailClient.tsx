@@ -433,7 +433,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
   if (isLoading) {
     return (
       <PageEntrance>
-        <div className="mx-auto max-w-3xl px-6 lg:px-8 py-xl lg:py-layout">
+        <div className="mx-auto max-w-3xl px-4 md:px-6 py-xl lg:py-layout">
           {/* Back link */}
           <Skeleton className="h-3 w-20 mb-10" />
           {/* Tags */}
@@ -487,7 +487,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
   return (
     <PageEntrance>
-      <div className="mx-auto max-w-3xl px-6 lg:px-8 py-xl lg:py-layout">
+      <div className="mx-auto max-w-3xl px-4 md:px-6 py-xl lg:py-layout">
         <FadeUp>
           <Link href="/blog" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-[var(--kvis-text3)] hover:text-foreground transition-colors mb-10 group">
             <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" /> Stories

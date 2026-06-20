@@ -109,14 +109,25 @@ html, body {
 
 @layer base {
   .font-display {
-    font-family: var(--font-bricolage), var(--font-be-vietnam-pro), sans-serif;
+    font-family: var(--font-bricolage), var(--font-be-vietnam-pro), var(--font-noto-thai), sans-serif;
   }
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-inter), var(--font-noto-thai), sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  /* Mask the browser autofill yellow/blue fill so inputs stay on-theme */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--foreground);
+    -webkit-box-shadow: 0 0 0 1000px var(--background) inset;
+    caret-color: var(--foreground);
+    transition: background-color 9999s ease-in-out 0s;
   }
 }
 

@@ -34,7 +34,7 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="min-h-full bg-background">
-      <div className="mx-auto max-w-md px-6 py-24 lg:py-32">
+      <div className="mx-auto max-w-md px-4 md:px-6 py-24 lg:py-32">
         <div className="flex items-baseline gap-4 mb-6">
           <span
             className="font-mono font-black text-2xl tabular-nums"

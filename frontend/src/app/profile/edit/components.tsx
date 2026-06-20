@@ -12,7 +12,7 @@ export function SectionHead({
   title: string;
 }) {
   return (
-    <header className="pt-9 pb-4">
+    <header className="pt-8 pb-4">
       <div className="flex items-baseline gap-3 mb-2">
         <span
           className="font-mono font-black text-xl tabular-nums text-[var(--kvis-green-light)]"

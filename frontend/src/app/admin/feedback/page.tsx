@@ -72,7 +72,7 @@ export default function FeedbackAdminPage() {
 
   return (
     <div
-      className="mx-auto max-w-4xl px-6 py-12"
+      className="mx-auto max-w-4xl px-4 md:px-6 py-12"
       style={{ fontFamily: "var(--font-be-vietnam-pro), sans-serif" }}
     >
       <p className="text-xs font-bold uppercase tracking-[0.3em] mb-2 text-[var(--kvis-green-light)]">

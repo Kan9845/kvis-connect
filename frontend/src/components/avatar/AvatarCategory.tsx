@@ -29,16 +29,16 @@ export function AvatarCategory({
           <button
             onClick={() => onSelect(null)}
             className={`
-              w-20 h-20 rounded-2xl border bg-white
+              w-20 h-20 rounded-2xl bg-muted
               flex items-center justify-center
               transition-all
-            
-              ${
-                value === null
-                  ? "border-black scale-105 shadow-xl"
-                  : "border-gray-200 hover:border-gray-400"
-              }
+              ${value === null ? "scale-105 shadow-xl shadow-[var(--kvis-purple)]/20" : ""}
             `}
+            style={{
+              border: value === null
+                ? "3px solid var(--kvis-purple)"
+                : "2px solid var(--sep-strong)",
+            }}
           >
             <svg
               viewBox="0 0 24 24"

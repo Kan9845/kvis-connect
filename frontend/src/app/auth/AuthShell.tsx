@@ -26,7 +26,7 @@ export function AuthShell({ numeral, kicker, title, lede, children, footer }: Au
   });
   return (
     <div className="min-h-full bg-background">
-      <div className="mx-auto max-w-6xl px-6 lg:px-12 py-xl lg:py-2xl">
+      <div className="mx-auto max-w-6xl px-4 md:px-6 py-xl lg:py-2xl">
         <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-xl lg:gap-20 items-start">
           <section
             className="lg:pr-10 lg:border-r lg:sticky lg:top-16 lg:self-start"

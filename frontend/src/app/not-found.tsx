@@ -24,7 +24,7 @@ export default function NotFound() {
         404
       </span>
 
-      <div className="relative mx-auto w-full max-w-5xl px-6 lg:px-10 py-16 md:py-24">
+      <div className="relative mx-auto w-full max-w-5xl px-4 md:px-6 py-16 md:py-24">
         <div className="grid md:grid-cols-[1fr_auto] gap-16 md:gap-24 items-center">
 
           {/* Text side */}

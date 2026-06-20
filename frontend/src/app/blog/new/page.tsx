@@ -195,7 +195,7 @@ export default function NewBlogPage() {
         onDone={handleCoverCropDone}
       />
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-4xl px-6 lg:px-10 py-xl lg:py-layout">
+        <div className="mx-auto max-w-4xl px-4 md:px-6 py-xl lg:py-layout">
           <header className="pb-8 border-b-2 border-[var(--sep-strong)]">
             <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 flex items-center gap-1" style={{ color: P.purple }}>
               KVIS Connect <Dot className="h-3 w-3 shrink-0" aria-hidden /> New post
