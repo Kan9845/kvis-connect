@@ -453,6 +453,7 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
 function makePinEl(
   cluster: PinCluster,
   onNavigate: (slug: string) => void,
+  onZoomTo: (lat: number, lng: number) => void,
 ): HTMLElement {
   const first = cluster.members[0];
   const isCluster = cluster.members.length > 1;
@@ -545,16 +546,14 @@ function makePinEl(
       onNavigate(first.slug);
       return;
     }
-    // On touch devices (pointer: coarse), tap to toggle the card since hover doesn't fire.
-    if (window.matchMedia("(pointer: coarse)").matches) {
-      const { card } = getCard();
-      const alreadyVisible = parseFloat(card.style.opacity) > 0;
-      if (alreadyVisible) {
-        hideCard(0);
-      } else {
-        populateCard(cluster, onNavigate);
-        showCardAt(wrap);
-      }
+    onZoomTo(cluster.latitude, cluster.longitude);
+    const { card } = getCard();
+    const alreadyVisible = parseFloat(card.style.opacity) > 0;
+    if (alreadyVisible) {
+      hideCard(0);
+    } else {
+      populateCard(cluster, onNavigate);
+      showCardAt(wrap);
     }
   });
 
@@ -718,9 +717,24 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     routerRef.current.push(`/profile/${slug}`);
   }, []);
 
+  const resumeTimerRef = useRef<number | null>(null);
+
+  const handleZoomTo = useCallback((lat: number, lng: number) => {
+    const g = globeRef.current;
+    if (!g) return;
+    g.controls().autoRotate = false;
+    g.pointOfView({ lat, lng, altitude: 1.0 }, 800);
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = window.setTimeout(() => {
+      globeRef.current?.controls().autoRotate === false &&
+        (globeRef.current.controls().autoRotate = true);
+      resumeTimerRef.current = null;
+    }, 5000);
+  }, []);
+
   const htmlElementFn = useCallback(
-    (c: object) => makePinEl(c as PinCluster, handleNavigate),
-    [handleNavigate],
+    (c: object) => makePinEl(c as PinCluster, handleNavigate, handleZoomTo),
+    [handleNavigate, handleZoomTo],
   );
 
   const polygonStrokeColor = useCallback(
