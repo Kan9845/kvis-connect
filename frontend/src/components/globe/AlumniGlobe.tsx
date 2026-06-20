@@ -34,11 +34,13 @@ interface PinCluster {
 // Pins for users at the same (country, state) are geocoded to identical
 // coordinates by the backend. Group them so a single visual represents the
 // whole location, with a count badge instead of stacked invisible duplicates.
-function clusterPins(pins: GlobePin[], precision: number): PinCluster[] {
+// `cellDeg` is the grid size in degrees: large when zoomed out (continents
+// collapse into one pin), tiny when zoomed in.
+function clusterPins(pins: GlobePin[], cellDeg: number): PinCluster[] {
   const map = new Map<string, PinCluster>();
   for (const p of pins) {
     if (!hasValidGlobeCoords(p)) continue;
-    const key = `${p.latitude.toFixed(precision)},${p.longitude.toFixed(precision)}`;
+    const key = `${Math.round(p.latitude / cellDeg)},${Math.round(p.longitude / cellDeg)}`;
     const existing = map.get(key);
     if (existing) {
       existing.members.push(p);
@@ -284,22 +286,35 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
   card.appendChild(closeBtn);
 
   const isCluster = cluster.members.length > 1;
-  // `place` already encodes "City, Country" (e.g. "Bangkok, Thailand"), so
-  // don't append country a second time. Only fall back to country alone.
+  // A coarse grid merges several cities into one cell, so group members by
+  // their own place and show a section per location rather than one misleading
+  // label. `place` already encodes "City, Country" - fall back to country.
+  const groupMap = new Map<string, GlobePin[]>();
+  for (const m of cluster.members) {
+    const label = m.place || m.country || "Unknown location";
+    const arr = groupMap.get(label);
+    if (arr) arr.push(m);
+    else groupMap.set(label, [m]);
+  }
+  const groups = Array.from(groupMap.entries()).sort(
+    (a, b) => b[1].length - a[1].length,
+  );
+  const multiPlace = groups.length > 1;
   const locLabel = cluster.place || cluster.country || "Unknown location";
 
   // Editorial kicker row
   const head = document.createElement("div");
   head.style.cssText = `
     display:flex;align-items:baseline;justify-content:space-between;gap:8px;
-    padding-bottom:8px;border-bottom:1px solid ${P.rule};margin-bottom:10px;
+    padding-right:16px;padding-bottom:8px;
+    border-bottom:1px solid ${P.rule};margin-bottom:10px;
   `;
   const kicker = document.createElement("div");
   kicker.style.cssText = `
     font-size:9px;font-weight:700;text-transform:uppercase;
     letter-spacing:0.26em;color:${P.purple};
   `;
-  kicker.textContent = "Location";
+  kicker.textContent = multiPlace ? "Locations" : "Location";
   head.appendChild(kicker);
 
   const tally = document.createElement("div");
@@ -308,18 +323,21 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
     font-variant-numeric:tabular-nums;letter-spacing:0.18em;
     text-transform:uppercase;
   `;
-  tally.textContent = `${cluster.members.length} ${cluster.members.length === 1 ? "alum" : "alumni"}`;
+  tally.textContent = `${cluster.members.length} alumni`;
   head.appendChild(tally);
   card.appendChild(head);
 
-  // Place - bold editorial display
-  const place = document.createElement("div");
-  place.style.cssText = `
-    font-size:18px;font-weight:800;letter-spacing:-0.015em;
-    color:${P.ink};line-height:1.18;margin-bottom:12px;
-  `;
-  place.textContent = locLabel;
-  card.appendChild(place);
+  // Place - bold editorial display. For multi-city clusters the per-section
+  // headers below carry the place names, so skip the single big label here.
+  if (!multiPlace) {
+    const place = document.createElement("div");
+    place.style.cssText = `
+      font-size:16px;font-weight:700;letter-spacing:-0.015em;
+      color:${P.ink};line-height:1.18;margin-bottom:12px;
+    `;
+    place.textContent = locLabel;
+    card.appendChild(place);
+  }
 
   if (!isCluster) {
     const p = cluster.members[0];
@@ -388,14 +406,37 @@ function populateCard(cluster: PinCluster, onNavigate: (slug: string) => void) {
     return;
   }
 
-  // Cluster: scrollable list of members
+  // Cluster: scrollable list, sectioned by place when members span >1 location
   const list = document.createElement("div");
   list.style.cssText = `
     max-height:248px;overflow-y:auto;
     margin:0 -6px;
     scrollbar-width:thin;
   `;
-  cluster.members.forEach((m) => list.appendChild(makeMemberRow(m, onNavigate)));
+  if (multiPlace) {
+    groups.forEach(([label, members], gi) => {
+      const sub = document.createElement("div");
+      sub.style.cssText = `
+        display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+        padding:${gi === 0 ? "0" : "14px"} 6px 5px;
+        ${gi === 0 ? "" : `border-top:1px solid ${P.rule};margin-top:8px;`}
+        font-size:16px;font-weight:700;color:${P.ink};letter-spacing:-0.015em;
+      `;
+      const lbl = document.createElement("span");
+      lbl.style.cssText =
+        "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+      lbl.textContent = label;
+      sub.appendChild(lbl);
+      const n = document.createElement("span");
+      n.style.cssText = `color:${P.text3};font-variant-numeric:tabular-nums;flex-shrink:0;`;
+      n.textContent = String(members.length);
+      sub.appendChild(n);
+      list.appendChild(sub);
+      members.forEach((m) => list.appendChild(makeMemberRow(m, onNavigate)));
+    });
+  } else {
+    cluster.members.forEach((m) => list.appendChild(makeMemberRow(m, onNavigate)));
+  }
   card.appendChild(list);
 
   const hint = document.createElement("div");
@@ -533,6 +574,20 @@ const POLY_GEOM = (f: any) => f.geometry;
 const CLUSTER_LAT_FN = (c: object) => (c as PinCluster).latitude;
 const CLUSTER_LNG_FN = (c: object) => (c as PinCluster).longitude;
 
+// Grid cell size per zoom level: heavy merge when far out, one pin per city up
+// close. Same-city alumni share identical coords so they always land in one
+// cell - one pin, never fanned apart. Re-clustering runs only on level change.
+const CELL_DEG = [40, 15, 5, 1.5, 0.4, 0.15];
+
+function zoomLevelForAltitude(alt: number): number {
+  if (alt > 2.0) return 0;
+  if (alt > 1.0) return 1;
+  if (alt > 0.6) return 2;
+  if (alt > 0.35) return 3;
+  if (alt > 0.2) return 4;
+  return 5;
+}
+
 function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   const globeRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -544,8 +599,8 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
 
   const [size, setSize] = useState({ w: 800, h: 600 });
   const [countryFeatures, setCountryFeatures] = useState<any[]>([]);
-  const [clusterPrecision, setClusterPrecision] = useState(2);
-  const clusterPrecisionRef = useRef(2);
+  const [zoomLevel, setZoomLevel] = useState(0);
+  const zoomLevelRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -597,30 +652,42 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     return () => clearInterval(id);
   }, []);
 
+  // globeRef populates asynchronously (dynamic import), so a plain mount effect
+  // sees no instance and the zoom listener never attaches - the symptom being
+  // clusters that never break down on zoom. Poll until ready, then attach.
   useEffect(() => {
-    if (!globeRef.current) return;
-    const controls = globeRef.current.controls();
-
-    controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.35;
-
     let rafId = 0;
+    let controls: { autoRotate: boolean; autoRotateSpeed: number; addEventListener: Function; removeEventListener: Function } | null = null;
     const handler = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         rafId = 0;
         const pov = globeRef.current?.pointOfView();
         if (!pov) return;
-        const precision = pov.altitude > 2 ? 0 : pov.altitude > 1 ? 1 : pov.altitude > 0.5 ? 2 : 4;
-        if (precision !== clusterPrecisionRef.current) {
-          clusterPrecisionRef.current = precision;
-          setClusterPrecision(precision);
+        const level = zoomLevelForAltitude(pov.altitude);
+        if (level !== zoomLevelRef.current) {
+          zoomLevelRef.current = level;
+          setZoomLevel(level);
         }
       });
     };
-    controls.addEventListener("change", handler);
+    let tries = 0;
+    const id = window.setInterval(() => {
+      tries += 1;
+      const g = globeRef.current;
+      if (g) {
+        controls = g.controls();
+        controls!.autoRotate = true;
+        controls!.autoRotateSpeed = 0.2;
+        controls!.addEventListener("change", handler);
+        clearInterval(id);
+      } else if (tries > 100) {
+        clearInterval(id);
+      }
+    }, 50);
     return () => {
-      controls.removeEventListener("change", handler);
+      clearInterval(id);
+      controls?.removeEventListener("change", handler);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
@@ -642,7 +709,10 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   }, [filteredPins]);
 
   const displayPins = filteredPins !== undefined ? filteredPins : pins;
-  const clusters = useMemo(() => clusterPins(displayPins, clusterPrecision), [displayPins, clusterPrecision]);
+  const clusters = useMemo(
+    () => clusterPins(displayPins, CELL_DEG[zoomLevel]),
+    [displayPins, zoomLevel],
+  );
 
   const handleNavigate = useCallback((slug: string) => {
     routerRef.current.push(`/profile/${slug}`);
