@@ -158,7 +158,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
     return (
       <PageEntrance>
         <div className="min-h-full bg-background">
-          <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
+          <div className="mx-auto max-w-5xl px-4 md:px-6 py-xl lg:py-layout">
             <Skeleton className="h-4 w-48 mb-4" />
             <div className="grid gap-lg md:gap-xl pb-lg border-b border-[var(--kvis-border)]"
               style={{ gridTemplateColumns: "auto 1fr" }}>
@@ -182,7 +182,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
     return (
       <PageEntrance>
         <div className="min-h-full bg-background">
-          <div className="mx-auto max-w-5xl px-6 lg:px-10 py-24 text-center">
+          <div className="mx-auto max-w-5xl px-4 md:px-6 py-24 text-center">
             <p className="text-xs uppercase tracking-[0.28em] font-bold mb-4 text-[var(--kvis-text3)]">404</p>
             <p className="text-4xl font-black tracking-tight text-foreground mb-3">Profile not found</p>
             <p className="text-sm" style={{ color: "var(--kvis-text2)" }}>
@@ -237,12 +237,14 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   ).some((v: any) => Array.isArray(v) ? v.length > 0 : !!v);
 
   const hasNostalgia = !!me && !!(user.kvis_fav_menu || user.kvis_fav_event || user.kvis_fav_area);
+  const hasActivities = (user.activities?.length ?? 0) > 0;
 
   const sections: { key: string; label: string }[] = [];
   if (user.bio) sections.push({ key: "bio", label: "About" });
   if (user.education?.length) sections.push({ key: "education", label: "Schooling" });
   if (user.career?.length) sections.push({ key: "career", label: "Work" });
   if (hasResearch) sections.push({ key: "research", label: "Research" });
+  if (hasActivities) sections.push({ key: "activities", label: "Activities & Awards" });
   if (contacts.length) sections.push({ key: "contact", label: "Get in touch" });
   if (hasPersonality) sections.push({ key: "personality", label: "Vibe" });
   if (hasHobbies) sections.push({ key: "hobbies", label: "Hobbies" });
@@ -257,7 +259,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   return (
     <PageEntrance>
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
+        <div className="mx-auto max-w-5xl px-4 md:px-6 py-xl lg:py-layout">
 
           {/* ── HEADER ─────────────────────────────────────────────────────── */}
           <FadeUp>
@@ -342,12 +344,17 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     </p>
                   )}
 
-                  {(interests.length > 0 || user.mbti || (!isFaculty(user) && !user.current_grade && user.kvis_year)) && (
+                  {(interests.length > 0 || user.mbti || user.province_of_origin || (!isFaculty(user) && !user.current_grade && user.kvis_year)) && (
                     <div className="flex items-center gap-sm flex-wrap mt-md">
                       {!isFaculty(user) && !user.current_grade && user.kvis_year && (
                         <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1"
                           style={{ background: cohortColorSoftHex(user.kvis_year), color: cohortColorHex(user.kvis_year) }}>
                           {cohortLabel(user.kvis_year)}
+                        </span>
+                      )}
+                      {user.province_of_origin && (
+                        <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
+                          Origin: {user.province_of_origin}
                         </span>
                       )}
                       {user.mbti && (
@@ -622,6 +629,27 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                       <p className="text-2xl font-bold text-foreground tracking-[-0.01em]">{user.chronotype}</p>
                     </div>
                   )}
+                </div>
+              </section>
+            </FadeUp>
+          )}
+
+          {/* ── ACTIVITIES & AWARDS ─────────────────────────────────────────── */}
+          {hasActivities && (
+            <FadeUp>
+              <section>
+                <SectionHead numeral={numeralFor("activities")} kicker="Activities & Awards" />
+                <div className="pb-lg border-b border-[var(--kvis-border)] space-y-4">
+                  {user.activities!.map((a, i) => (
+                    <div key={i} className="pt-lg">
+                      <p className="text-sm font-bold text-foreground">
+                        {a.title}{a.year ? ` - ${a.year}` : ""}
+                      </p>
+                      {a.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{a.description}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </section>
             </FadeUp>

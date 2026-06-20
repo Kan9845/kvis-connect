@@ -501,7 +501,7 @@ export default function StatsClient() {
   return (
     <PageEntrance>
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout">
+        <div className="mx-auto max-w-5xl px-4 md:px-6 py-xl lg:py-layout">
           {/* ── Masthead ─────────────────────────────────────────────────── */}
           <FadeUp>
             <header className="pb-md border-b border-[var(--sep-strong)]">

@@ -15,6 +15,26 @@ router = APIRouter(prefix="/search", tags=["search"])
 VALID_SORT = {"name", "kvis_year", "created_at"}
 
 
+@router.get("/autocomplete")
+def autocomplete(
+    field: str = Query(...),
+    q: str = Query(default=""),
+    session: Session = Depends(get_session),
+):
+    ALLOWED = {"job_title", "employer"}
+    if field not in ALLOWED:
+        from fastapi import HTTPException
+        raise HTTPException(400, "Invalid field")
+    col = getattr(Career, field)
+    stmt = (
+        select(col)
+        .where(col.isnot(None), col != "", col.ilike(f"%{q}%") if q else True)
+        .distinct()
+        .limit(20)
+    )
+    return [r for r in session.exec(stmt).all() if r]
+
+
 @router.get("/directory")
 @cached(key="directory", tags=["users"], ttl=settings.CACHE_TTL_SHORT)
 def directory_list(session: Session = Depends(get_session)):

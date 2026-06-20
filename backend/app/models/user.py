@@ -184,6 +184,7 @@ class User(SQLModel, table=True):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     country: Optional[str] = Field(default=None, index=True)
+    province_of_origin: Optional[str] = None
 
     # Profile
     profile_pic_url: Optional[str] = None
@@ -203,6 +204,7 @@ class User(SQLModel, table=True):
     kvis_fav_menu: Optional[str] = None
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
+    activities: Optional[str] = None   # JSON list of {title, year?, description?}
 
     profile_setup_done: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)

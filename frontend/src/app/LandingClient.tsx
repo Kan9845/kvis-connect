@@ -5,13 +5,22 @@ import { searchApi, userApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import { SearchFilters } from "@/components/search/SearchFilters";
 import type { SearchParams, GlobePin } from "@/lib/types";
-import { useState, useEffect, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  type PointerEvent,
+} from "react";
+import { motion } from "framer-motion";
 import { SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
 
-const AlumniGlobe = dynamic(() => import("@/components/globe/AlumniGlobe"), { ssr: false });
+const AlumniGlobe = dynamic(() => import("@/components/globe/AlumniGlobe"), {
+  ssr: false,
+});
 
 interface Props {
   initialPins: GlobePin[];
@@ -20,6 +29,31 @@ interface Props {
 export function LandingClient({ initialPins }: Props) {
   const [searchParams, setSearchParams] = useState<SearchParams>({});
   const [panelOpen, setPanelOpen] = useState(true);
+  const [sheetExpanded, setSheetExpanded] = useState(false);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  const sheetBodyRef = useRef<HTMLDivElement | null>(null);
+  const collapsedMeasureRef = useRef<HTMLDivElement | null>(null);
+  const [sheetHeight, setSheetHeight] = useState(0);
+  const [sheetDragHeight, setSheetDragHeight] = useState<number | null>(null);
+  const [collapsedSheetHeight, setCollapsedSheetHeight] = useState<
+    number | null
+  >(null);
+  const contentDragRef = useRef({
+    tracking: false,
+    pointerId: 0,
+    startX: 0,
+    startY: 0,
+  });
+  const sheetDragRef = useRef({
+    active: false,
+    startY: 0,
+    startHeight: 0,
+    minHeight: 0,
+    maxHeight: 0,
+    lastY: 0,
+    lastTime: 0,
+    velocity: 0,
+  });
   // Mount only ONE SearchFilters instance (desktop OR mobile). Two live
   // instances bound to the same state create a debounced two-way sync race
   // where one panel's stale timer echoes an old filter back over the other.
@@ -40,6 +74,28 @@ export function LandingClient({ initialPins }: Props) {
     setVariant(isDarkSky ? "dark" : "light");
     return () => setVariant("light");
   }, [setVariant, isDarkSky]);
+
+  useEffect(() => {
+    if (isDesktop || !panelOpen || !sheetRef.current) {
+      setSheetHeight(0);
+      return;
+    }
+
+    const update = () => {
+      const height = sheetRef.current?.getBoundingClientRect().height ?? 0;
+      setSheetHeight(height);
+    };
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(sheetRef.current);
+    window.addEventListener("resize", update);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [isDesktop, panelOpen, sheetExpanded]);
 
   const { data: pins = initialPins } = useQuery({
     queryKey: keys.globe.pins(),
@@ -63,6 +119,169 @@ export function LandingClient({ initialPins }: Props) {
   }, [hasFilter, searchResults, pins]);
 
   const resultCount = hasFilter ? (filteredPins?.length ?? 0) : pins.length;
+  const getExpandedSheetHeight = () =>
+    typeof window === "undefined" ? 0 : Math.max(window.innerHeight - 64, 0);
+  const getCollapsedSheetHeight = () => {
+    if (typeof window === "undefined") {
+      return collapsedSheetHeight ?? 0;
+    }
+
+    const viewportCap = Math.max(window.innerHeight - 84, 0);
+    const measured =
+      collapsedSheetHeight ??
+      collapsedMeasureRef.current?.getBoundingClientRect().height ??
+      0;
+
+    return measured ? Math.min(measured, viewportCap) : 0;
+  };
+
+  useEffect(() => {
+    if (isDesktop) {
+      setCollapsedSheetHeight(null);
+      return;
+    }
+
+    if (!collapsedMeasureRef.current) return;
+
+    const update = () => {
+      const measured =
+        collapsedMeasureRef.current?.getBoundingClientRect().height ?? 0;
+      const viewportCap = Math.max(window.innerHeight - 84, 0);
+      setCollapsedSheetHeight(measured ? Math.min(measured, viewportCap) : null);
+    };
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(collapsedMeasureRef.current);
+    window.addEventListener("resize", update);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [isDesktop, hasFilter, isDarkSky, pins.length, resultCount]);
+
+  const collapsedSnapHeight =
+    collapsedSheetHeight ?? (isDesktop ? null : getCollapsedSheetHeight());
+  const sheetTargetHeight =
+    sheetDragHeight ??
+    (sheetExpanded ? "calc(100dvh - 64px)" : collapsedSnapHeight || "auto");
+  const sheetTargetMaxHeight =
+    sheetExpanded || sheetDragHeight !== null
+      ? "calc(100dvh - 64px)"
+      : "calc(100dvh - 84px)";
+
+  const beginSheetDrag = (
+    event: PointerEvent<HTMLDivElement>,
+    startY = event.clientY
+  ) => {
+    if (isDesktop || !sheetRef.current) return;
+
+    const now = performance.now();
+    const currentHeight = sheetRef.current.getBoundingClientRect().height;
+    const minHeight = collapsedSnapHeight || currentHeight;
+    const maxHeight = getExpandedSheetHeight();
+
+    sheetDragRef.current = {
+      active: true,
+      startY,
+      startHeight: currentHeight,
+      minHeight,
+      maxHeight,
+      lastY: event.clientY,
+      lastTime: now,
+      velocity: 0,
+    };
+    setSheetDragHeight(currentHeight);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handleSheetDragStart = (event: PointerEvent<HTMLDivElement>) => {
+    beginSheetDrag(event);
+  };
+
+  const handleSheetDragMove = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = sheetDragRef.current;
+    if (!drag.active) return;
+
+    const now = performance.now();
+    const elapsed = Math.max(now - drag.lastTime, 1);
+    drag.velocity = ((event.clientY - drag.lastY) / elapsed) * 1000;
+    drag.lastY = event.clientY;
+    drag.lastTime = now;
+
+    const nextHeight = Math.min(
+      Math.max(drag.startHeight - (event.clientY - drag.startY), drag.minHeight),
+      drag.maxHeight
+    );
+    setSheetDragHeight(nextHeight);
+  };
+
+  const handleSheetDragEnd = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = sheetDragRef.current;
+    if (!drag.active) return;
+
+    const currentHeight =
+      sheetRef.current?.getBoundingClientRect().height ?? sheetDragHeight ?? 0;
+    const range = Math.max(drag.maxHeight - drag.minHeight, 1);
+    const draggedOpenRatio = (currentHeight - drag.minHeight) / range;
+    const shouldExpand =
+      drag.velocity < -450 ||
+      (drag.velocity <= 450 && draggedOpenRatio > 0.45);
+
+    sheetDragRef.current.active = false;
+    setSheetDragHeight(null);
+    setSheetExpanded(shouldExpand);
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+  const handleContentDragStart = (event: PointerEvent<HTMLDivElement>) => {
+    if (isDesktop || !sheetExpanded || sheetDragRef.current.active) return;
+    if (sheetBodyRef.current && sheetBodyRef.current.scrollTop > 0) return;
+
+    const target = event.target as HTMLElement;
+    if (
+      target.closest(
+        'button, input, textarea, select, a, [role="combobox"], [data-radix-popper-content-wrapper]'
+      )
+    ) {
+      return;
+    }
+
+    contentDragRef.current = {
+      tracking: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+    };
+  };
+
+  const handleContentDragMove = (event: PointerEvent<HTMLDivElement>) => {
+    const pending = contentDragRef.current;
+    if (!pending.tracking || pending.pointerId !== event.pointerId) return;
+
+    const deltaX = event.clientX - pending.startX;
+    const deltaY = event.clientY - pending.startY;
+    if (deltaY < 10 || Math.abs(deltaX) > Math.abs(deltaY)) return;
+    if (sheetBodyRef.current && sheetBodyRef.current.scrollTop > 0) return;
+
+    beginSheetDrag(event, pending.startY);
+    handleSheetDragMove(event);
+    contentDragRef.current.tracking = false;
+  };
+
+  const handleContentDragEnd = (event: PointerEvent<HTMLDivElement>) => {
+    contentDragRef.current.tracking = false;
+    handleSheetDragEnd(event);
+  };
+  const sheetDragHandlers = {
+    onPointerDown: handleSheetDragStart,
+    onPointerMove: handleSheetDragMove,
+    onPointerUp: handleSheetDragEnd,
+    onPointerCancel: handleSheetDragEnd,
+  };
 
   const panelHeaderCls = `flex items-center justify-between px-4 pt-4 pb-2 border-b ${isDarkSky ? "border-white/30" : "border-[var(--kvis-border)]"}`;
   const closeBtnCls = `h-7 w-7 rounded-lg ${isDarkSky ? "text-white/70 hover:bg-white/10 hover:text-white" : "text-slate-500 hover:bg-slate-900/5 hover:text-slate-900"}`;
@@ -72,23 +291,40 @@ export function LandingClient({ initialPins }: Props) {
     <>
       <div className={panelHeaderCls}>
         <div>
-          <p className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}>Filter Alumni</p>
-          <p className={`text-xs mt-0.5 ${isDarkSky ? "text-white/70" : "text-slate-600"}`}>
+          <p
+            className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}
+          >
+            Filter Alumni
+          </p>
+          <p
+            className={`text-xs mt-0.5 ${isDarkSky ? "text-white/70" : "text-slate-600"}`}
+          >
             {hasFilter ? `${resultCount} found` : `${pins.length} worldwide`}
           </p>
         </div>
-        <Button variant="ghost" size="icon" onClick={() => setPanelOpen(false)} className={closeBtnCls}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setPanelOpen(false)}
+          className={closeBtnCls}
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-4 pb-[env(safe-area-inset-bottom)]">
-        <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />
+      <div className="flex-1 overflow-y-auto p-4">
+        <SearchFilters
+          values={searchParams}
+          onChange={setSearchParams}
+          dark={isDarkSky}
+        />
       </div>
     </>
   );
 
   return (
-    <div className={`relative w-full h-full overflow-hidden isolate ${isDarkSky ? "bg-black" : "bg-white"}`}>
+    <div
+      className={`relative w-full h-full overflow-hidden isolate ${isDarkSky ? "bg-black" : "bg-white"}`}
+    >
       <AlumniGlobe pins={pins} filteredPins={filteredPins} />
 
       {!panelOpen && isDesktop && (
@@ -126,8 +362,12 @@ export function LandingClient({ initialPins }: Props) {
               top: 76,
               left: 20,
               maxHeight: "calc(100vh - 96px)",
-              background: isDarkSky ? "rgba(2,6,18,0.55)" : "rgba(255,255,255,0.55)",
-              border: isDarkSky ? "1px solid rgba(255,255,255,0.6)" : "1px solid var(--kvis-border)",
+              background: isDarkSky
+                ? "rgba(2,6,18,0.55)"
+                : "rgba(255,255,255,0.55)",
+              border: isDarkSky
+                ? "1px solid rgba(255,255,255,0.6)"
+                : "1px solid var(--kvis-border)",
             }}
           >
             {panelContent}
@@ -137,45 +377,160 @@ export function LandingClient({ initialPins }: Props) {
 
       {panelOpen && !isDesktop && (
         <>
-          {/* Mobile: bottom sheet */}
           <div
-            className="fixed z-50 inset-x-0 bottom-0 rounded-t-2xl flex flex-col"
+            ref={collapsedMeasureRef}
+            aria-hidden="true"
+            className="fixed inset-x-0 bottom-0 -z-10 flex flex-col overflow-hidden opacity-0 pointer-events-none"
             style={{
-              maxHeight: "72dvh",
-              background: isDarkSky ? "rgba(2,6,18,0.92)" : "rgba(255,255,255,0.92)",
-              border: isDarkSky ? "1px solid rgba(255,255,255,0.2)" : "1px solid var(--kvis-rule)",
+              maxHeight: "calc(100dvh - 84px)",
+              background: isDarkSky
+                ? "rgba(2,6,18,0.92)"
+                : "rgba(255,255,255,0.92)",
+              border: isDarkSky
+                ? "1px solid rgba(255,255,255,0.2)"
+                : "1px solid var(--kvis-rule)",
               borderBottom: "none",
             }}
           >
-            {/* Drag handle */}
             <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
-              <div className={`w-10 h-1 rounded-full ${isDarkSky ? "bg-white/25" : "bg-slate-300"}`} />
+              <div
+                className={`w-10 h-1 rounded-full ${isDarkSky ? "bg-white/25" : "bg-slate-300"}`}
+              />
             </div>
             <div className="flex-shrink-0">
-              <div className={`flex items-center justify-between px-4 pt-2 pb-2 border-b ${isDarkSky ? "border-white/20" : "border-slate-900/10"}`}>
-                <div>
-                  <p className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}>Filter Alumni</p>
-                  <p className={`text-xs mt-0.5 ${isDarkSky ? "text-white/60" : "text-slate-500"}`}>
-                    {hasFilter ? `${resultCount} found` : `${pins.length} worldwide`}
+              <div
+                className={`flex items-center justify-between px-4 pt-2 pb-2 border-b ${isDarkSky ? "border-white/20" : "border-slate-900/10"}`}
+              >
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}
+                  >
+                    Filter Alumni
+                  </p>
+                  <p
+                    className={`text-xs mt-0.5 ${isDarkSky ? "text-white/60" : "text-slate-500"}`}
+                  >
+                    {hasFilter
+                      ? `${resultCount} found`
+                      : `${pins.length} worldwide`}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => setPanelOpen(false)} className={closeBtnCls}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  tabIndex={-1}
+                  className={closeBtnCls}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4 pb-[env(safe-area-inset-bottom)]">
-              <SearchFilters values={searchParams} onChange={setSearchParams} dark={isDarkSky} />
+            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+              <SearchFilters
+                values={searchParams}
+                onChange={() => {}}
+                dark={isDarkSky}
+                forceSectionsClosed
+                measureOnly
+              />
             </div>
           </div>
+
+          {/* Mobile: bottom sheet */}
+          <motion.div
+            ref={sheetRef}
+            className="fixed z-50 inset-x-0 bottom-0 flex min-h-0 flex-col overflow-hidden"
+            animate={{
+              height: sheetTargetHeight,
+              borderRadius: "16px 16px 0 0",
+            }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            style={{
+              maxHeight: sheetTargetMaxHeight,
+              background: isDarkSky
+                ? "rgba(2,6,18,0.92)"
+                : "rgba(255,255,255,0.92)",
+              border: isDarkSky
+                ? "1px solid rgba(255,255,255,0.2)"
+                : "1px solid var(--kvis-rule)",
+              borderBottom: "none",
+            }}
+          >
+            {/* Drag handle */}
+            <motion.div
+              className="flex justify-center pt-3 pb-1 flex-shrink-0 cursor-grab active:cursor-grabbing touch-none"
+              {...sheetDragHandlers}
+            >
+              <div
+                className={`w-10 h-1 rounded-full ${isDarkSky ? "bg-white/25" : "bg-slate-300"}`}
+              />
+            </motion.div>
+            <div className="flex-shrink-0">
+              <div
+                className={`flex items-center justify-between px-4 pt-2 pb-2 border-b ${isDarkSky ? "border-white/20" : "border-slate-900/10"}`}
+              >
+                <div
+                  className="min-w-0 flex-1 cursor-grab touch-none active:cursor-grabbing"
+                  {...sheetDragHandlers}
+                >
+                  <p
+                    className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}
+                  >
+                    Filter Alumni
+                  </p>
+                  <p
+                    className={`text-xs mt-0.5 ${isDarkSky ? "text-white/60" : "text-slate-500"}`}
+                  >
+                    {hasFilter
+                      ? `${resultCount} found`
+                      : `${pins.length} worldwide`}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setPanelOpen(false)}
+                  className={closeBtnCls}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div
+              ref={sheetBodyRef}
+              className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+              onPointerDown={handleContentDragStart}
+              onPointerMove={handleContentDragMove}
+              onPointerUp={handleContentDragEnd}
+              onPointerCancel={handleContentDragEnd}
+            >
+              <SearchFilters
+                values={searchParams}
+                onChange={setSearchParams}
+                dark={isDarkSky}
+              />
+            </div>
+          </motion.div>
         </>
       )}
 
       {hasFilter && filteredPins?.length === 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+          style={{
+            bottom:
+              !isDesktop && panelOpen && !sheetExpanded && sheetHeight > 0
+                ? `${sheetHeight + 12}px`
+                : "2rem",
+          }}
+        >
           <div
             className="px-5 py-3 rounded-xl text-center text-sm text-white"
-            style={{ background: "rgba(4,10,30,0.9)", border: "1px solid rgba(239,68,68,0.3)", boxShadow: "0 8px 24px rgba(0,0,0,0.6)" }}
+            style={{
+              background: "rgba(4,10,30,0.9)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
+            }}
           >
             No alumni matched your filters
           </div>

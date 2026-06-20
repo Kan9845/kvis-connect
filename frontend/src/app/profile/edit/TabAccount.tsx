@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Check, KeyRound, Trash2, Link2Off, Mail, X } from "lucide-react";
+import { Loader2, Check, KeyRound, Trash2, Link2Off, Mail, X, CornerDownRight } from "lucide-react";
 import { authApi, userApi } from "@/lib/api";
 import { toast } from "sonner";
 import type { UserMe } from "@/lib/types";
@@ -147,8 +147,7 @@ export function TabAccount({
 
       {/* Email row */}
       <div
-        className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-5 border-b"
-        style={{ borderColor: "var(--kvis-border)" }}
+        className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-5"
       >
         <div className="md:pt-2">
           <span className="text-xs uppercase tracking-[0.24em] font-bold text-[var(--kvis-text3)]">
@@ -156,7 +155,7 @@ export function TabAccount({
           </span>
         </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <span className="text-sm text-foreground font-mono">{me.email}</span>
+          <span className="text-sm text-foreground">{me.email}</span>
           <span
             className="text-[10px] font-bold uppercase tracking-[0.22em] px-2 py-0.5"
             style={{
@@ -171,8 +170,7 @@ export function TabAccount({
 
       {/* Google row */}
       <div
-        className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-5 border-b"
-        style={{ borderColor: "var(--kvis-border)" }}
+        className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-5"
       >
         <div className="md:pt-2">
           <span className="text-xs uppercase tracking-[0.24em] font-bold text-[var(--kvis-text3)]">
@@ -203,8 +201,14 @@ export function TabAccount({
               <button
                 type="button"
                 onClick={() => authApi.linkGoogle()}
-                className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.22em] text-foreground border border-[var(--kvis-border)] px-3 py-1.5 hover:bg-foreground hover:text-background transition-colors"
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.22em] text-foreground bg-background border border-[var(--kvis-border)] px-3.5 py-2 hover:border-foreground transition-colors"
               >
+                <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden>
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
+                  <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.07H2.18a11 11 0 0 0 0 9.87l3.66-2.84z" />
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
+                </svg>
                 Link Google
               </button>
             </>
@@ -224,8 +228,7 @@ export function TabAccount({
 
       {/* Personal email row */}
       <div
-        className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-5 border-b"
-        style={{ borderColor: "var(--kvis-border)" }}
+        className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-x-6 gap-y-2 py-5"
       >
         <div className="md:pt-2">
           <span className="text-xs uppercase tracking-[0.24em] font-bold text-[var(--kvis-text3)]">
@@ -235,7 +238,7 @@ export function TabAccount({
         <div>
           {me.personal_email ? (
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <span className="text-sm text-foreground font-mono">{me.personal_email}</span>
+              <span className="text-sm text-foreground">{me.personal_email}</span>
               <button
                 type="button"
                 onClick={handleRemovePe}
@@ -247,34 +250,40 @@ export function TabAccount({
               </button>
             </div>
           ) : pePhase === "idle" ? (
-            <div className="flex flex-col gap-3 max-w-md">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Add a secondary email (any domain). Once verified, you can use it to log in with your existing password.
-              </p>
-              <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4">
+              <div className="flex-1 min-w-0 md:max-w-md flex flex-col gap-1.5">
                 <Input
                   type="email"
                   placeholder="you@example.com"
                   value={peEmail}
                   onChange={(e) => { setPeEmail(e.target.value); setPeError(""); }}
-                  className={inputCls}
+                  className={`${inputCls} w-full`}
                   autoComplete="email"
                 />
-                <Button
-                  type="button"
-                  onClick={handleRequestPe}
-                  disabled={peLoading}
-                  className="h-auto rounded-none bg-foreground px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 shrink-0"
-                >
-                  {peLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
-                  Send code
-                </Button>
+                <p className="flex items-start gap-1">
+                  <CornerDownRight
+                    className="shrink-0 h-3 w-3 mt-0.5 text-[var(--kvis-text3)]"
+                    aria-hidden
+                  />
+                  <span className="text-xs text-[var(--kvis-text3)] leading-[1.5]">
+                    Add a secondary email (any domain). Once verified, you can use it to log in with your existing password.
+                  </span>
+                </p>
               </div>
+              <Button
+                type="button"
+                onClick={handleRequestPe}
+                disabled={peLoading}
+                className="h-auto w-full md:w-auto justify-center rounded-none bg-foreground px-5 py-3 text-xs font-bold uppercase tracking-[0.28em] text-background hover:bg-foreground/90 gap-2 disabled:opacity-40 shrink-0"
+              >
+                {peLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                Send code
+              </Button>
             </div>
           ) : (
             <div className="flex flex-col gap-3 max-w-md">
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Enter the 6-digit code sent to <span className="font-mono text-foreground">{peEmail.trim().toLowerCase()}</span>.
+                Enter the 6-digit code sent to <span className="font-semibold text-foreground">{peEmail.trim().toLowerCase()}</span>.
               </p>
               <div className="flex items-center gap-3 flex-wrap">
                 <Input

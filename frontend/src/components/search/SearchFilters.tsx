@@ -1,7 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
+import { searchApi } from "@/lib/api";
 import { Select, SelectContent, SelectItem, SelectGroup, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select";
 import React from "react";
 import { Check, ChevronDown, ChevronsUpDown, X } from "lucide-react";
@@ -23,6 +24,9 @@ interface Props {
   values: SearchParams;
   onChange: (params: SearchParams) => void;
   dark?: boolean;
+  forceSectionsClosed?: boolean;
+  measureOnly?: boolean;
+  onHeightChange?: (height: number) => void;
 }
 
 function Section({
@@ -31,20 +35,25 @@ function Section({
   defaultOpen = false,
   dark = false,
   hasValue = false,
+  forceClosed = false,
 }: {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
   dark?: boolean;
   hasValue?: boolean;
+  forceClosed?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const isOpen = forceClosed ? false : open;
 
   return (
     <div>
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          if (!forceClosed) setOpen((o) => !o);
+        }}
         className={cn(
           "flex items-center justify-between w-full text-sm font-medium py-2.5 transition-colors",
           dark ? "text-white/90 hover:text-white" : "text-foreground hover:text-foreground/70"
@@ -63,14 +72,14 @@ function Section({
           className={cn(
             "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
             dark ? "text-white/40" : "text-muted-foreground",
-            open && "rotate-180"
+            isOpen && "rotate-180"
           )}
         />
       </button>
 
       <div
         className="grid transition-[grid-template-rows] duration-200 ease-out"
-        style={{ gridTemplateRows: open ? "1fr" : "0fr" }}
+        style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
       >
         <div className="overflow-hidden">
           <div className="space-y-2 pb-3 pt-0.5">{children}</div>
@@ -134,11 +143,101 @@ function OptionsCombobox({ value, onChange, options, placeholder, triggerCls }: 
   );
 }
 
-export function SearchFilters({ values, onChange, dark = false }: Props) {
+function AsyncCombobox({ field, value, onChange, placeholder, triggerCls }: {
+  field: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  triggerCls?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [options, setOptions] = useState<string[]>([]);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchOptions = useCallback((q: string) => {
+    searchApi.autocomplete(field, q).then(setOptions).catch(() => {});
+  }, [field]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => fetchOptions(query), 200);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [query, open, fetchOptions]);
+
+  useEffect(() => {
+    if (open) fetchOptions(query);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={open}
+          className={cn("w-full h-9 border rounded-md px-3 flex items-center justify-between text-sm", triggerCls)}
+          onClick={() => setOpen((o) => !o)}
+        >
+          <span className={cn("truncate min-w-0", !value && "opacity-40")}>{value || placeholder}</span>
+          <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 rounded-md" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput placeholder="Search..." value={query} onValueChange={setQuery} />
+          <CommandList className="max-h-60">
+            {options.length === 0 ? (
+              <CommandEmpty>No results</CommandEmpty>
+            ) : (
+              <CommandGroup>
+                <CommandItem value="" onSelect={() => { onChange(""); setOpen(false); setQuery(""); }}>
+                  <Check className={cn("mr-2 h-4 w-4 shrink-0", !value ? "opacity-100" : "opacity-0")} />
+                  Any
+                </CommandItem>
+                {options.map((o) => (
+                  <CommandItem key={o} value={o} onSelect={() => { onChange(value === o ? "" : o); setOpen(false); setQuery(""); }}>
+                    <Check className={cn("mr-2 h-4 w-4 shrink-0", value === o ? "opacity-100" : "opacity-0")} />
+                    {o}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+export function SearchFilters({
+  values,
+  onChange,
+  dark = false,
+  forceSectionsClosed = false,
+  measureOnly = false,
+  onHeightChange,
+}: Props) {
   const { register, reset, setValue, watch, getValues } = useForm<SearchParams>({ defaultValues: values });
   const formValues = watch();
   const serialized = JSON.stringify(formValues);
   const externalRef = useRef(JSON.stringify(values));
+  const rootRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!onHeightChange || !rootRef.current) return;
+
+    const update = () =>
+      onHeightChange(rootRef.current?.getBoundingClientRect().height ?? 0);
+    update();
+
+    const observer = new ResizeObserver(update);
+    observer.observe(rootRef.current);
+
+    return () => observer.disconnect();
+  }, [onHeightChange, serialized, forceSectionsClosed]);
 
   // Sync form when parent searchParams change (e.g. other panel instance updated them)
   useEffect(() => {
@@ -151,6 +250,8 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
   }, [JSON.stringify(values)]);
 
   useEffect(() => {
+    if (measureOnly) return;
+
     const t = setTimeout(() => {
       // Read live form values (not the stale effect closure) so a reset()
       // triggered by the sibling panel instance can't re-emit an old filter.
@@ -169,12 +270,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
 
   const handleClear = () => {
     externalRef.current = "{}";
-    // reset({}) leaves values of unmounted fields (collapsed sections) intact
-    // because RHF keeps them by default, so getValues() would still report the
-    // old filter and the debounce would re-emit it. Null every known field.
-    reset(
-      Object.fromEntries(Object.keys(getValues()).map((k) => [k, undefined])) as SearchParams
-    );
+    reset(Object.fromEntries(Object.keys(getValues()).map((k) => [k, ""])) as SearchParams);
     onChange({});
   };
 
@@ -199,7 +295,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
   const dividerCls = dark ? "bg-white/10" : "bg-[var(--kvis-rule)]";
 
   return (
-    <div className="space-y-0.5">
+    <div ref={rootRef} className="space-y-0.5">
       {/* Name - always visible */}
       <div className="pb-3">
         <span className={cn("block text-xs font-medium mb-1.5", dark ? "text-white/50" : "text-muted-foreground")}>
@@ -210,7 +306,12 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
 
       <div className={cn("h-px", dividerCls)} />
 
-      <Section title="KVIS Batch" dark={dark} hasValue={!!formValues.kvis_year}>
+      <Section
+        title="KVIS Batch"
+        dark={dark}
+        hasValue={!!formValues.kvis_year}
+        forceClosed={forceSectionsClosed}
+      >
         <Select value={formValues.kvis_year ? String(formValues.kvis_year) : "__any__"} onValueChange={(v) => setValue("kvis_year", v && v !== "__any__" ? parseInt(v) : undefined)}>
           <SelectTrigger className={selectCls(formValues.kvis_year?.toString())}>
             <SelectValue placeholder="Any batch" />
@@ -230,6 +331,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
         title="Location"
         dark={dark}
         hasValue={!!(formValues.country || formValues.place_level2 || formValues.place)}
+        forceClosed={forceSectionsClosed}
       >
         <div className="space-y-2">
           <CountrySelect
@@ -270,6 +372,7 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
         title="Education"
         dark={dark}
         hasValue={!!(formValues.uni_name || formValues.degree || formValues.field_of_study || formValues.major || formValues.scholarship)}
+        forceClosed={forceSectionsClosed}
       >
         <div className="space-y-2">
           <UniversityCombobox
@@ -321,10 +424,11 @@ export function SearchFilters({ values, onChange, dark = false }: Props) {
         title="Career"
         dark={dark}
         hasValue={!!(formValues.job_title || formValues.employer || formValues.industry_sector || formValues.role_type)}
+        forceClosed={forceSectionsClosed}
       >
         <div className="space-y-2">
-          <Input placeholder="Job title" {...register("job_title")} className={inputCls} />
-          <Input placeholder="Employer" {...register("employer")} className={inputCls} />
+          <AsyncCombobox field="job_title" value={formValues.job_title ?? ""} onChange={(v) => setValue("job_title", v || undefined)} placeholder="Job title" triggerCls={triggerCls} />
+          <AsyncCombobox field="employer" value={formValues.employer ?? ""} onChange={(v) => setValue("employer", v || undefined)} placeholder="Employer" triggerCls={triggerCls} />
           <Select value={formValues.industry_sector || "__any__"} 
             onValueChange={(v) => setValue("industry_sector", v && v !== "__any__" ? v : undefined)}>
             <SelectTrigger className={selectCls(formValues.industry_sector)}>

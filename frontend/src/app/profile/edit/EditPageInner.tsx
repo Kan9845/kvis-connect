@@ -16,7 +16,9 @@ import {
   Check,
   ArrowLeft,
   ArrowRight,
+  ChevronDown,
   Dot,
+  ExternalLink,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -81,6 +83,7 @@ export default function EditPageInner() {
   const [picPreview, setPicPreview] = useState<string | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [tab, setTab] = useState<Tab>("general");
+  const [tabMenuOpen, setTabMenuOpen] = useState(false);
   const isGooseProfile = !!me?.goose_config;
   const [gooseConfig, setGooseConfig] = useState<AvatarConfig>(() => {
     if (me?.goose_config) {
@@ -123,6 +126,9 @@ export default function EditPageInner() {
   const [kvisFavMenu, setKvisFavMenu] = useState("");
   const [kvisFavEvent, setKvisFavEvent] = useState("");
   const [kvisFavArea, setKvisFavArea] = useState("");
+  const [activities, setActivities] = useState<
+    { title: string; year?: number; description?: string }[]
+  >([]);
 
   useEffect(() => {
     if (!loading && !me) router.push("/auth/login");
@@ -140,6 +146,7 @@ export default function EditPageInner() {
       setKvisFavMenu(me.kvis_fav_menu ?? "");
       setKvisFavEvent(me.kvis_fav_event ?? "");
       setKvisFavArea(me.kvis_fav_area ?? "");
+      setActivities((me.activities as any) ?? []);
     }
   }, [me]);
 
@@ -148,9 +155,11 @@ export default function EditPageInner() {
     handleSubmit,
     setValue,
     watch,
+    setError,
     formState: { errors, isDirty, isSubmitting },
   } = useForm<GeneralForm>({
     resolver: zodResolver(generalSchema),
+    resetOptions: { keepDirtyValues: true },
     values: me
       ? {
           first_name: me.first_name,
@@ -174,6 +183,7 @@ export default function EditPageInner() {
           nickname: me.nickname ?? "",
           nickname_public: me.nickname_public ?? true,
           current_status: me.current_status ?? "",
+          province_of_origin: me.province_of_origin ?? "",
           place_level2: me.place_level2 ?? "",
           contact_email: me.contact_email ?? "",
           contact_email_public: me.contact_email_public ?? true,
@@ -236,15 +246,15 @@ export default function EditPageInner() {
   const saveEducation = async () => {
     for (const edu of education) {
       if (!edu.uni_name?.trim() || !edu.degree?.trim()) {
-        toast.error("Please fill in University and Degree for all entries.");
+        notify.error("Please fill in University and Degree for all entries.");
         throw new Error("Validation failed");
       }
       if (!MED_DEGREES.includes(edu.degree) && !edu.major?.trim()) {
-        toast.error("Please fill in the Major for all entries.");
+        notify.error("Please fill in the Major for all entries.");
         throw new Error("Validation failed");
       }
       if (MED_DEGREES.includes(edu.degree) && !edu.med_school?.trim()) {
-        toast.error("Please select a Medical school for all entries.");
+        notify.error("Please select a Medical school for all entries.");
         throw new Error("Validation failed");
       }
     }
@@ -260,7 +270,7 @@ export default function EditPageInner() {
   const saveCareer = async () => {
     for (const job of career) {
       if (!job.job_title?.trim() || !job.industry_sector?.trim() || !job.role_type?.trim()) {
-        toast.error("Please fill in Job title, Industry, and Role type for all entries.");
+        notify.error("Please fill in Job title, Industry, and Role type for all entries.");
         throw new Error("Validation failed");
       }
     }
@@ -296,6 +306,7 @@ export default function EditPageInner() {
           kvis_fav_menu: kvisFavMenu,
           kvis_fav_event: kvisFavEvent,
           kvis_fav_area: kvisFavArea,
+          activities,
         }),
         userApi.updateLanguages(languages),
       ]);
@@ -367,7 +378,7 @@ export default function EditPageInner() {
     return (
       <div className="min-h-full bg-background">
         <div
-          className={`mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout ${isSetup ? "pb-32" : ""}`}
+          className={`mx-auto max-w-5xl px-4 md:px-6 py-xl lg:py-layout ${isSetup ? "pb-32" : ""}`}
         >
           <Skeleton className="h-4 w-48 mb-4" />
           <Skeleton className="h-20 w-3/4 mb-6" />
@@ -386,10 +397,17 @@ export default function EditPageInner() {
   const isFacultyUser = isFaculty(me);
   const isAlumni = !isStudent && !isFacultyUser;
 
+  const tabList = (
+    isStudent
+      ? ["general", "research", "personal", "account"]
+      : ["general", "education", "career", "research", "personal", "account"]
+  ).filter((t) => !(isSetup && t === "account"));
+  const activeIdx = tabList.indexOf(tab);
+
   return (
     <div className="min-h-full bg-background">
       <div
-        className={`mx-auto max-w-5xl px-6 lg:px-10 py-xl lg:py-layout ${isSetup ? "pb-28 sm:pb-44 lg:pb-44" : ""}`}
+        className={`mx-auto max-w-5xl px-4 md:px-6 py-xl lg:py-layout ${isSetup ? "pb-28 sm:pb-44 lg:pb-44" : ""}`}
       >
         <header className="pb-7 border-b border-[var(--sep-strong)]">
           <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center gap-1">
@@ -414,27 +432,24 @@ export default function EditPageInner() {
               : "Update your dossier - the page other Kvisians see when they look you up."}
           </p>
           <div className="flex items-center gap-3 md:gap-4 mt-6 text-xs tabular-nums uppercase tracking-[0.22em] flex-wrap text-[var(--kvis-text3)]">
-            <span>{me.email}</span>
-            <Dot className="h-3 w-3 shrink-0" aria-hidden />
             <Link
               href={`/profile/${me.slug}`}
-              className="hover:text-foreground transition-colors underline decoration-1 underline-offset-4"
+              className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors underline decoration-1 underline-offset-4"
             >
               View public profile
+              <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />
             </Link>
           </div>
         </header>
 
+        {/* Desktop: horizontal section rail */}
         <Tabs
           value={tab}
           onValueChange={(v) => setTab(v as Tab)}
-          className="w-full"
+          className="hidden w-full md:block"
         >
           <TabsList className="h-auto w-full justify-start gap-7 rounded-none bg-transparent p-0 pt-5 pb-0 border-b border-[var(--sep-strong)] overflow-x-auto">
-            {(isStudent
-              ? ["general", "research", "personal", "account"]
-              : ["general", "education", "career", "research", "personal", "account"]
-            ).filter((t) => !(isSetup && t === "account")).map((t) => (
+            {tabList.map((t) => (
               <TabsTrigger
                 key={t}
                 value={t}
@@ -445,6 +460,67 @@ export default function EditPageInner() {
             ))}
           </TabsList>
         </Tabs>
+
+        {/* Mobile: dossier section selector */}
+        <div className="md:hidden sticky top-0 z-30 bg-background pt-4 border-b border-[var(--sep-strong)]">
+          <button
+            type="button"
+            onClick={() => setTabMenuOpen((o) => !o)}
+            aria-expanded={tabMenuOpen}
+            aria-label="Choose section"
+            className="w-full flex items-center justify-between gap-3 pb-4 text-left"
+          >
+            <span className="flex items-baseline gap-3 min-w-0">
+              <span className="font-mono text-sm tabular-nums text-[var(--kvis-purple-light)] shrink-0">
+                {String(activeIdx + 1).padStart(2, "0")}
+              </span>
+              <span className="text-xs font-bold uppercase tracking-[0.28em] text-[var(--kvis-purple-light)] truncate">
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </span>
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300 ${tabMenuOpen ? "rotate-180" : ""}`}
+              aria-hidden
+            />
+          </button>
+
+          <div
+            className={`grid transition-[grid-template-rows] duration-300 ease-out ${tabMenuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+          >
+            <div className="overflow-hidden">
+              <div className="pb-2">
+                {tabList.map((t, i) => {
+                  const active = t === tab;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => {
+                        setTab(t as Tab);
+                        setTabMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 py-3 text-left border-t border-[var(--kvis-border)] transition-colors ${active ? "" : "active:bg-foreground/[0.04]"}`}
+                    >
+                      <span
+                        className={`font-mono text-sm tabular-nums shrink-0 ${active ? "text-[var(--kvis-purple-light)]" : "text-[var(--kvis-text3)]"}`}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className={`text-xs font-bold uppercase tracking-[0.28em] ${active ? "text-[var(--kvis-purple-light)]" : "text-muted-foreground"}`}
+                      >
+                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                      </span>
+                      {active && (
+                        <Check className="h-3.5 w-3.5 ml-auto text-[var(--kvis-purple-light)] shrink-0" aria-hidden />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* ── GENERAL TAB ─────────────────────────────────────────────────── */}
         {tab === "general" && (
@@ -551,7 +627,8 @@ export default function EditPageInner() {
               JSON.stringify(hobbies) !== JSON.stringify(me.hobbies ?? {}) ||
               kvisFavMenu !== (me.kvis_fav_menu ?? "") ||
               kvisFavEvent !== (me.kvis_fav_event ?? "") ||
-              kvisFavArea !== (me.kvis_fav_area ?? "")
+              kvisFavArea !== (me.kvis_fav_area ?? "") ||
+              JSON.stringify(activities) !== JSON.stringify(me.activities ?? [])
             }
             me={me}
             refetch={refetch}
@@ -565,6 +642,8 @@ export default function EditPageInner() {
             setKvisFavEvent={setKvisFavEvent}
             kvisFavArea={kvisFavArea}
             setKvisFavArea={setKvisFavArea}
+            activities={activities}
+            setActivities={setActivities}
             savePersonal={savePersonal}
           />
         )}
@@ -590,12 +669,31 @@ export default function EditPageInner() {
 
             const handleSave = async () => {
               try {
-                if (tab === "general") await handleSubmit(saveGeneral, (errs) => { const msg = Object.values(errs).find(e => e?.message)?.message; toast.error(msg ?? "Please fill in all required fields"); })();
+                if (tab === "general") {
+                  return await new Promise<boolean>((resolve) => {
+                    handleSubmit(
+                      async (data) => {
+                        await saveGeneral(data);
+                        resolve(true);
+                      },
+                      (errs) => {
+                        if (!isSetup) {
+                          const msg = Object.values(errs).find(e => e?.message)?.message;
+                          toast.error(msg ?? "Please fill in all required fields");
+                        }
+                        resolve(false);
+                      },
+                    )();
+                  });
+                }
                 else if (tab === "education") await saveEducation();
                 else if (tab === "career") await saveCareer();
                 else if (tab === "research") await saveResearch();
                 else if (tab === "personal") await savePersonal();
-              } catch { /* don't block */ }
+                return true;
+              } catch {
+                return false;
+              }
             };
 
             return (
@@ -650,7 +748,16 @@ export default function EditPageInner() {
                       <button
                         type="button"
                         onClick={async () => {
-                          await handleSave();
+                          const saved = await handleSave();
+                          if (!saved) return;
+                          if (!watch("country")) {
+                            setError("country", { message: "Country is required to place your pin on the globe." });
+                            setTab("general");
+                            setTimeout(() => {
+                              document.getElementById("location-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                            }, 100);
+                            return;
+                          }
                           try {
                             await userApi.updateMe({ profile_setup_done: true });
                             await refetch();
@@ -669,7 +776,8 @@ export default function EditPageInner() {
                       <button
                         type="button"
                         onClick={async () => {
-                          await handleSave();
+                          const saved = await handleSave();
+                          if (!saved) return;
                           setTab(tabs[idx + 1] as Tab);
                           window.scrollTo({ top: 0, behavior: "smooth" });
                         }}

@@ -50,6 +50,7 @@ export interface UserCard {
   kvis_year?: number;
   place?: string;
   country?: string;
+  province_of_origin?: string | null;
   profile_pic_url?: string;
   mbti?: string;
   interests?: string;
@@ -88,12 +89,14 @@ export interface UserPublic extends UserCard {
   interests_public?: boolean;
   nickname_public?: boolean;
   place_level2?: string;
+  province_of_origin?: string | null;
   zodiac?: string;
   chronotype?: string;
   hobbies?: Record<string, string[]> | null;
   kvis_fav_menu?: string | null;
   kvis_fav_event?: string | null;
   kvis_fav_area?: string | null;
+  activities?: { title: string; year?: number; description?: string }[] | null;
   research_keywords?: string;
   research_interests?: string[];
   projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
@@ -128,6 +131,7 @@ export interface UserMe extends UserPublic {
   kvis_fav_menu?: string;
   kvis_fav_event?: string;
   kvis_fav_area?: string;
+  activities?: { title: string; year?: number; description?: string }[] | null;
   extra_contacts: { type: string; value: string; public: boolean }[];
   goose_config?: string;
 }

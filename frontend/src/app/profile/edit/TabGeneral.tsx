@@ -23,8 +23,10 @@ import {
   Trash2,
   Loader2,
   Check,
+  Globe2,
   ShieldCheck,
   ShieldAlert,
+  AlertTriangle,
 } from "lucide-react";
 import {
   MBTI_TYPES,
@@ -237,7 +239,7 @@ export function TabGeneral({
         </div>
       </section>
 
-      <form onSubmit={handleSubmit(saveGeneral, (errs) => { const msg = Object.values(errs).find(e => e?.message)?.message; toast.error(msg ?? "Please fill in all required fields"); })}>
+      <form onSubmit={handleSubmit(saveGeneral, (errs) => { if (!isSetup) { const msg = Object.values(errs).find(e => e?.message)?.message; toast.error(msg ?? "Please fill in all required fields"); } })}>
         {/* Identity */}
         <section>
           <SectionHead
@@ -287,6 +289,16 @@ export function TabGeneral({
               </Select>
             </FieldRow>
           )}
+          <FieldRow label="Province of origin" hint="Where in Thailand you are from.">
+            <ProvinceSelect
+              variant="underline"
+              country="Thailand"
+              value={watch("province_of_origin") ?? ""}
+              onChange={(v) =>
+                setValue("province_of_origin", v, { shouldDirty: true })
+              }
+            />
+          </FieldRow>
           {/* Teaching period - faculty only */}
           {isFaculty(me) && (
             <>
@@ -444,15 +456,38 @@ export function TabGeneral({
         </section>
 
         {/* Location */}
-        <section>
+        <section id="location-section">
           <SectionHead numeral="IV." kicker="Location" title="Where you are" />
-          <FieldRow label="Country" required error={errors.country?.message}>
-            <CountrySelect
-              variant="underline"
-              value={watch("country") ?? ""}
-              onChange={(v) => setValue("country", v, { shouldDirty: true })}
-            />
-          </FieldRow>
+          <div
+            className={`transition-all duration-300 ${
+              errors.country
+                ? "ring-1 ring-destructive bg-destructive/5 px-3"
+                : ""
+            }`}
+          >
+            <FieldRow label="Country">
+              <CountrySelect
+                variant="underline"
+                value={watch("country") ?? ""}
+                onChange={(v) => setValue("country", v, { shouldDirty: true })}
+              />
+            </FieldRow>
+          </div>
+          {errors.country ? (
+            <div className="flex items-start gap-2 mb-5 mt-2 px-3 py-2.5 border border-destructive bg-destructive/10 rounded-none">
+              <AlertTriangle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <p className="text-sm leading-relaxed text-destructive font-medium">
+                {errors.country.message ?? "Country is required. Select your country above so your alumni pin can appear on the globe."}
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-start gap-2 mb-5 mt-2 px-3 py-2.5 border border-[var(--kvis-green-light)] bg-[var(--kvis-green-light)]/5 rounded-none">
+              <Globe2 className="h-4 w-4 text-[var(--kvis-green-light)] shrink-0 mt-0.5" />
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                This country is required for your alumni pin to appear on the globe. Add province or city for a more precise location.
+              </p>
+            </div>
+          )}
           {watch("country") && !CITY_STATE_COUNTRIES.has(watch("country")!) && (
             <FieldRow label="Province / State" hint="Region within your country.">
               <ProvinceSelect
@@ -481,7 +516,7 @@ export function TabGeneral({
         {/* Contacts */}
         <section>
           <SectionHead numeral="V." kicker="Contact" title="How to reach you" />
-          <FieldRow label="Public email" hint="Shown on your profile if public.">
+          <FieldRow label="Public email">
             <div className="flex items-center gap-3">
               <Input
                 placeholder="you@gmail.com"

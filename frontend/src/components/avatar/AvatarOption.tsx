@@ -15,10 +15,10 @@ export function AvatarOption({ asset, category, selected, onClick }: Props) {
       onClick={onClick}
       className={`
         relative w-20 h-20 rounded-2xl overflow-hidden
-        border transition-all duration-300
+        transition-all duration-150
         ${selected
-          ? "border-black scale-105 shadow-xl"
-          : "border-gray-200 hover:border-gray-400"
+          ? "border-[3px] border-[var(--kvis-purple)] scale-105 shadow-xl shadow-[var(--kvis-purple)]/20"
+          : "border-0"
         }
       `}
     >

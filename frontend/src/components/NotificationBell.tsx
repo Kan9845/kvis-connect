@@ -25,7 +25,7 @@ function NotifIcon({ type }: { type: string }) {
   return <Megaphone className={base} style={{ color: "var(--kvis-text3)" }} />;
 }
 
-export function NotificationBell() {
+export function NotificationBell({ dark = false }: { dark?: boolean }) {
   const router = useRouter();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -59,7 +59,11 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="relative p-2 text-muted-foreground hover:text-foreground transition-colors"
+        className={`relative h-9 w-9 rounded-full inline-flex items-center justify-center transition-colors ${
+          dark
+            ? "text-white hover:bg-white/10 hover:text-white"
+            : "text-foreground hover:bg-muted"
+        }`}
       >
         <Bell className="h-4 w-4" />
         {unread > 0 && (

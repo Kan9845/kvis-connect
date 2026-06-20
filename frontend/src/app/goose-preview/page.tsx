@@ -194,7 +194,7 @@ function Card({
 export default function GoosePreview() {
   return (
     <div style={{ background: KVIS.paper, color: KVIS.ink }} className="min-h-screen">
-      <div className="mx-auto max-w-5xl px-6 lg:px-10 py-12">
+      <div className="mx-auto max-w-5xl px-4 md:px-6 py-12">
         <header className="pb-6 border-b" style={{ borderColor: KVIS.rule }}>
           <p
             className="text-xs font-bold uppercase tracking-[0.3em] mb-3 flex items-center gap-1"

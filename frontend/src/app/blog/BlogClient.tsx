@@ -299,7 +299,7 @@ export default function BlogClient() {
   return (
     <PageEntrance className="min-h-full overflow-hidden">
       <div className="min-h-full bg-background">
-        <div className="mx-auto flex min-h-full max-w-5xl flex-col px-6 lg:px-10 py-xl lg:py-layout">
+        <div className="mx-auto flex min-h-full max-w-5xl flex-col px-4 md:px-6 py-xl lg:py-layout">
           <FadeUp>
             <header className="pb-xl border-b border-[var(--sep-strong)]">
               <div className="flex items-start justify-between gap-6 flex-wrap">
@@ -441,7 +441,7 @@ export default function BlogClient() {
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="rounded-2xl overflow-hidden border border-[var(--kvis-border)]"
+                    className="rounded-2xl overflow-hidden border border-muted"
                   >
                     <Skeleton className="h-24 w-full" />
                     <div className="p-4 space-y-2">

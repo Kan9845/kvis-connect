@@ -630,6 +630,7 @@ function KvisianInner() {
     !!activeGrade ||
     !!activeField ||
     !!activeUni ||
+    sortBy !== "cohort-asc" ||
     q.trim().length > 0;
 
   const resetFilters = () => {
@@ -640,6 +641,7 @@ function KvisianInner() {
     setActiveField("");
     setActiveUni("");
     setQ("");
+    setSortBy("cohort-asc");
   };
 
   const showAlumni = personType === "all" || personType === "alumni";
@@ -649,7 +651,7 @@ function KvisianInner() {
   if (authLoading || !user) {
     return (
       <PageEntrance>
-        <div className="mx-auto max-w-6xl px-6 lg:px-10 py-xl lg:py-layout">
+        <div className="mx-auto max-w-6xl px-4 md:px-6 py-xl lg:py-layout">
           <Skeleton className="h-32 w-full mb-8" />
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-x-4 gap-y-6">
             {Array.from({ length: 15 }).map((_, i) => (
@@ -670,7 +672,7 @@ function KvisianInner() {
   return (
     <PageEntrance>
       <div className="min-h-full bg-background">
-        <div className="mx-auto max-w-6xl px-6 lg:px-10 py-xl lg:py-layout">
+        <div className="mx-auto max-w-6xl px-4 md:px-6 py-xl lg:py-layout">
           <FadeUp>
             <header className="pb-7 border-b border-[var(--sep-strong)]">
               <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
@@ -704,7 +706,7 @@ function KvisianInner() {
           </FadeUp>
 
           <FadeUp delay={0.1}>
-            <nav className="py-4 space-y-3">
+            <nav className="pt-4 pb-6 space-y-3 border-b border-[var(--kvis-border)]">
               {/* Search */}
               <div className="flex items-center gap-3 px-3 py-2 border border-[var(--kvis-border)] rounded-sm">
                 <Search className="h-4 w-4 text-muted-foreground shrink-0" />

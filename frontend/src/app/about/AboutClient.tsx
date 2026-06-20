@@ -72,7 +72,7 @@ export function AboutClient() {
         className="bg-[var(--background)] min-h-full"
         style={{ fontFamily: "var(--font-be-vietnam-pro), sans-serif" }}
       >
-        <div className="mx-auto max-w-5xl px-6 lg:px-10">
+        <div className="mx-auto max-w-5xl px-4 md:px-6">
           {/* Hero */}
           <FadeUp>
             <header className="py-xl lg:py-layout flex items-start justify-between gap-6">

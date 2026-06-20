@@ -214,9 +214,12 @@ function NavLink({
   let style: React.CSSProperties = {};
   if (dark) {
     cls = active
-      ? "text-white font-semibold"
+      ? "font-semibold"
       : "text-white/90 hover:text-white font-medium";
-    if (active) style.boxShadow = "inset 0 -2px 0 0 rgba(255,255,255,0.9)";
+    if (active) {
+      style.color = "var(--kvis-purple-light)";
+      style.boxShadow = "inset 0 -2px 0 0 var(--kvis-purple-light)";
+    }
   } else {
     cls = active
       ? "font-semibold"
@@ -293,7 +296,7 @@ function MobileNavPanel({
       }}
     >
       {/* Panel header: Logo + X */}
-      <div className="flex items-center justify-between px-6 h-16">
+      <div className="flex items-center justify-between px-4 md:px-6 h-16">
         <Link
           href="/"
           className={`font-bold text-lg ${dark ? "text-white" : "text-foreground"}`}
@@ -572,7 +575,7 @@ export function Navbar() {
       >
         {/* Top bar - hidden on mobile when panel is open */}
         <div
-          className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-6 h-16 pointer-events-auto`}
+          className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-4 md:px-6 h-16 pointer-events-auto`}
         >
           <Link
             href="/"
@@ -660,7 +663,7 @@ export function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
             <ThemeToggle dark={dark} />
-            {user && <NotificationBell />}
+            {user && <NotificationBell dark={dark} />}
             {user && <div className="w-2" />}
             {user ? (
               userMenu("focus:ring-2 focus:ring-white/50")
@@ -729,7 +732,7 @@ export function Navbar() {
   return (
     <header className="relative z-50 w-full bg-background">
       <div
-        className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-6 h-16`}
+        className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-4 md:px-6 h-16`}
       >
         <Link href="/" className="font-bold text-lg shrink-0 text-foreground">
           KVIS Connect
@@ -786,7 +789,7 @@ export function Navbar() {
         {/* Right side */}
         <div className="flex items-center gap-1.5 shrink-0">
           <ThemeToggle dark={false} />
-          {user && <NotificationBell />}
+          {user && <NotificationBell dark={false} />}
           {user && <div className="w-2" />}
           {user ? (
             userMenu("focus:ring-2 focus:ring-blue-200")

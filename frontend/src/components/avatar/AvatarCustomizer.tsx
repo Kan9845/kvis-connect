@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AvatarConfig } from "@/lib/avatarTypes";
 import { avatarOptions } from "@/components/avatar/avatarData";
 import { AvatarOption } from "./AvatarOption";
+import { AvatarCanvas } from "./AvatarCanvas";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Props {
@@ -81,13 +82,15 @@ export function AvatarCustomizer({ value, onChange }: Props) {
             type="button"
             onClick={() => onChange({ ...value, [category]: null })}
             className={`
-              w-20 h-20 rounded-2xl border flex items-center justify-center
+              w-20 h-20 rounded-2xl flex items-center justify-center
               transition-all duration-200
-              ${currentValue === null
-                ? "border-black scale-105 shadow-xl"
-                : "border-gray-200 hover:border-gray-400"
-              }
+              ${currentValue === null ? "scale-105 shadow-xl shadow-[var(--kvis-purple)]/20" : ""}
             `}
+            style={{
+              border: currentValue === null
+                ? "3px solid var(--kvis-purple)"
+                : "2px solid var(--sep-strong)",
+            }}
           >
             <svg viewBox="0 0 24 24" className="w-8 h-8" stroke="#7C3AED" strokeWidth={2.5} strokeLinecap="round">
               <line x1="5" y1="5" x2="19" y2="19" />

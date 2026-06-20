@@ -522,36 +522,14 @@ function makePinEl(
 
 // --------- map data ---------
 const COUNTRY_URL = "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson";
-const PROVINCE_URL = "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_1_states_provinces.geojson";
-const CITIES_URL = "https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_populated_places_simple.geojson";
 
 const GLOBE_IMG = "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg";
 const BG_IMG = "https://unpkg.com/three-globe/example/img/night-sky.png";
-
-interface LabelPoint {
-  lat: number;
-  lng: number;
-  name: string;
-  tier: "country" | "province" | "city";
-  pop?: number;
-}
-
-type Tier = 0 | 1 | 2;
-function altitudeToTier(alt: number): Tier {
-  if (alt < 0.8) return 2;
-  if (alt < 1.2) return 1;
-  return 0;
-}
+const MAX_GLOBE_PIXEL_RATIO = 1.25;
+const EMPTY_LABELS: [] = [];
 
 const TRANSPARENT = () => "transparent";
 const POLY_GEOM = (f: any) => f.geometry;
-const LABEL_LAT_FN = (d: object) => (d as LabelPoint).lat;
-const LABEL_LNG_FN = (d: object) => (d as LabelPoint).lng;
-const LABEL_TEXT_FN = (d: object) => (d as LabelPoint).name;
-const LABEL_SIZE_FN = (d: object) => {
-  const t = (d as LabelPoint).tier;
-  return t === "country" ? 0.55 : t === "province" ? 0.35 : 0.25;
-};
 const CLUSTER_LAT_FN = (c: object) => (c as PinCluster).latitude;
 const CLUSTER_LNG_FN = (c: object) => (c as PinCluster).longitude;
 
@@ -565,72 +543,17 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   const isDarkSky = resolvedTheme !== "light";
 
   const [size, setSize] = useState({ w: 800, h: 600 });
-  const [tier, setTier] = useState<Tier>(0);
   const [countryFeatures, setCountryFeatures] = useState<any[]>([]);
-  const [provinceFeatures, setProvinceFeatures] = useState<any[]>([]);
-  const [countryLabels, setCountryLabels] = useState<LabelPoint[]>([]);
-  const [provinceLabels, setProvinceLabels] = useState<LabelPoint[]>([]);
-  const [cityLabels, setCityLabels] = useState<LabelPoint[]>([]);
   const [clusterPrecision, setClusterPrecision] = useState(2);
-  const provincesLoadedRef = useRef(false);
-  const citiesLoadedRef = useRef(false);
-  const tierRef = useRef<Tier>(0);
+  const clusterPrecisionRef = useRef(2);
 
   useEffect(() => {
     let cancelled = false;
     fetch(COUNTRY_URL).then((r) => r.json()).then((d) => {
       if (cancelled) return;
-      const features = d.features ?? [];
-      setCountryFeatures(features);
-      setCountryLabels(
-        features
-          .filter((f: any) => f.properties?.LABEL_X != null && f.properties?.LABEL_Y != null)
-          .map((f: any) => ({
-            lat: f.properties.LABEL_Y,
-            lng: f.properties.LABEL_X,
-            name: f.properties.NAME ?? f.properties.ADMIN ?? "",
-            tier: "country" as const,
-          })),
-      );
+      setCountryFeatures(d.features ?? []);
     });
     return () => { cancelled = true; };
-  }, []);
-
-  const loadProvinces = useCallback(() => {
-    if (provincesLoadedRef.current) return;
-    provincesLoadedRef.current = true;
-    fetch(PROVINCE_URL).then((r) => r.json()).then((d) => {
-      const features = d.features ?? [];
-      setProvinceFeatures(features);
-      setProvinceLabels(
-        features
-          .filter((f: any) => f.properties?.LABEL_X != null && f.properties?.LABEL_Y != null)
-          .map((f: any) => ({
-            lat: f.properties.LABEL_Y,
-            lng: f.properties.LABEL_X,
-            name: f.properties.name ?? f.properties.NAME ?? "",
-            tier: "province" as const,
-          })),
-      );
-    });
-  }, []);
-
-  const loadCities = useCallback(() => {
-    if (citiesLoadedRef.current) return;
-    citiesLoadedRef.current = true;
-    fetch(CITIES_URL).then((r) => r.json()).then((d) => {
-      setCityLabels(
-        (d.features ?? [])
-          .filter((f: any) => (f.properties?.pop_max ?? 0) > 300_000)
-          .map((f: any) => ({
-            lat: f.properties.latitude ?? f.geometry?.coordinates?.[1],
-            lng: f.properties.longitude ?? f.geometry?.coordinates?.[0],
-            name: f.properties.name ?? f.properties.NAME ?? "",
-            tier: "city" as const,
-            pop: f.properties.pop_max,
-          })),
-      );
-    });
   }, []);
 
   useEffect(() => {
@@ -663,6 +586,8 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
       tries += 1;
       const g = globeRef.current;
       if (g) {
+        const renderer = g.renderer?.();
+        renderer?.setPixelRatio?.(Math.min(window.devicePixelRatio || 1, MAX_GLOBE_PIXEL_RATIO));
         g.pointOfView({ lat: 15.87, lng: 100.99, altitude: 2.2 }, 0);
         clearInterval(id);
       } else if (tries > 100) {
@@ -686,16 +611,11 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
         rafId = 0;
         const pov = globeRef.current?.pointOfView();
         if (!pov) return;
-        const next = altitudeToTier(pov.altitude);
-        if (next !== tierRef.current) {
-          tierRef.current = next;
-          if (next >= 1) loadProvinces();
-          if (next >= 2) loadCities();
-          setTier(next);
-        }
-        // Update cluster precision based on zoom
         const precision = pov.altitude > 2 ? 0 : pov.altitude > 1 ? 1 : pov.altitude > 0.5 ? 2 : 4;
-        setClusterPrecision(precision);
+        if (precision !== clusterPrecisionRef.current) {
+          clusterPrecisionRef.current = precision;
+          setClusterPrecision(precision);
+        }
       });
     };
     controls.addEventListener("change", handler);
@@ -703,7 +623,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
       controls.removeEventListener("change", handler);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [loadProvinces, loadCities, size.w, size.h]);
+  }, []);
 
   useEffect(() => {
     if (!globeRef.current) return;
@@ -720,20 +640,6 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     globeRef.current.controls().autoRotate = false;
     globeRef.current.pointOfView({ lat, lng, altitude: alt }, 1200);
   }, [filteredPins]);
-
-  const polygonsData = useMemo(
-    () =>
-      tier >= 1 && provinceFeatures.length > 0
-        ? [...countryFeatures, ...provinceFeatures]
-        : countryFeatures,
-    [tier, countryFeatures, provinceFeatures],
-  );
-
-  const labelsData = useMemo<LabelPoint[]>(() => {
-    if (tier === 0) return countryLabels;
-    if (tier === 1) return [...countryLabels, ...provinceLabels];
-    return [...countryLabels, ...provinceLabels, ...cityLabels];
-  }, [tier, countryLabels, provinceLabels, cityLabels]);
 
   const displayPins = filteredPins !== undefined ? filteredPins : pins;
   const clusters = useMemo(() => clusterPins(displayPins, clusterPrecision), [displayPins, clusterPrecision]);
@@ -759,25 +665,6 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     [isDarkSky],
   );
 
-  const labelColor = useCallback(
-    (d: object) => {
-      const t = (d as LabelPoint).tier;
-      if (isDarkSky) {
-        return t === "country"
-          ? "rgba(255,255,255,0.85)"
-          : t === "province"
-            ? "rgba(255,255,255,0.55)"
-            : "rgba(255,220,100,0.75)";
-      }
-      return t === "country"
-        ? "rgba(15,23,42,0.9)"
-        : t === "province"
-          ? "rgba(15,23,42,0.6)"
-          : "rgba(180,83,9,0.85)";
-    },
-    [isDarkSky],
-  );
-
   return (
     <div ref={containerRef} className="relative w-full h-full isolate" style={{ zIndex: 0 }}>
       <Globe
@@ -787,27 +674,20 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
         globeImageUrl={GLOBE_IMG}
         backgroundImageUrl={isDarkSky ? BG_IMG : null}
         backgroundColor={isDarkSky ? "#000000" : "#ffffff"}
-        polygonsData={polygonsData}
+        polygonsData={countryFeatures}
         polygonGeoJsonGeometry={POLY_GEOM}
         polygonCapColor={TRANSPARENT}
         polygonSideColor={TRANSPARENT}
         polygonStrokeColor={polygonStrokeColor}
         polygonAltitude={0.001}
-        labelsData={labelsData}
-        labelLat={LABEL_LAT_FN}
-        labelLng={LABEL_LNG_FN}
-        labelText={LABEL_TEXT_FN}
-        labelSize={LABEL_SIZE_FN}
-        labelColor={labelColor}
-        labelDotRadius={0}
-        labelAltitude={0.002}
-        labelResolution={2}
+        labelsData={EMPTY_LABELS}
         htmlElementsData={clusters}
         htmlLat={CLUSTER_LAT_FN}
         htmlLng={CLUSTER_LNG_FN}
         htmlElement={htmlElementFn}
         atmosphereColor="#7c3aed"
         atmosphereAltitude={0.15}
+        enablePointerInteraction={false}
       />
     </div>
   );

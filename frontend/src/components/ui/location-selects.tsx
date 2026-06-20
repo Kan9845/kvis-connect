@@ -25,6 +25,23 @@ let countriesCache: string[] | null = null;
 const statesCache: Record<string, string[]> = {};
 const citiesCache: Record<string, Record<string, string[]>> = {};
 
+const LOCATION_NAME_OVERRIDES: Record<string, string> = {
+  "city|Thailand|Bangkok|Parthum Wan": "Pathum Wan",
+};
+
+function normalizeLocationName(
+  kind: "state" | "city",
+  name: string,
+  country: string,
+  state?: string,
+) {
+  return (
+    LOCATION_NAME_OVERRIDES[`${kind}|${country}|${state ?? ""}|${name}`] ??
+    LOCATION_NAME_OVERRIDES[`${kind}|${country}|${name}`] ??
+    name
+  );
+}
+
 async function fetchCountries(): Promise<string[]> {
   if (countriesCache) return countriesCache;
   countriesCache = COUNTRIES.map((c) => c.label).sort();
@@ -41,7 +58,7 @@ async function fetchStates(country: string): Promise<string[]> {
       return [];
     }
     const states: string[] = (json.data.states as { name: string }[])
-      .map((s) => s.name)
+      .map((s) => normalizeLocationName("state", s.name, country))
       .sort();
     statesCache[country] = states;
     return states;
@@ -68,7 +85,9 @@ async function fetchCities(country: string, state?: string): Promise<string[]> {
           body: JSON.stringify({ country }),
         });
     const json = await res.json();
-    const cities: string[] = json.error ? [] : (json.data as string[]).sort();
+    const cities: string[] = json.error ? [] : (json.data as string[])
+      .map((city) => normalizeLocationName("city", city, country, state))
+      .sort();
 
     if (!citiesCache[country]) citiesCache[country] = {};
     citiesCache[country][cacheKey] = cities;

@@ -171,6 +171,7 @@ class UserPublic(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     country: Optional[str] = None
+    province_of_origin: Optional[str] = None
     # Profile
     profile_pic_url: Optional[str] = None
     goose_config: Optional[str] = None
@@ -209,6 +210,7 @@ class UserPublic(BaseModel):
     kvis_fav_menu: Optional[str] = None
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
+    activities: Optional[List[Any]] = None
 
 
 class UserMe(UserPublic):
@@ -231,6 +233,7 @@ class UserMe(UserPublic):
     kvis_fav_menu: Optional[str] = None
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
+    activities: Optional[List[Any]] = None
 
 
 class UserUpdate(BaseModel):
@@ -253,6 +256,7 @@ class UserUpdate(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     country: Optional[str] = None
+    province_of_origin: Optional[str] = None
     # Profile
     bio: Optional[str] = None
     mbti: Optional[str] = None
@@ -280,6 +284,7 @@ class UserUpdate(BaseModel):
     kvis_fav_menu: Optional[str] = None
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
+    activities: Optional[Any] = None
     profile_setup_done: Optional[bool] = None
     profile_pic_url: Optional[str] = None
     goose_config: Optional[str] = None
@@ -302,6 +307,7 @@ class UserCard(BaseModel):
     is_current_teacher: bool = False
     place: Optional[str] = None
     country: Optional[str] = None
+    province_of_origin: Optional[str] = None
     profile_pic_url: Optional[str] = None
     mbti: Optional[str] = None
     interests: Optional[str] = None

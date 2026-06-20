@@ -147,8 +147,8 @@ export function TabPhoto({
       </Dialog>
 
       <div className="grid grid-cols-1 lg:grid-cols-[360px_minmax(0,1fr)] gap-section py-lg border-b border-[var(--kvis-border)] items-start">
-        <div className="space-y-lg self-start">
-          <div className="relative w-full max-w-[320px]">
+        <div className="space-y-lg self-start hidden lg:flex lg:flex-col lg:items-center">
+          <div className="relative w-full max-w-[320px] mx-auto">
             {profileMode === "goose" ? (
               <div
                 key={profileMode}
@@ -206,6 +206,29 @@ export function TabPhoto({
                 {mode === "upload" ? "Upload Photo" : "Goose Profile"}
               </button>
             ))}
+          </div>
+
+          {/* Mobile pfp preview - below tabs, replaces left column */}
+          <div className="lg:hidden flex justify-center py-2">
+            <div className="relative w-48 h-48">
+              {profileMode === "goose" ? (
+                <div className="relative w-full overflow-hidden rounded-full">
+                  <AvatarCanvas config={gooseConfig} backgroundColor="var(--kvis-green)" />
+                </div>
+              ) : previewUrl ? (
+                <div className="relative w-full overflow-hidden" style={{ paddingBottom: "100%", background: cohortColorHex(me.kvis_year) }}>
+                  <img src={previewUrl} alt={`${me.first_name} ${me.last_name}`} className="absolute inset-0 h-full w-full object-cover" />
+                </div>
+              ) : me.goose_config ? (
+                <div className="relative w-full overflow-hidden rounded-full">
+                  <AvatarCanvas config={gooseConfig} backgroundColor="var(--kvis-green)" />
+                </div>
+              ) : (
+                <div className="relative w-full overflow-hidden" style={{ paddingBottom: "100%", background: cohortColorHex(me.kvis_year) }}>
+                  <div className="absolute inset-0 flex items-center justify-center font-black text-2xl text-white">{initials}</div>
+                </div>
+              )}
+            </div>
           </div>
 
           {profileMode === "goose" && (

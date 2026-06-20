@@ -119,7 +119,7 @@ async def update_me(
                    ("last_name" in data and data["last_name"] != user.last_name)
     import json as _json
     for k, v in data.items():
-        if k == "hobbies" and isinstance(v, (dict, list)):
+        if k in ("hobbies", "activities") and isinstance(v, (dict, list)):
             setattr(user, k, _json.dumps(v))
         else:
             setattr(user, k, v)
@@ -450,6 +450,7 @@ def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False)
         "latitude": user.latitude,
         "longitude": user.longitude,
         "country": user.country,
+        "province_of_origin": user.province_of_origin,
         # Profile
         "profile_pic_url": user.profile_pic_url,
         "goose_config": user.goose_config,
@@ -462,6 +463,7 @@ def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False)
         "kvis_fav_menu": user.kvis_fav_menu if is_kvis else None,
         "kvis_fav_event": user.kvis_fav_event if is_kvis else None,
         "kvis_fav_area": user.kvis_fav_area if is_kvis else None,
+        "activities": (lambda a: __import__('json').loads(a) if isinstance(a, str) else a)(user.activities) if user.activities else None,
         # Privacy-gated fields
         "interests": user.interests if (user.interests_public or is_kvis) else None,
         "interests_public": user.interests_public,
@@ -513,6 +515,12 @@ def _user_to_me(user: User) -> dict:
             hobbies = _json.loads(hobbies)
         except Exception:
             hobbies = {}
+    activities = user.activities
+    if isinstance(activities, str):
+        try:
+            activities = _json.loads(activities)
+        except Exception:
+            activities = []
     return {
         **_user_to_public(user, public_only=False, is_kvis=True),
         "email": user.email,
@@ -531,6 +539,7 @@ def _user_to_me(user: User) -> dict:
         "kvis_fav_menu": user.kvis_fav_menu,
         "kvis_fav_event": user.kvis_fav_event,
         "kvis_fav_area": user.kvis_fav_area,
+        "activities": activities,
         "projects": [
             {"title": p.title, "advisor": p.advisor, "advisor2": p.advisor2,
              "description": p.description, "status": p.status, "link": p.link}
