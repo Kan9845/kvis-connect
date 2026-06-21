@@ -119,6 +119,17 @@ export default function EditPageInner() {
   const [portfolioLinks, setPortfolioLinks] = useState<
     { type: string; url: string }[]
   >([]);
+  const [launches, setLaunches] = useState<
+    {
+      name: string;
+      innovation_type: string;
+      innovation_type_other?: string;
+      role: string;
+      status?: string;
+      description?: string;
+      link?: string;
+    }[]
+  >([]);
 
   // Personal state
   const [languages, setLanguages] = useState<
@@ -144,6 +155,7 @@ export default function EditPageInner() {
       setProjects(me.projects ?? []);
       setPublications(me.publications ?? []);
       setPortfolioLinks(me.portfolio_links ?? []);
+      setLaunches((me as any).launches ?? []);
       setLanguages(me.languages ?? []);
       setHobbies(me.hobbies ?? {});
       setKvisFavMenu(me.kvis_fav_menu ?? "");
@@ -295,6 +307,7 @@ export default function EditPageInner() {
         userApi.updateProjects(projects),
         userApi.updatePublications(publications),
         userApi.updatePortfolioLinks(portfolioLinks),
+        userApi.updateLaunches(launches),
       ]);
       await refetch();
       notify.success("Research saved");
@@ -622,7 +635,8 @@ export default function EditPageInner() {
               JSON.stringify(researchInterests) !== JSON.stringify(me.research_interests ?? []) ||
               JSON.stringify(projects) !== JSON.stringify(me.projects ?? []) ||
               JSON.stringify(publications) !== JSON.stringify(me.publications ?? []) ||
-              JSON.stringify(portfolioLinks) !== JSON.stringify(me.portfolio_links ?? [])
+              JSON.stringify(portfolioLinks) !== JSON.stringify(me.portfolio_links ?? []) ||
+              JSON.stringify(launches) !== JSON.stringify((me as any).launches ?? [])
             }
             researchInterests={researchInterests}
             setResearchInterests={setResearchInterests}
@@ -632,6 +646,8 @@ export default function EditPageInner() {
             setPublications={setPublications}
             portfolioLinks={portfolioLinks}
             setPortfolioLinks={setPortfolioLinks}
+            launches={launches}
+            setLaunches={setLaunches}
             saveResearch={saveResearch}
           />
         )}

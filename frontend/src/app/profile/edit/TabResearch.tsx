@@ -22,7 +22,19 @@ import {
   RESEARCH_CATEGORIES,
   PORTFOLIO_TYPES,
   PROJECT_STATUSES,
+  INNOVATION_TYPES,
+  LAUNCH_STATUSES,
 } from "./constants";
+
+type LaunchItem = {
+  name: string;
+  innovation_type: string;
+  innovation_type_other?: string;
+  role: string;
+  status?: string;
+  description?: string;
+  link?: string;
+};
 
 interface TabResearchProps {
   isSetup: boolean;
@@ -50,6 +62,8 @@ interface TabResearchProps {
   setPublications: React.Dispatch<React.SetStateAction<{ citation: string; doi?: string }[]>>;
   portfolioLinks: { type: string; url: string }[];
   setPortfolioLinks: React.Dispatch<React.SetStateAction<{ type: string; url: string }[]>>;
+  launches: LaunchItem[];
+  setLaunches: React.Dispatch<React.SetStateAction<LaunchItem[]>>;
   saveResearch: () => Promise<void>;
 }
 
@@ -65,6 +79,8 @@ export function TabResearch({
   setPublications,
   portfolioLinks,
   setPortfolioLinks,
+  launches,
+  setLaunches,
   saveResearch,
 }: TabResearchProps) {
   return (
@@ -366,6 +382,148 @@ export function TabResearch({
           className="mt-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
         >
           <Plus className="h-3 w-3" /> Add link
+        </button>
+      )}
+
+      <SectionHead
+        numeral="V."
+        kicker="Launches & Innovations"
+        title="Products & initiatives"
+      />
+      {launches.map((l, i) => (
+        <div key={i} className="py-5 border-b border-[var(--kvis-border)]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-mono tabular-nums text-[var(--kvis-text3)]">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <button
+              type="button"
+              onClick={() => setLaunches((prev) => prev.filter((_, j) => j !== i))}
+              className="text-xs font-bold uppercase tracking-[0.22em] inline-flex items-center gap-1.5 text-[var(--kvis-text3)] hover:text-foreground"
+            >
+              <Trash2 className="h-3 w-3" /> Remove
+            </button>
+          </div>
+          <FieldRow label="Product / Initiative Name" required>
+            <Input
+              placeholder="e.g. Khee, Leagues of Code TH, KVIS Connect"
+              value={l.name}
+              onChange={(e) =>
+                setLaunches((prev) =>
+                  prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x)
+                )
+              }
+              className={inputCls}
+            />
+          </FieldRow>
+          <FieldRow label="Innovation Type" required>
+            <div className="flex gap-2">
+              <Select
+                value={l.innovation_type}
+                onValueChange={(v) =>
+                  setLaunches((prev) =>
+                    prev.map((x, j) =>
+                      j === i ? { ...x, innovation_type: v, innovation_type_other: v !== "Other" ? undefined : x.innovation_type_other } : x
+                    )
+                  )
+                }
+              >
+                <SelectTrigger className={`${selectTriggerCls} flex-1`}>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {INNOVATION_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {l.innovation_type === "Other" && (
+                <Input
+                  placeholder="Please specify"
+                  value={l.innovation_type_other ?? ""}
+                  onChange={(e) =>
+                    setLaunches((prev) =>
+                      prev.map((x, j) => j === i ? { ...x, innovation_type_other: e.target.value } : x)
+                    )
+                  }
+                  className={`${inputCls} flex-1`}
+                />
+              )}
+            </div>
+          </FieldRow>
+          <FieldRow label="Role" required>
+            <Input
+              placeholder="e.g. Co-founder, Lead Developer, Product Designer"
+              value={l.role}
+              onChange={(e) =>
+                setLaunches((prev) =>
+                  prev.map((x, j) => j === i ? { ...x, role: e.target.value } : x)
+                )
+              }
+              className={inputCls}
+            />
+          </FieldRow>
+          <FieldRow label="Status">
+            <Select
+              value={l.status ?? ""}
+              onValueChange={(v) =>
+                setLaunches((prev) =>
+                  prev.map((x, j) => j === i ? { ...x, status: v } : x)
+                )
+              }
+            >
+              <SelectTrigger className={selectTriggerCls}>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {LAUNCH_STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FieldRow>
+          <FieldRow
+            label="Description / Mission"
+            hint="What problem does this solve? Share your product pitch, mission statement, or the tech stack you used."
+          >
+            <Textarea
+              placeholder="What problem does this solve? Share your product pitch, mission statement, or the tech stack you used."
+              rows={3}
+              value={l.description ?? ""}
+              onChange={(e) =>
+                setLaunches((prev) =>
+                  prev.map((x, j) => j === i ? { ...x, description: e.target.value } : x)
+                )
+              }
+              className={`${textareaCls} min-h-[80px]`}
+            />
+          </FieldRow>
+          <FieldRow label="Launch / Product Link">
+            <Input
+              placeholder="https://..."
+              value={l.link ?? ""}
+              onChange={(e) =>
+                setLaunches((prev) =>
+                  prev.map((x, j) => j === i ? { ...x, link: e.target.value } : x)
+                )
+              }
+              className={inputCls}
+            />
+          </FieldRow>
+        </div>
+      ))}
+      {launches.length < 5 && (
+        <button
+          type="button"
+          onClick={() =>
+            setLaunches((prev) => [
+              ...prev,
+              { name: "", innovation_type: "", role: "" },
+            ])
+          }
+          className="mt-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
+        >
+          <Plus className="h-3 w-3" /> Add launch
         </button>
       )}
 

@@ -214,6 +214,22 @@ export const PORTFOLIO_TYPES = [
 
 export const PROJECT_STATUSES = ["Ongoing", "Completed", "On-hold"];
 
+export const INNOVATION_TYPES = [
+  "Software / App / Platform",
+  "Hardware / Deep Tech / Physical Product",
+  "Research Patent / Intellectual Property",
+  "Organization / Entity",
+  "Book / Publication",
+  "Song / Cover / Creative Release",
+  "Other",
+];
+
+export const LAUNCH_STATUSES = [
+  "Active / Launched",
+  "In Development / Prototyping",
+  "Archived / Closed",
+];
+
 export const RESEARCH_CATEGORIES = [
   {
     group: "Life Sciences & Bio-Innovation",

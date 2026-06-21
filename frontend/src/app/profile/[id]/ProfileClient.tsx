@@ -256,7 +256,8 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   const hasResearch =
     groupedInterests.length > 0 ||
     (user.projects?.length ?? 0) > 0 ||
-    (user.publications?.length ?? 0) > 0;
+    (user.publications?.length ?? 0) > 0 ||
+    ((user as any).launches?.length ?? 0) > 0;
 
   const hasPersonality = !!me && (!!user.zodiac || !!user.chronotype);
 
@@ -610,6 +611,52 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                               <a href={/^https?:/.test(p.doi) ? p.doi : `https://doi.org/${p.doi}`}
                                 target="_blank" rel="noopener noreferrer"
                                 className="text-[var(--kvis-text3)] hover:text-foreground transition-colors shrink-0 pt-0.5">
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                        </StaggerItem>
+                      ))}
+                    </StaggerList>
+                  </>
+                )}
+
+                {/* Launches & Innovations */}
+                {((user as any).launches ?? []).length > 0 && (
+                  <>
+                    <SubHead label="Launches & Innovations" />
+                    <StaggerList>
+                      {((user as any).launches ?? []).map((l: any, i: number) => (
+                        <StaggerItem key={i}>
+                          <div className="grid items-start py-lg border-b border-[var(--kvis-border)]"
+                            style={{ gridTemplateColumns: "1.75rem minmax(0, 1fr) auto", columnGap: "1.25rem" }}>
+                            <span className="text-xs font-mono tabular-nums font-semibold pt-1 text-[var(--kvis-text3)]">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <p className="text-xl font-bold text-foreground leading-tight tracking-[-0.01em]">{l.name}</p>
+                                {l.status && (
+                                  <span className="text-xs font-bold uppercase tracking-[0.18em] px-1.5 py-0.5 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
+                                    {l.status}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm mt-1.5 leading-snug" style={{ color: "var(--kvis-text2)" }}>
+                                {l.innovation_type === "Other" && l.innovation_type_other
+                                  ? l.innovation_type_other
+                                  : l.innovation_type}
+                                {l.role && <> · {l.role}</>}
+                              </p>
+                              {l.description && (
+                                <p className="text-xs mt-2 leading-relaxed max-w-[55ch]" style={{ color: "var(--kvis-text2)" }}>
+                                  {l.description}
+                                </p>
+                              )}
+                            </div>
+                            {l.link && (
+                              <a href={l.link} target="_blank" rel="noopener noreferrer"
+                                className="text-[var(--kvis-text3)] hover:text-foreground transition-colors shrink-0 pt-1">
                                 <ExternalLink className="h-4 w-4" />
                               </a>
                             )}

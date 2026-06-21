@@ -148,6 +148,18 @@ class ResearchInterestBulkWrite(BaseModel):
     interests: List[str]
 
 
+# ─── Launch ───────────────────────────────────────────────────────────────────
+
+class LaunchWrite(BaseModel):
+    name: str
+    innovation_type: str
+    innovation_type_other: Optional[str] = None
+    role: str
+    status: Optional[str] = None
+    description: Optional[str] = None
+    link: Optional[str] = None
+
+
 # ─── User ─────────────────────────────────────────────────────────────────────
 
 class UserPublic(BaseModel):
@@ -201,6 +213,7 @@ class UserPublic(BaseModel):
     projects: List[Any] = []
     publications: List[Any] = []
     portfolio_links: List[Any] = []
+    launches: List[Any] = []
     is_verified: bool = False
     education: List[EducationRead] = []
     career: List[CareerRead] = []

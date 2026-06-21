@@ -13,12 +13,12 @@ from app.core.deps import get_current_user, get_optional_user
 from app.core.config import settings
 from app.core.cache import cached, invalidate_tags
 from app.core.slug import unique_user_slug
-from app.models.user import User, Education, Career, Project, Publication, PortfolioLink, ExtraContact, UserLanguage, ResearchInterest
+from app.models.user import User, Education, Career, Project, Publication, PortfolioLink, ExtraContact, UserLanguage, ResearchInterest, Launch
 from app.schemas.user import (
     UserMe, UserPublic, UserUpdate, UserCard,
     EducationWrite, CareerWrite, GlobePin,
     ProjectWrite, PublicationWrite, PortfolioLinkWrite,
-    ExtraContactWrite, UserLanguageWrite, ResearchInterestBulkWrite,
+    ExtraContactWrite, UserLanguageWrite, ResearchInterestBulkWrite, LaunchWrite,
 )
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -96,6 +96,7 @@ def _load_me(session: Session, user_id) -> User:
             selectinload(User.extra_contacts),
             selectinload(User.languages),
             selectinload(User.research_interests),
+            selectinload(User.launches),
         )
     ).first()
 
@@ -204,6 +205,7 @@ def get_user(
             selectinload(User.publications),
             selectinload(User.portfolio_links),
             selectinload(User.research_interests),
+            selectinload(User.launches),
             selectinload(User.extra_contacts),
         )
     ).first()
@@ -357,6 +359,22 @@ async def replace_research_interests(
     return {"message": "Research interests updated"}
 
 
+@router.put("/me/launches")
+async def replace_launches(
+    items: list[LaunchWrite],
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    existing = session.exec(select(Launch).where(Launch.user_id == current_user.id)).all()
+    for e in existing:
+        session.delete(e)
+    for i, item in enumerate(items):
+        session.add(Launch(user_id=current_user.id, order_index=i, **item.model_dump()))
+    session.commit()
+    await invalidate_tags("users", f"user:{current_user.slug}")
+    return {"message": "Launches updated"}
+
+
 @router.get("/globe/pins", response_model=list[GlobePin])
 @cached(key="globe", tags=["users"], ttl=settings.CACHE_TTL_LONG)
 def get_globe_pins(session: Session = Depends(get_session)):
@@ -495,6 +513,11 @@ def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False)
             {"type": p.type, "url": p.url}
             for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
         ],
+        "launches": [
+            {"name": l.name, "innovation_type": l.innovation_type, "innovation_type_other": l.innovation_type_other,
+             "role": l.role, "status": l.status, "description": l.description, "link": l.link}
+            for l in sorted(user.launches, key=lambda x: x.order_index)
+        ],
         "extra_contacts": [
             {"type": c.type, "value": c.value, "public": c.is_public}
             for c in sorted(user.extra_contacts, key=lambda x: x.order_index)
@@ -564,6 +587,11 @@ def _user_to_me(user: User) -> dict:
         "portfolio_links": [
             {"type": p.type, "url": p.url}
             for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
+        ],
+        "launches": [
+            {"name": l.name, "innovation_type": l.innovation_type, "innovation_type_other": l.innovation_type_other,
+             "role": l.role, "status": l.status, "description": l.description, "link": l.link}
+            for l in sorted(user.launches, key=lambda x: x.order_index)
         ],
         "education": _edu_list(user, public_only=False),
         "career": _career_list(user, public_only=False),

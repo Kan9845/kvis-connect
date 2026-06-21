@@ -125,6 +125,20 @@ class ResearchInterest(SQLModel, table=True):
     user: Optional["User"] = Relationship(back_populates="research_interests")
 
 
+class Launch(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    name: str
+    innovation_type: str
+    innovation_type_other: Optional[str] = None
+    role: str
+    status: Optional[str] = None
+    description: Optional[str] = None
+    link: Optional[str] = None
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="launches")
+
+
 class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
@@ -222,3 +236,4 @@ class User(SQLModel, table=True):
     extra_contacts: List["ExtraContact"] = Relationship(back_populates="user")
     languages: List["UserLanguage"] = Relationship(back_populates="user")
     research_interests: List["ResearchInterest"] = Relationship(back_populates="user")
+    launches: List["Launch"] = Relationship(back_populates="user")

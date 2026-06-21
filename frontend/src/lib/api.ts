@@ -123,6 +123,8 @@ export const userApi = {
     api.put("/api/users/me/languages", items).then((r) => r.data),
   updateResearchInterests: (interests: string[]) =>
     api.put("/api/users/me/research-interests", { interests }).then((r) => r.data),
+  updateLaunches: (items: { name: string; innovation_type: string; innovation_type_other?: string; role: string; status?: string; description?: string; link?: string }[]) =>
+    api.put("/api/users/me/launches", items).then((r) => r.data),
   uploadProfilePic: (file: File) => {
     const form = new FormData();
     form.append("file", file);
