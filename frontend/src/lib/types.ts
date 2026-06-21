@@ -67,6 +67,40 @@ export interface UserCard {
   instagram_url?: string;
 }
 
+export interface Competition {
+  event_name: string;
+  competition_type: string;
+  competition_type_other?: string;
+  scope: string;
+  result?: string;
+  result_other?: string;
+  year?: string;
+  is_public: boolean;
+}
+
+export interface ExperienceCamp {
+  program_name: string;
+  program_type: string;
+  program_type_other?: string;
+  field: string;
+  role?: string;
+  country?: string;
+  year?: string;
+  is_public: boolean;
+}
+
+export interface ClubLeadership {
+  org_name: string;
+  role_title: string;
+  start_month?: string;
+  start_year?: string;
+  end_month?: string;
+  end_year?: string;
+  is_current: boolean;
+  description?: string;
+  is_public: boolean;
+}
+
 export interface UserPublic extends UserCard {
   teach_department?: string;
   latitude?: number;
@@ -97,6 +131,9 @@ export interface UserPublic extends UserCard {
   kvis_fav_event?: string | null;
   kvis_fav_area?: string | null;
   activities?: { title: string; year?: number; description?: string }[] | null;
+  competitions?: Competition[] | null;
+  experience_camps?: ExperienceCamp[] | null;
+  clubs?: ClubLeadership[] | null;
   research_keywords?: string;
   research_interests?: string[];
   projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
@@ -132,6 +169,9 @@ export interface UserMe extends UserPublic {
   kvis_fav_event?: string;
   kvis_fav_area?: string;
   activities?: { title: string; year?: number; description?: string }[] | null;
+  competitions?: Competition[] | null;
+  experience_camps?: ExperienceCamp[] | null;
+  clubs?: ClubLeadership[] | null;
   extra_contacts: { type: string; value: string; public: boolean }[];
   goose_config?: string;
 }

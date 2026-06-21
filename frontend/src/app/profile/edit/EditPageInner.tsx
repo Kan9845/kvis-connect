@@ -35,6 +35,8 @@ import { TabResearch } from "./TabResearch";
 import { TabPersonal } from "./TabPersonal";
 import { MED_DEGREES } from "./constants";
 import { TabAccount } from "./TabAccount";
+import { TabExperience } from "./TabExperience";
+import type { Competition, ExperienceCamp, ClubLeadership } from "@/lib/types";
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -130,6 +132,11 @@ export default function EditPageInner() {
     { title: string; year?: number; description?: string }[]
   >([]);
 
+  // Experience state
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [camps, setCamps] = useState<ExperienceCamp[]>([]);
+  const [clubs, setClubs] = useState<ClubLeadership[]>([]);
+
   useEffect(() => {
     if (!loading && !me) router.push("/auth/login");
   }, [loading, me, router]);
@@ -147,6 +154,9 @@ export default function EditPageInner() {
       setKvisFavEvent(me.kvis_fav_event ?? "");
       setKvisFavArea(me.kvis_fav_area ?? "");
       setActivities((me.activities as any) ?? []);
+      setCompetitions((me.competitions as Competition[]) ?? []);
+      setCamps((me.experience_camps as ExperienceCamp[]) ?? []);
+      setClubs((me.clubs as ClubLeadership[]) ?? []);
     }
   }, [me]);
 
@@ -298,6 +308,20 @@ export default function EditPageInner() {
     }
   };
 
+  const saveExperience = async () => {
+    try {
+      await userApi.updateMe({
+        competitions,
+        experience_camps: camps,
+        clubs,
+      } as any);
+      await refetch();
+      notify.success("Experience saved");
+    } catch {
+      notify.error("Failed to save experience");
+    }
+  };
+
   const savePersonal = async () => {
     try {
       await Promise.all([
@@ -399,8 +423,8 @@ export default function EditPageInner() {
 
   const tabList = (
     isStudent
-      ? ["general", "research", "personal", "account"]
-      : ["general", "education", "career", "research", "personal", "account"]
+      ? ["general", "research", "experience", "personal", "account"]
+      : ["general", "education", "career", "research", "experience", "personal", "account"]
   ).filter((t) => !(isSetup && t === "account"));
   const activeIdx = tabList.indexOf(tab);
 
@@ -618,6 +642,25 @@ export default function EditPageInner() {
           />
         )}
 
+        {/* ── EXPERIENCE TAB ───────────────────────────────────────────────── */}
+        {tab === "experience" && (
+          <TabExperience
+            isSetup={isSetup}
+            isDirty={
+              JSON.stringify(competitions) !== JSON.stringify((me.competitions as Competition[]) ?? []) ||
+              JSON.stringify(camps) !== JSON.stringify((me.experience_camps as ExperienceCamp[]) ?? []) ||
+              JSON.stringify(clubs) !== JSON.stringify((me.clubs as ClubLeadership[]) ?? [])
+            }
+            competitions={competitions}
+            setCompetitions={setCompetitions}
+            camps={camps}
+            setCamps={setCamps}
+            clubs={clubs}
+            setClubs={setClubs}
+            saveExperience={saveExperience}
+          />
+        )}
+
         {/* ── PERSONAL TAB ─────────────────────────────────────────────────── */}
         {tab === "personal" && (
           <TabPersonal
@@ -662,8 +705,8 @@ export default function EditPageInner() {
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-[var(--kvis-border)]">
           {(() => {
             const tabs = isStudent
-              ? ["general", "research", "personal"]
-              : ["general", "education", "career", "research", "personal"];
+              ? ["general", "research", "experience", "personal"]
+              : ["general", "education", "career", "research", "experience", "personal"];
             const idx = tabs.indexOf(tab);
             const isLast = idx === tabs.length - 1;
 
@@ -689,6 +732,7 @@ export default function EditPageInner() {
                 else if (tab === "education") await saveEducation();
                 else if (tab === "career") await saveCareer();
                 else if (tab === "research") await saveResearch();
+                else if (tab === "experience") await saveExperience();
                 else if (tab === "personal") await savePersonal();
                 return true;
               } catch {
