@@ -205,6 +205,9 @@ class User(SQLModel, table=True):
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
     activities: Optional[str] = None   # JSON list of {title, year?, description?}
+    competitions: Optional[str] = None  # JSON
+    experience_camps: Optional[str] = None  # JSON
+    clubs: Optional[str] = None  # JSON
 
     profile_setup_done: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)

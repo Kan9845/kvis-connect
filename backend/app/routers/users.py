@@ -119,7 +119,7 @@ async def update_me(
                    ("last_name" in data and data["last_name"] != user.last_name)
     import json as _json
     for k, v in data.items():
-        if k in ("hobbies", "activities") and isinstance(v, (dict, list)):
+        if k in ("hobbies", "activities", "competitions", "experience_camps", "clubs") and isinstance(v, (dict, list)):
             setattr(user, k, _json.dumps(v))
         else:
             setattr(user, k, v)
@@ -521,6 +521,15 @@ def _user_to_me(user: User) -> dict:
             activities = _json.loads(activities)
         except Exception:
             activities = []
+
+    def _parse_json_list(val):
+        if isinstance(val, str):
+            try:
+                return _json.loads(val)
+            except Exception:
+                return []
+        return val or []
+
     return {
         **_user_to_public(user, public_only=False, is_kvis=True),
         "email": user.email,
@@ -540,6 +549,9 @@ def _user_to_me(user: User) -> dict:
         "kvis_fav_event": user.kvis_fav_event,
         "kvis_fav_area": user.kvis_fav_area,
         "activities": activities,
+        "competitions": _parse_json_list(user.competitions),
+        "experience_camps": _parse_json_list(user.experience_camps),
+        "clubs": _parse_json_list(user.clubs),
         "projects": [
             {"title": p.title, "advisor": p.advisor, "advisor2": p.advisor2,
              "description": p.description, "status": p.status, "link": p.link}

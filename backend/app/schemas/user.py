@@ -211,6 +211,9 @@ class UserPublic(BaseModel):
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
     activities: Optional[List[Any]] = None
+    competitions: Optional[List[Any]] = None
+    experience_camps: Optional[List[Any]] = None
+    clubs: Optional[List[Any]] = None
 
 
 class UserMe(UserPublic):
@@ -234,6 +237,9 @@ class UserMe(UserPublic):
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
     activities: Optional[List[Any]] = None
+    competitions: Optional[List[Any]] = None
+    experience_camps: Optional[List[Any]] = None
+    clubs: Optional[List[Any]] = None
 
 
 class UserUpdate(BaseModel):
@@ -285,6 +291,9 @@ class UserUpdate(BaseModel):
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
     activities: Optional[Any] = None
+    competitions: Optional[Any] = None
+    experience_camps: Optional[Any] = None
+    clubs: Optional[Any] = None
     profile_setup_done: Optional[bool] = None
     profile_pic_url: Optional[str] = None
     goose_config: Optional[str] = None

@@ -128,10 +128,6 @@ export default function EditPageInner() {
   const [kvisFavMenu, setKvisFavMenu] = useState("");
   const [kvisFavEvent, setKvisFavEvent] = useState("");
   const [kvisFavArea, setKvisFavArea] = useState("");
-  const [activities, setActivities] = useState<
-    { title: string; year?: number; description?: string }[]
-  >([]);
-
   // Experience state
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [camps, setCamps] = useState<ExperienceCamp[]>([]);
@@ -153,7 +149,6 @@ export default function EditPageInner() {
       setKvisFavMenu(me.kvis_fav_menu ?? "");
       setKvisFavEvent(me.kvis_fav_event ?? "");
       setKvisFavArea(me.kvis_fav_area ?? "");
-      setActivities((me.activities as any) ?? []);
       setCompetitions((me.competitions as Competition[]) ?? []);
       setCamps((me.experience_camps as ExperienceCamp[]) ?? []);
       setClubs((me.clubs as ClubLeadership[]) ?? []);
@@ -330,7 +325,6 @@ export default function EditPageInner() {
           kvis_fav_menu: kvisFavMenu,
           kvis_fav_event: kvisFavEvent,
           kvis_fav_area: kvisFavArea,
-          activities,
         }),
         userApi.updateLanguages(languages),
       ]);
@@ -423,8 +417,8 @@ export default function EditPageInner() {
 
   const tabList = (
     isStudent
-      ? ["general", "research", "experience", "personal", "account"]
-      : ["general", "education", "career", "research", "experience", "personal", "account"]
+      ? ["general", "experience", "research", "personal", "account"]
+      : ["general", "education", "career", "experience", "research", "personal", "account"]
   ).filter((t) => !(isSetup && t === "account"));
   const activeIdx = tabList.indexOf(tab);
 
@@ -670,8 +664,7 @@ export default function EditPageInner() {
               JSON.stringify(hobbies) !== JSON.stringify(me.hobbies ?? {}) ||
               kvisFavMenu !== (me.kvis_fav_menu ?? "") ||
               kvisFavEvent !== (me.kvis_fav_event ?? "") ||
-              kvisFavArea !== (me.kvis_fav_area ?? "") ||
-              JSON.stringify(activities) !== JSON.stringify(me.activities ?? [])
+              kvisFavArea !== (me.kvis_fav_area ?? "")
             }
             me={me}
             refetch={refetch}
@@ -685,8 +678,6 @@ export default function EditPageInner() {
             setKvisFavEvent={setKvisFavEvent}
             kvisFavArea={kvisFavArea}
             setKvisFavArea={setKvisFavArea}
-            activities={activities}
-            setActivities={setActivities}
             savePersonal={savePersonal}
           />
         )}
@@ -705,8 +696,8 @@ export default function EditPageInner() {
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-[var(--kvis-border)]">
           {(() => {
             const tabs = isStudent
-              ? ["general", "research", "experience", "personal"]
-              : ["general", "education", "career", "research", "experience", "personal"];
+              ? ["general", "experience", "research", "personal"]
+              : ["general", "education", "career", "experience", "research", "personal"];
             const idx = tabs.indexOf(tab);
             const isLast = idx === tabs.length - 1;
 

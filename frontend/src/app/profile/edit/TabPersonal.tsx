@@ -43,8 +43,6 @@ interface TabPersonalProps {
   setKvisFavEvent: React.Dispatch<React.SetStateAction<string>>;
   kvisFavArea: string;
   setKvisFavArea: React.Dispatch<React.SetStateAction<string>>;
-  activities: { title: string; year?: number; description?: string }[];
-  setActivities: React.Dispatch<React.SetStateAction<{ title: string; year?: number; description?: string }[]>>;
   savePersonal: () => Promise<void>;
 }
 
@@ -63,8 +61,6 @@ export function TabPersonal({
   setKvisFavEvent,
   kvisFavArea,
   setKvisFavArea,
-  activities,
-  setActivities,
   savePersonal,
 }: TabPersonalProps) {
   return (
@@ -245,88 +241,6 @@ export function TabPersonal({
           </div>
         ),
       )}
-
-      <SectionHead
-        numeral="IV."
-        kicker="Alumni"
-        title="Activities & Awards"
-      />
-      {activities.length === 0 && (
-        <div className="py-10 border-b border-[var(--kvis-border)] text-sm text-muted-foreground italic">
-          No activities or awards added yet.
-        </div>
-      )}
-      {activities.map((a, i) => (
-        <div key={i} className="py-7 border-b border-[var(--kvis-border)]">
-          <div className="flex flex-wrap items-center justify-between gap-y-2 mb-4">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-mono tabular-nums font-semibold text-[var(--kvis-text3)] shrink-0">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] shrink-0">
-                Activity / Award
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={() => setActivities((prev) => prev.filter((_, j) => j !== i))}
-              className="text-xs font-bold uppercase tracking-[0.22em] inline-flex items-center gap-1.5 hover:text-foreground transition-colors text-[var(--kvis-text3)]"
-            >
-              <Trash2 className="h-3 w-3" /> Remove
-            </button>
-          </div>
-          <FieldRow label="Title" required>
-            <Input
-              placeholder="e.g. Science Olympiad, POSN Camp, Student Council"
-              value={a.title}
-              onChange={(e) =>
-                setActivities((prev) =>
-                  prev.map((x, j) => j === i ? { ...x, title: e.target.value } : x)
-                )
-              }
-              className={inputCls}
-            />
-          </FieldRow>
-          <FieldRow label="Year">
-            <Input
-              type="number"
-              placeholder="e.g. 2019"
-              value={a.year ?? ""}
-              min={1990}
-              max={2099}
-              onChange={(e) =>
-                setActivities((prev) =>
-                  prev.map((x, j) =>
-                    j === i ? { ...x, year: e.target.value ? Number(e.target.value) : undefined } : x
-                  )
-                )
-              }
-              className={`${inputCls} w-32`}
-            />
-          </FieldRow>
-          <FieldRow label="Description">
-            <Input
-              placeholder="Brief detail (optional)"
-              value={a.description ?? ""}
-              onChange={(e) =>
-                setActivities((prev) =>
-                  prev.map((x, j) => j === i ? { ...x, description: e.target.value } : x)
-                )
-              }
-              className={inputCls}
-            />
-          </FieldRow>
-        </div>
-      ))}
-      <div className="py-6">
-        <button
-          type="button"
-          onClick={() => setActivities((prev) => [...prev, { title: "" }])}
-          className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
-        >
-          <Plus className="h-3 w-3" /> Add activity or award
-        </button>
-      </div>
 
       {!isSetup && (
         <div className="pt-8">
