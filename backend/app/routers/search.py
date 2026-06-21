@@ -76,6 +76,7 @@ def directory_list(session: Session = Depends(get_session)):
         (SELECT string_agg(scholarship, ' ') FROM education
          WHERE user_id = u.id AND scholarship IS NOT NULL AND scholarship != '') AS edu_scholarships
         FROM "user" u
+        WHERE u.email_verified = TRUE AND u.is_deleted = FALSE
         ORDER BY u.kvis_year ASC NULLS LAST, u.first_name ASC
     """)).mappings().all()
     return [dict(r) for r in rows]
