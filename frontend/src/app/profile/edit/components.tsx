@@ -136,6 +136,7 @@ export function TagPills({
         <button
           key={o}
           type="button"
+          onMouseDown={(e) => e.preventDefault()}
           onClick={() => toggle(o)}
           className="px-2.5 py-1.5 text-xs font-semibold transition-colors border"
           style={{
@@ -166,6 +167,7 @@ export function TagPills({
         ) : (
           <button
             type="button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => setAdding(true)}
             className="px-2.5 py-1.5 text-xs font-semibold border border-dashed border-[var(--kvis-border)] text-[var(--kvis-text3)] hover:border-[var(--kvis-purple)] hover:text-[var(--kvis-purple)] transition-colors flex items-center gap-1"
           >
