@@ -482,6 +482,9 @@ def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False)
         "kvis_fav_event": user.kvis_fav_event if is_kvis else None,
         "kvis_fav_area": user.kvis_fav_area if is_kvis else None,
         "activities": (lambda a: __import__('json').loads(a) if isinstance(a, str) else a)(user.activities) if user.activities else None,
+        "competitions": [e for e in ((lambda v: __import__('json').loads(v) if isinstance(v, str) else v or [])(user.competitions)) if is_kvis or e.get("is_public", True)],
+        "experience_camps": [e for e in ((lambda v: __import__('json').loads(v) if isinstance(v, str) else v or [])(user.experience_camps)) if is_kvis or e.get("is_public", True)],
+        "clubs": [e for e in ((lambda v: __import__('json').loads(v) if isinstance(v, str) else v or [])(user.clubs)) if is_kvis or e.get("is_public", True)],
         # Privacy-gated fields
         "interests": user.interests if (user.interests_public or is_kvis) else None,
         "interests_public": user.interests_public,

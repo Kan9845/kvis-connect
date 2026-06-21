@@ -82,7 +82,7 @@ export interface ExperienceCamp {
   program_name: string;
   program_type: string;
   program_type_other?: string;
-  field: string;
+  field?: string;
   role?: string;
   country?: string;
   year?: string;

@@ -195,8 +195,8 @@ export function TabExperience({
       {/* ── I. Competitions ──────────────────────────────────────────────── */}
       <SectionHead
         numeral="I."
-        kicker="Competitions"
-        title="Competitions, Tournaments & Research Fairs"
+        kicker="Achievements"
+        title="Competitions & Fairs"
       />
 
       {competitions.length === 0 && (
@@ -292,7 +292,7 @@ export function TabExperience({
 
       <div className="pt-8 flex items-center gap-4 flex-wrap border-b border-[var(--kvis-border)] pb-8">
         <AddButton
-          label="Add competition"
+          label="Add achievement"
           disabled={competitions.length >= MAX_ENTRIES}
           onClick={() =>
             setCompetitions((prev) => [
@@ -306,11 +306,11 @@ export function TabExperience({
         )}
       </div>
 
-      {/* ── II. Camps & Conferences ─────────────────────────────────────── */}
+      {/* ── II. Camps & Programs ───────────────────────────────────────── */}
       <SectionHead
         numeral="II."
-        kicker="Camps & Conferences"
-        title="Camps, Conferences & Exchange Programs"
+        kicker="Engagements"
+        title="Camps & Programs"
       />
 
       {camps.length === 0 && (
@@ -359,19 +359,6 @@ export function TabExperience({
             )}
           </FieldRow>
 
-          <FieldRow label="Field" required>
-            <Select value={c.field} onValueChange={(v) => updateCamp(i, "field", v)}>
-              <SelectTrigger className={selectTriggerCls}>
-                <SelectValue placeholder="Select field" />
-              </SelectTrigger>
-              <SelectContent>
-                {CAMP_FIELDS.map((f) => (
-                  <SelectItem key={f} value={f}>{f}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FieldRow>
-
           <FieldRow label="Role">
             <Select value={c.role ?? ""} onValueChange={(v) => updateCamp(i, "role", v)}>
               <SelectTrigger className={selectTriggerCls}>
@@ -406,12 +393,12 @@ export function TabExperience({
 
       <div className="pt-8 flex items-center gap-4 flex-wrap border-b border-[var(--kvis-border)] pb-8">
         <AddButton
-          label="Add program"
+          label="Add engagement"
           disabled={camps.length >= MAX_ENTRIES}
           onClick={() =>
             setCamps((prev) => [
               ...prev,
-              { program_name: "", program_type: "", field: "", is_public: true },
+              { program_name: "", program_type: "", is_public: true },
             ])
           }
         />
@@ -420,11 +407,11 @@ export function TabExperience({
         )}
       </div>
 
-      {/* ── III. Clubs & Leadership ─────────────────────────────────────── */}
+      {/* ── III. Clubs & Volunteering ───────────────────────────────────── */}
       <SectionHead
         numeral="III."
-        kicker="Clubs & Leadership"
-        title="Clubs, Leadership & Volunteer Initiatives"
+        kicker="Extracurriculars"
+        title="Clubs & Volunteering"
       />
 
       {clubs.length === 0 && (
@@ -537,7 +524,7 @@ export function TabExperience({
 
       <div className="pt-8 flex items-center gap-4 flex-wrap">
         <AddButton
-          label="Add club / initiative"
+          label="Add extracurricular"
           disabled={clubs.length >= MAX_ENTRIES}
           onClick={() =>
             setClubs((prev) => [

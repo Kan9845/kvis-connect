@@ -267,6 +267,10 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
   const hasNostalgia = !!me && !!(user.kvis_fav_menu || user.kvis_fav_event || user.kvis_fav_area);
   const hasActivities = (user.activities?.length ?? 0) > 0;
+  const hasExperience =
+    ((user as any).competitions?.length ?? 0) > 0 ||
+    ((user as any).experience_camps?.length ?? 0) > 0 ||
+    ((user as any).clubs?.length ?? 0) > 0;
 
   const sections: { key: string; label: string }[] = [];
   if (user.bio) sections.push({ key: "bio", label: "About" });
@@ -274,6 +278,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   if (user.career?.length) sections.push({ key: "career", label: "Work" });
   if (hasResearch) sections.push({ key: "research", label: "Research" });
   if (hasActivities) sections.push({ key: "activities", label: "Activities & Awards" });
+  if (hasExperience) sections.push({ key: "experience", label: "Experience" });
   if (contacts.length) sections.push({ key: "contact", label: "Get in touch" });
   if (hasPersonality) sections.push({ key: "personality", label: "Vibe" });
   if (hasHobbies) sections.push({ key: "hobbies", label: "Hobbies" });
@@ -745,6 +750,126 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     </div>
                   ));
                 })()}
+              </section>
+            </FadeUp>
+          )}
+
+          {/* ── EXPERIENCE ──────────────────────────────────────────────────── */}
+          {hasExperience && (
+            <FadeUp>
+              <section>
+                <SectionHead numeral={numeralFor("experience")} kicker="Experience" />
+
+                {/* Competitions */}
+                {((user as any).competitions ?? []).length > 0 && (
+                  <>
+                    <SubHead label="Competitions & Fairs" />
+                    <StaggerList>
+                      {((user as any).competitions ?? []).map((c: any, i: number) => (
+                        <StaggerItem key={i}>
+                          <div className="grid items-baseline py-lg border-b border-[var(--kvis-border)]"
+                            style={{ gridTemplateColumns: "1.75rem minmax(0, 1fr) auto", columnGap: "1.25rem" }}>
+                            <span className="text-xs font-mono tabular-nums font-semibold pt-1 text-[var(--kvis-text3)]">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <p className="text-xl font-bold text-foreground leading-tight tracking-[-0.01em]">{c.event_name}</p>
+                                {c.result && (
+                                  <span className="text-xs font-bold uppercase tracking-[0.18em] px-1.5 py-0.5 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
+                                    {c.result === "Other" && c.result_other ? c.result_other : c.result}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm mt-1 leading-snug" style={{ color: "var(--kvis-text2)" }}>
+                                {[
+                                  c.competition_type === "Other" ? c.competition_type_other : c.competition_type,
+                                  c.scope,
+                                  c.year,
+                                ].filter(Boolean).join(" · ")}
+                              </p>
+                            </div>
+                          </div>
+                        </StaggerItem>
+                      ))}
+                    </StaggerList>
+                  </>
+                )}
+
+                {/* Camps & Programs */}
+                {((user as any).experience_camps ?? []).length > 0 && (
+                  <>
+                    <SubHead label="Camps & Programs" />
+                    <StaggerList>
+                      {((user as any).experience_camps ?? []).map((c: any, i: number) => (
+                        <StaggerItem key={i}>
+                          <div className="grid items-baseline py-lg border-b border-[var(--kvis-border)]"
+                            style={{ gridTemplateColumns: "1.75rem minmax(0, 1fr)", columnGap: "1.25rem" }}>
+                            <span className="text-xs font-mono tabular-nums font-semibold pt-1 text-[var(--kvis-text3)]">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="text-xl font-bold text-foreground leading-tight tracking-[-0.01em]">{c.program_name}</p>
+                              <p className="text-sm mt-1 leading-snug" style={{ color: "var(--kvis-text2)" }}>
+                                {[
+                                  c.program_type === "Other" ? c.program_type_other : c.program_type,
+                                  c.role,
+                                  c.country,
+                                  c.year,
+                                ].filter(Boolean).join(" · ")}
+                              </p>
+                            </div>
+                          </div>
+                        </StaggerItem>
+                      ))}
+                    </StaggerList>
+                  </>
+                )}
+
+                {/* Clubs & Volunteering */}
+                {((user as any).clubs ?? []).length > 0 && (
+                  <>
+                    <SubHead label="Clubs & Volunteering" />
+                    <StaggerList>
+                      {((user as any).clubs ?? []).map((c: any, i: number) => (
+                        <StaggerItem key={i}>
+                          <div className="grid items-baseline py-lg border-b border-[var(--kvis-border)]"
+                            style={{ gridTemplateColumns: "1.75rem minmax(0, 1fr)", columnGap: "1.25rem" }}>
+                            <span className="text-xs font-mono tabular-nums font-semibold pt-1 text-[var(--kvis-text3)]">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <p className="text-xl font-bold text-foreground leading-tight tracking-[-0.01em]">{c.org_name}</p>
+                                {c.is_current && (
+                                  <span className="text-xs font-bold uppercase tracking-[0.18em] px-1.5 py-0.5 text-white"
+                                    style={{ background: "var(--kvis-green-light)" }}>
+                                    Current
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm mt-1 leading-snug" style={{ color: "var(--kvis-text2)" }}>
+                                {c.role_title}
+                                {(c.start_year || c.end_year) && (
+                                  <span className="ml-2 text-xs" style={{ color: "var(--kvis-text3)" }}>
+                                    {[c.start_month, c.start_year].filter(Boolean).join(" ")}
+                                    {(c.end_year || c.is_current) && " – "}
+                                    {c.is_current ? "Present" : [c.end_month, c.end_year].filter(Boolean).join(" ")}
+                                  </span>
+                                )}
+                              </p>
+                              {c.description && (
+                                <p className="text-xs mt-1.5 leading-relaxed max-w-[55ch]" style={{ color: "var(--kvis-text2)" }}>
+                                  {c.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </StaggerItem>
+                      ))}
+                    </StaggerList>
+                  </>
+                )}
               </section>
             </FadeUp>
           )}
