@@ -241,6 +241,7 @@ export interface SearchParams {
   major?: string;
   scholarship?: string;
   field_of_study?: string;
+  province_of_origin?: string;
   job_title?: string;
   employer?: string;
   industry_sector?: string;
@@ -294,4 +295,7 @@ export interface DirectoryCard {
   edu_uni?: string;
   hobbies?: any;
   research_interests_text?: string | null;
+  place_level2?: string;
+  province_of_origin?: string | null;
+  edu_scholarships?: string | null;
 }

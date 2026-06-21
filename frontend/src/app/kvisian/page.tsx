@@ -542,13 +542,17 @@ function KvisianInner() {
           u.nickname,
           u.country,
           u.place,
+          u.place_level2,
+          u.province_of_origin,
           u.mbti,
           u.interests,
           u.job_title,
           u.employer,
           u.industry_sector,
           u.edu_major,
+          u.edu_degree,
           u.edu_uni,
+          u.edu_scholarships,
           u.hobbies ? (typeof u.hobbies === 'string' ? u.hobbies : JSON.stringify(u.hobbies)) : null,
           u.research_interests_text,
         ]
@@ -713,7 +717,7 @@ function KvisianInner() {
                 <input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search by name, interest (chess, photography...), field, university..."
+                  placeholder="Search anything (e.g. name, university, interest, etc)"
                   className="flex-1 bg-transparent border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
                 />
                 {q && (

@@ -45,7 +45,8 @@ def directory_list(session: Session = Depends(get_session)):
             u.current_grade,
             u.hobbies,
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
-            u.profile_pic_url, u.goose_config, u.country, u.place, u.mbti, u.interests,
+            u.profile_pic_url, u.goose_config, u.country, u.place, u.place_level2,
+            u.province_of_origin, u.mbti, u.interests,
             u.is_verified,
             (SELECT string_agg(interest, ' ') FROM research_interest
              WHERE user_id = u.id) AS research_interests_text,
@@ -70,8 +71,10 @@ def directory_list(session: Session = Depends(get_session)):
          WHERE user_id = u.id 
          ORDER BY is_current DESC, end_year DESC NULLS FIRST LIMIT 1) AS edu_degree,
         (SELECT uni_name FROM education
-         WHERE user_id = u.id 
-         ORDER BY is_current DESC, end_year DESC NULLS FIRST LIMIT 1) AS edu_uni
+         WHERE user_id = u.id
+         ORDER BY is_current DESC, end_year DESC NULLS FIRST LIMIT 1) AS edu_uni,
+        (SELECT string_agg(scholarship, ' ') FROM education
+         WHERE user_id = u.id AND scholarship IS NOT NULL AND scholarship != '') AS edu_scholarships
         FROM "user" u
         ORDER BY u.kvis_year ASC NULLS LAST, u.first_name ASC
     """)).mappings().all()
@@ -96,6 +99,7 @@ def search_users(
     employer: Optional[str] = Query(default=None),
     industry_sector: Optional[str] = Query(default=None),
     role_type: Optional[str] = Query(default=None),
+    province_of_origin: Optional[str] = Query(default=None),
     sort: str = Query(default="name"),
     order: str = Query(default="asc"),
     limit: int = Query(default=50, le=2000),
@@ -121,6 +125,8 @@ def search_users(
         query = query.where(User.place_level2.ilike(f"%{place_level2}%"))
     if place:
         query = query.where(User.place.ilike(f"%{place}%"))
+    if province_of_origin:
+        query = query.where(User.province_of_origin.ilike(f"%{province_of_origin}%"))
 
     users = session.exec(query).all()
 
