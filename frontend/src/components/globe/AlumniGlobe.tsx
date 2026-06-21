@@ -40,7 +40,7 @@ function clusterPins(pins: GlobePin[], cellDeg: number): PinCluster[] {
   const map = new Map<string, PinCluster>();
   for (const p of pins) {
     if (!hasValidGlobeCoords(p)) continue;
-    const key = `${Math.round(p.latitude / cellDeg)},${Math.round(p.longitude / cellDeg)}`;
+    const key = `${p.country ?? ""}|${Math.round(p.latitude / cellDeg)},${Math.round(p.longitude / cellDeg)}`;
     const existing = map.get(key);
     if (existing) {
       existing.members.push(p);
