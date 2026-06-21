@@ -244,6 +244,18 @@ function RegisterInner() {
             style={{ borderColor: INPUT_BORDER }}
             {...focusable}
           />
+          <p className="mt-2 text-xs" style={{ color: P.text3 }}>
+            Cannot access your KVIS email?{" "}
+            <a
+              href="https://line.me/R/ti/p/@128dzhku"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-[3px] hover:opacity-80 transition-opacity"
+              style={{ color: P.text3, textDecorationColor: P.text3 }}
+            >
+              Contact KVIS IT to reset your password
+            </a>
+          </p>
         </div>
 
         <div>
