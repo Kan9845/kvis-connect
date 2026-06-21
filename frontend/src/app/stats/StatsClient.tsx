@@ -201,7 +201,7 @@ function RankedList({
         {visible.map((it) => (
           <StaggerItem key={it.key}>
             <div
-              className="grid items-start py-3 border-b border-[var(--kvis-rule)]"
+              className="grid items-center py-3 border-b border-[var(--kvis-rule)]"
               style={{
                 gridTemplateColumns: "1.75rem minmax(0,1fr) 4rem 2.5rem 3rem",
                 columnGap: "0.75rem",
