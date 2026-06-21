@@ -452,16 +452,45 @@ function KvisianInner() {
     }
   }, [authLoading, user, router]);
 
-  const [personType, setPersonType] = useState<PersonType>("all");
-  const [activeCohort, setActiveCohort] = useState("");
-  const [activeCountry, setActiveCountry] = useState("");
-  const [activeGrade, setActiveGrade] = useState("");
-  const [activeField, setActiveField] = useState("");
-  const [activeUni, setActiveUni] = useState("");
-  const [q, setQ] = useState("");
+  const searchParams = useSearchParams();
+
+  const [personType, setPersonType] = useState<PersonType>(() => {
+    const t = searchParams.get("type") as PersonType;
+    return (["all", "alumni", "students", "faculty"] as PersonType[]).includes(t)
+      ? t
+      : "all";
+  });
+  const [activeCohort, setActiveCohort] = useState(() => searchParams.get("cohort") ?? "");
+  const [activeCountry, setActiveCountry] = useState(() => searchParams.get("country") ?? "");
+  const [activeGrade, setActiveGrade] = useState(() => searchParams.get("grade") ?? "");
+  const [activeField, setActiveField] = useState(() => searchParams.get("field") ?? "");
+  const [activeUni, setActiveUni] = useState(() => searchParams.get("uni") ?? "");
+  const [q, setQ] = useState(() => searchParams.get("q") ?? "");
   const [sortBy, setSortBy] = useState<
     "cohort-asc" | "cohort-desc" | "name-asc" | "name-desc"
-  >("cohort-asc");
+  >(() => {
+    const s = searchParams.get("sort");
+    return (["cohort-asc", "cohort-desc", "name-asc", "name-desc"] as const).includes(
+      s as "cohort-asc"
+    )
+      ? (s as "cohort-asc" | "cohort-desc" | "name-asc" | "name-desc")
+      : "cohort-asc";
+  });
+
+  // Sync filter state → URL so back-navigation restores the search
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (q.trim()) params.set("q", q.trim());
+    if (personType !== "all") params.set("type", personType);
+    if (activeCohort) params.set("cohort", activeCohort);
+    if (activeCountry) params.set("country", activeCountry);
+    if (activeGrade) params.set("grade", activeGrade);
+    if (activeField) params.set("field", activeField);
+    if (activeUni) params.set("uni", activeUni);
+    if (sortBy !== "cohort-asc") params.set("sort", sortBy);
+    const qs = params.toString();
+    router.replace(`/kvisian${qs ? `?${qs}` : ""}`, { scroll: false });
+  }, [q, personType, activeCohort, activeCountry, activeGrade, activeField, activeUni, sortBy]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     data: rawPeople = [],
