@@ -1,6 +1,10 @@
 "use client";
-import React from "react";
-import { Globe, Lock, CornerDownRight } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Globe, Lock, CornerDownRight, Plus } from "lucide-react";
+
+function toTitleCase(str: string) {
+  return str.trim().replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
 
 export function SectionHead({
   numeral,
@@ -99,15 +103,33 @@ export function TagPills({
   options,
   selected,
   onChange,
+  onAdd,
 }: {
   options: string[];
   selected: string[];
   onChange: (v: string[]) => void;
+  onAdd?: (tag: string) => void;
 }) {
+  const [adding, setAdding] = useState(false);
+  const [inputVal, setInputVal] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const toggle = (o: string) =>
     onChange(
       selected.includes(o) ? selected.filter((x) => x !== o) : [...selected, o],
     );
+
+  const commit = () => {
+    const tag = toTitleCase(inputVal);
+    if (tag && !options.includes(tag)) {
+      onAdd?.(tag);
+    } else if (tag && options.includes(tag) && !selected.includes(tag)) {
+      onChange([...selected, tag]);
+    }
+    setInputVal("");
+    setAdding(false);
+  };
+
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((o) => (
@@ -117,18 +139,40 @@ export function TagPills({
           onClick={() => toggle(o)}
           className="px-2.5 py-1.5 text-xs font-semibold transition-colors border"
           style={{
-            background: selected.includes(o)
-              ? "var(--kvis-purple)"
-              : "transparent",
+            background: selected.includes(o) ? "var(--kvis-purple)" : "transparent",
             color: selected.includes(o) ? "white" : "var(--foreground)",
-            borderColor: selected.includes(o)
-              ? "var(--kvis-purple)"
-              : "var(--kvis-border)",
+            borderColor: selected.includes(o) ? "var(--kvis-purple)" : "var(--kvis-border)",
           }}
         >
           {o}
         </button>
       ))}
+
+      {onAdd && (
+        adding ? (
+          <input
+            ref={inputRef}
+            autoFocus
+            value={inputVal}
+            onChange={(e) => setInputVal(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") { e.preventDefault(); commit(); }
+              if (e.key === "Escape") { setInputVal(""); setAdding(false); }
+            }}
+            onBlur={commit}
+            placeholder="Add tag…"
+            className="px-2.5 py-1.5 text-xs font-semibold border border-dashed border-[var(--kvis-purple)] bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none w-24"
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="px-2.5 py-1.5 text-xs font-semibold border border-dashed border-[var(--kvis-border)] text-[var(--kvis-text3)] hover:border-[var(--kvis-purple)] hover:text-[var(--kvis-purple)] transition-colors flex items-center gap-1"
+          >
+            <Plus className="h-3 w-3" /> Add
+          </button>
+        )
+      )}
     </div>
   );
 }

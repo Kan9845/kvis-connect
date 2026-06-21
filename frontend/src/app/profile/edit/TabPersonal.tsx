@@ -226,20 +226,28 @@ export function TabPersonal({
         title="Hobbies & interests"
       />
       {(Object.entries(HOBBIES) as [string, string[]][]).map(
-        ([cat, opts]) => (
-          <div key={cat} className="pt-6 pb-3">
-            <p className="text-xs font-bold uppercase tracking-[0.26em] text-foreground mb-3">
-              {cat.replace(/_/g, " ")}
-            </p>
-            <TagPills
-              options={opts}
-              selected={hobbies[cat] ?? []}
-              onChange={(v) =>
-                setHobbies((prev) => ({ ...prev, [cat]: v }))
-              }
-            />
-          </div>
-        ),
+        ([cat, opts]) => {
+          const customTags = (hobbies[cat] ?? []).filter((t) => !opts.includes(t));
+          const allOptions = [...opts, ...customTags];
+          return (
+            <div key={cat} className="pt-6 pb-3">
+              <p className="text-xs font-bold uppercase tracking-[0.26em] text-foreground mb-3">
+                {cat.replace(/_/g, " ")}
+              </p>
+              <TagPills
+                options={allOptions}
+                selected={hobbies[cat] ?? []}
+                onChange={(v) => setHobbies((prev) => ({ ...prev, [cat]: v }))}
+                onAdd={(tag) =>
+                  setHobbies((prev) => ({
+                    ...prev,
+                    [cat]: [...(prev[cat] ?? []), tag],
+                  }))
+                }
+              />
+            </div>
+          );
+        },
       )}
 
       {!isSetup && (
