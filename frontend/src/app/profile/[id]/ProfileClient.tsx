@@ -11,7 +11,7 @@ import { degreeLabel } from "@/lib/constants/options";
 import { PageEntrance, FadeUp, StaggerList, StaggerItem } from "@/components/ui/motion";
 import type { BlogRead } from "@/lib/types";
 import { cohortColorHex, cohortColorSoftHex, formatDate, cohortLabel, isFaculty, facultyPeriodLabel, FACULTY_COLOR, FACULTY_COLOR_HEX, FACULTY_COLOR_SOFT_HEX } from "@/lib/utils";
-import { RESEARCH_CATEGORIES } from "@/app/profile/edit/constants";
+import { RESEARCH_CATEGORIES, CURRENT_STATUS_OPTIONS } from "@/app/profile/edit/constants";
 import { AvatarCanvas } from "@/components/avatar/AvatarCanvas";
 
 function parseInterests(t?: string) {
@@ -378,7 +378,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     </p>
                   )}
 
-                  {(interests.length > 0 || user.mbti || user.province_of_origin || (!isFaculty(user) && !user.current_grade && user.kvis_year)) && (
+                  {(interests.length > 0 || user.mbti || user.province_of_origin || user.current_status || (!isFaculty(user) && !user.current_grade && user.kvis_year)) && (
                     <div className="flex items-center gap-sm flex-wrap mt-md">
                       {!isFaculty(user) && !user.current_grade && user.kvis_year && (
                         <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1"
@@ -386,6 +386,14 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                           {cohortLabel(user.kvis_year)}
                         </span>
                       )}
+                      {user.current_status && (() => {
+                        const label = CURRENT_STATUS_OPTIONS.flatMap(g => g.options).find(o => o.value === user.current_status)?.label;
+                        return label ? (
+                          <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
+                            {label}
+                          </span>
+                        ) : null;
+                      })()}
                       {user.province_of_origin && (
                         <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
                           Origin: {user.province_of_origin}
