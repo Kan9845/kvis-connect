@@ -228,10 +228,19 @@ export function AboutClient() {
               </h2>
 
               <StaggerList>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-lg">
-                  {CONTRIBUTORS.map((c, i) => (
-                    <StaggerItem key={i} className={i === CONTRIBUTORS.length - 1 && CONTRIBUTORS.length % 2 !== 0 ? "col-span-2 md:col-span-1" : ""}>
-                      <div className={`group${i === CONTRIBUTORS.length - 1 && CONTRIBUTORS.length % 2 !== 0 ? " w-1/2 md:w-full mx-auto md:mx-0" : ""}`}>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-lg">
+                  {CONTRIBUTORS.map((c, i) => {
+                    const N = CONTRIBUTORS.length;
+                    const lastRowCount = N % 3 || 3;
+                    const isLastOddMobile = i === N - 1 && N % 2 !== 0;
+                    const isFirstOfCenteredRow = lastRowCount < 3 && i === N - lastRowCount;
+                    const mdColStart = isFirstOfCenteredRow
+                      ? `md:col-start-${lastRowCount === 2 ? 2 : 3}`
+                      : "";
+                    const itemClass = [isLastOddMobile ? "col-span-2" : "", "md:col-span-2", mdColStart].filter(Boolean).join(" ");
+                    return (
+                    <StaggerItem key={i} className={itemClass}>
+                      <div className={`group${isLastOddMobile ? " w-1/2 md:w-full mx-auto md:mx-0" : ""}`}>
                         <Link href={`/profile/${c.slug}`} className="block">
                           <div
                             className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
@@ -276,7 +285,8 @@ export function AboutClient() {
                         )}
                       </div>
                     </StaggerItem>
-                  ))}
+                    );
+                  })}
                 </div>
               </StaggerList>
             </section>
