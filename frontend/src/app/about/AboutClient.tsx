@@ -29,7 +29,7 @@ const CONTRIBUTORS: {
 }[] = [
   {
     name: "Surapa Panjaphakdee",
-    role: "Founder & Coordinator",
+    role: "Project Manager & UX Planner",
     batch: "KVIS 7",
     initials: "SP",
     image: "/bio.jpeg",
@@ -38,7 +38,7 @@ const CONTRIBUTORS: {
   },
   {
     name: "Chayada Pakpoomkamonlert",
-    role: "Design & Fullstack",
+    role: "Design & Founding Fullstack Developer",
     batch: "KVIS 7",
     initials: "CP",
     image: "/chp.jpeg",
@@ -47,7 +47,7 @@ const CONTRIBUTORS: {
   },
   {
     name: "Naruesorn Prabpon",
-    role: "Fullstack",
+    role: "Founding Fullstack Engineer",
     batch: "KVIS 7",
     initials: "NP",
     image: "/narue.png",
@@ -56,12 +56,21 @@ const CONTRIBUTORS: {
   },
   {
     name: "Popsuk Sumetchoengprachya",
-    role: "Fullstack",
+    role: "Founding Fullstack Developer",
     batch: "KVIS 7",
     initials: "PS",
     image: "/pop.jpg",
     instagram: "p____p.x",
     slug: "popsuk-sumetchoengprachya",
+  },
+  {
+    name: "Krittawee Chaiprasertsud",
+    role: "Core Fullstack Developer",
+    batch: "KVIS 7",
+    initials: "KC",
+    image: "/pun.jpg",
+    instagram: "puu_nnd",
+    slug: "krittawee-chaiprasertsud",
   },
 ];
 
@@ -219,10 +228,10 @@ export function AboutClient() {
               </h2>
 
               <StaggerList>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-lg">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-lg">
                   {CONTRIBUTORS.map((c, i) => (
-                    <StaggerItem key={i}>
-                      <div className="group">
+                    <StaggerItem key={i} className={i === CONTRIBUTORS.length - 1 && CONTRIBUTORS.length % 2 !== 0 ? "col-span-2 md:col-span-1" : ""}>
+                      <div className={`group${i === CONTRIBUTORS.length - 1 && CONTRIBUTORS.length % 2 !== 0 ? " w-1/2 md:w-full mx-auto md:mx-0" : ""}`}>
                         <Link href={`/profile/${c.slug}`} className="block">
                           <div
                             className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
