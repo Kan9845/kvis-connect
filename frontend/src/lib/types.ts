@@ -298,4 +298,14 @@ export interface DirectoryCard {
   place_level2?: string;
   province_of_origin?: string | null;
   edu_scholarships?: string | null;
+  all_edu_unis?: string | null;
+  all_edu_locations?: string | null;
+  all_job_titles?: string | null;
+  all_employers?: string | null;
+  all_career_locations?: string | null;
+  all_launches?: string | null;
+  activities?: string | null;
+  competitions?: string | null;
+  experience_camps?: string | null;
+  clubs?: string | null;
 }

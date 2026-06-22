@@ -584,6 +584,20 @@ function KvisianInner() {
           u.edu_scholarships,
           u.hobbies ? (typeof u.hobbies === 'string' ? u.hobbies : JSON.stringify(u.hobbies)) : null,
           u.research_interests_text,
+          // all education + career entries (not just the most recent)
+          u.all_edu_unis,
+          u.all_edu_locations,
+          u.all_job_titles,
+          u.all_employers,
+          u.all_career_locations,
+          // experience, clubs, activities, launches (JSON text — substring match works)
+          u.activities,
+          u.competitions,
+          u.experience_camps,
+          u.clubs,
+          u.all_launches,
+          // cohort labels: "KVIS 1", "KVIS1", "K1", "Class of 2018"
+          u.kvis_year ? `KVIS ${u.kvis_year} KVIS${u.kvis_year} K${u.kvis_year} Class of ${2017 + u.kvis_year}` : null,
         ]
           .filter(Boolean)
           .join(" ")

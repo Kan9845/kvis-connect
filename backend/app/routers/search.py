@@ -43,7 +43,7 @@ def directory_list(session: Session = Depends(get_session)):
         SELECT
             u.id::text, u.slug, u.first_name, u.last_name, u.nickname, u.kvis_year,
             u.current_grade,
-            u.hobbies,
+            u.hobbies, u.activities, u.competitions, u.experience_camps, u.clubs,
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
             u.profile_pic_url, u.goose_config, u.country, u.place, u.place_level2,
             u.province_of_origin, u.mbti, u.interests,
@@ -74,7 +74,19 @@ def directory_list(session: Session = Depends(get_session)):
          WHERE user_id = u.id
          ORDER BY is_current DESC, end_year DESC NULLS FIRST LIMIT 1) AS edu_uni,
         (SELECT string_agg(scholarship, ' ') FROM education
-         WHERE user_id = u.id AND scholarship IS NOT NULL AND scholarship != '') AS edu_scholarships
+         WHERE user_id = u.id AND scholarship IS NOT NULL AND scholarship != '') AS edu_scholarships,
+        (SELECT string_agg(DISTINCT uni_name, ' ') FROM education
+         WHERE user_id = u.id AND uni_name IS NOT NULL AND uni_name != '') AS all_edu_unis,
+        (SELECT string_agg(DISTINCT CONCAT_WS(' ', country, state, city), ' ') FROM education
+         WHERE user_id = u.id) AS all_edu_locations,
+        (SELECT string_agg(DISTINCT job_title, ' ') FROM career
+         WHERE user_id = u.id AND job_title IS NOT NULL AND job_title != '') AS all_job_titles,
+        (SELECT string_agg(DISTINCT employer, ' ') FROM career
+         WHERE user_id = u.id AND employer IS NOT NULL AND employer != '') AS all_employers,
+        (SELECT string_agg(DISTINCT CONCAT_WS(' ', country, state, city), ' ') FROM career
+         WHERE user_id = u.id) AS all_career_locations,
+        (SELECT string_agg(DISTINCT CONCAT_WS(' ', name, innovation_type, role, description), ' ')
+         FROM launch WHERE user_id = u.id) AS all_launches
         FROM "user" u
         WHERE u.email_verified = TRUE AND u.is_deleted = FALSE
         ORDER BY u.kvis_year ASC NULLS LAST, u.first_name ASC
