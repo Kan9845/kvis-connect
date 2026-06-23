@@ -124,8 +124,8 @@ export interface UserPublic extends UserCard {
   nickname_public?: boolean;
   place_level2?: string;
   province_of_origin?: string | null;
-  zodiac?: string;
-  chronotype?: string;
+  zodiac?: string | null;
+  chronotype?: string | null;
   hobbies?: Record<string, string[]> | null;
   kvis_fav_menu?: string | null;
   kvis_fav_event?: string | null;
@@ -151,8 +151,8 @@ export interface UserMe extends UserPublic {
   kvis_email?: string;
   personal_email?: string | null;
   profile_setup_done: boolean;
-  zodiac?: string;
-  chronotype?: string;
+  zodiac?: string | null;
+  chronotype?: string | null;
   contact_email?: string;
   contact_email_public?: boolean;
   google_id?: string | null;

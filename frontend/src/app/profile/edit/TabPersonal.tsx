@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Trash2, Check, Dot } from "lucide-react";
+import { Plus, Trash2, Check, Dot, X } from "lucide-react";
 import { userApi } from "@/lib/api";
 import {
   SectionHead,
@@ -76,42 +76,70 @@ export function TabPersonal({
         title="Personality & vibe"
       />
       <FieldRow label="Zodiac">
-        <Select
-          defaultValue={me.zodiac ?? undefined}
-          onValueChange={(v) =>
-            userApi.updateMe({ zodiac: v }).then(refetch)
-          }
-        >
-          <SelectTrigger className={selectTriggerCls}>
-            <SelectValue placeholder="Select sign" />
-          </SelectTrigger>
-          <SelectContent>
-            {ZODIAC_SIGNS.map((z) => (
-              <SelectItem key={z} value={z}>
-                {z}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select
+            value={me.zodiac ?? undefined}
+            onValueChange={(v) =>
+              userApi.updateMe({ zodiac: v }).then(refetch)
+            }
+          >
+            <SelectTrigger className={`${selectTriggerCls} flex-1`}>
+              <SelectValue placeholder="Select sign" />
+            </SelectTrigger>
+            <SelectContent>
+              {ZODIAC_SIGNS.map((z) => (
+                <SelectItem key={z} value={z}>
+                  {z}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {me.zodiac && (
+            <button
+              type="button"
+              onClick={() =>
+                userApi.updateMe({ zodiac: null }).then(refetch)
+              }
+              aria-label="Clear zodiac"
+              className="text-[var(--kvis-text3)] hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </FieldRow>
       <FieldRow label="Chronotype">
-        <Select
-          defaultValue={me.chronotype ?? undefined}
-          onValueChange={(v) =>
-            userApi.updateMe({ chronotype: v }).then(refetch)
-          }
-        >
-          <SelectTrigger className={selectTriggerCls}>
-            <SelectValue placeholder="Select type" />
-          </SelectTrigger>
-          <SelectContent>
-            {CHRONOTYPES.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select
+            value={me.chronotype ?? undefined}
+            onValueChange={(v) =>
+              userApi.updateMe({ chronotype: v }).then(refetch)
+            }
+          >
+            <SelectTrigger className={`${selectTriggerCls} flex-1`}>
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent>
+              {CHRONOTYPES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {me.chronotype && (
+            <button
+              type="button"
+              onClick={() =>
+                userApi.updateMe({ chronotype: null }).then(refetch)
+              }
+              aria-label="Clear chronotype"
+              className="text-[var(--kvis-text3)] hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </FieldRow>
       <FieldRow label="Languages">
         <div className="space-y-2">
