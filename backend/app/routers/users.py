@@ -397,6 +397,8 @@ def get_globe_pins(session: Session = Depends(get_session)):
             mbti=u.mbti,
             current_job=_current_job(u),
             country=u.country,
+            teach_start_year=u.teach_start_year,
+            is_current_teacher=u.is_current_teacher,
         )
         for u in users
         if u.latitude is not None and u.longitude is not None
