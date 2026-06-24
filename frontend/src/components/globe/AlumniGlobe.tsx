@@ -3,7 +3,7 @@ import { memo, useRef, useEffect, useState, useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 import type { GlobePin } from "@/lib/types";
-import { hasValidGlobeCoords } from "@/lib/utils";
+import { hasValidGlobeCoords, isFaculty } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 // Loaded via a wrapper because next/dynamic does not forward refs; the wrapper
@@ -240,7 +240,7 @@ function makeMemberRow(p: GlobePin, onNavigate: (slug: string) => void): HTMLEle
   name.textContent = `${p.first_name} ${p.last_name}`;
   text.appendChild(name);
 
-  const metaParts = [p.kvis_year ? `K${p.kvis_year}` : null, p.current_job]
+  const metaParts = [!isFaculty(p) && p.kvis_year ? `K${p.kvis_year}` : null, p.current_job]
     .filter(Boolean)
     .join(" / ");
   if (metaParts) {

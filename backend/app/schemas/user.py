@@ -351,3 +351,5 @@ class GlobePin(BaseModel):
     mbti: Optional[str] = None
     current_job: Optional[str] = None
     country: Optional[str] = None
+    teach_start_year: Optional[int] = None
+    is_current_teacher: bool = False

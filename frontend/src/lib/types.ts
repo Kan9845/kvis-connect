@@ -190,6 +190,8 @@ export interface GlobePin {
   mbti?: string;
   current_job?: string;
   country?: string;
+  teach_start_year?: number;
+  is_current_teacher?: boolean;
 }
 
 export interface BlogAuthor {
