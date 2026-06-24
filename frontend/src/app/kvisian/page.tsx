@@ -444,11 +444,11 @@ function KvisianInner() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.push("/auth/login");
+      router.replace("/auth/register");
       return;
     }
     if (user.profile_setup_done === false) {
-      router.push("/onboarding");
+      router.replace("/onboarding");
     }
   }, [authLoading, user, router]);
 
@@ -695,7 +695,7 @@ function KvisianInner() {
   const showStudents = personType === "all" || personType === "students";
   const showFaculty = personType === "all" || personType === "faculty";
 
-  if (authLoading || !user) {
+  if (authLoading) {
     return (
       <PageEntrance>
         <div className="mx-auto max-w-6xl px-4 md:px-6 py-xl lg:py-layout">
@@ -714,6 +714,10 @@ function KvisianInner() {
         </div>
       </PageEntrance>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (
