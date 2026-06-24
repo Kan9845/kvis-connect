@@ -20,6 +20,8 @@ from app.schemas.user import (
     ProjectWrite, PublicationWrite, PortfolioLinkWrite,
     ExtraContactWrite, UserLanguageWrite, ResearchInterestBulkWrite, LaunchWrite,
 )
+from app.models.blog import Blog
+from app.models.blog_interactions import BlogLike, BlogComment
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -622,12 +624,52 @@ async def delete_account(
     session: Session = Depends(get_session),
 ):
     user = session.get(User, current_user.id)
+    
+    # Delete all user's blogs and their associated data (comments, likes)
+    user_blogs = session.exec(
+        select(Blog).where(Blog.author_id == current_user.id)
+    ).all()
+    
+    for blog in user_blogs:
+        # Delete all comments for this blog (replies first, then top-level)
+        all_comments = session.exec(
+            select(BlogComment).where(BlogComment.blog_id == blog.id)
+        ).all()
+        
+        # Delete replies first (comments with parent_id)
+        for comment in all_comments:
+            if comment.parent_id is not None:
+                session.delete(comment)
+        session.flush()
+        
+        # Then delete top-level comments
+        for comment in all_comments:
+            if comment.parent_id is None:
+                session.delete(comment)
+        session.flush()
+        
+        # Delete all likes for this blog
+        blog_likes = session.exec(
+            select(BlogLike).where(BlogLike.blog_id == blog.id)
+        ).all()
+        for like in blog_likes:
+            session.delete(like)
+        session.flush()
+        
+        # Finally delete the blog itself
+        session.delete(blog)
+        
+        # Invalidate cache for this blog
+        await invalidate_tags(f"blog:{blog.slug}")
+    
+    # Soft delete the user account
     user.is_deleted = True
     user.is_deleted_at = datetime.utcnow()
     session.add(user)
     session.commit()
+    
     response = Response()
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
-    await invalidate_tags("users", f"user:{user.slug}")
+    await invalidate_tags("users", f"user:{user.slug}", "blogs")
     return response
