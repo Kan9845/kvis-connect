@@ -118,7 +118,10 @@ def search_users(
     limit: int = Query(default=50, le=2000),
     offset: int = Query(default=0),
 ):
-    query = select(User).options(
+    query = select(User).where(
+        User.email_verified == True,
+        User.is_deleted == False,
+    ).options(
         selectinload(User.education),
         selectinload(User.career),
     )

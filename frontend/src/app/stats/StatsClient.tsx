@@ -24,7 +24,7 @@ import {
   StaggerItem,
 } from "@/components/ui/motion";
 import { Separator } from "@/components/ui/separator";
-import { cohortColor } from "@/lib/utils";
+import { cohortColor, isFaculty } from "@/lib/utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -349,7 +349,7 @@ export default function StatsClient() {
     setChartTickColor(readCssVar("--kvis-text3", "oklch(60% 0.006 294)"));
   }, [resolvedTheme]);
 
-  const { data: alumni = [], isLoading } = useQuery({
+  const { data: people = [], isLoading } = useQuery({
     queryKey: keys.stats.alumni(),
     queryFn: () =>
       api
@@ -359,6 +359,13 @@ export default function StatsClient() {
         .then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   });
+
+  // "Alumni" = registered Kvisians who are neither faculty nor current
+  // students. This matches the alumni count shown on the kvisian page.
+  const alumni = useMemo(
+    () => people.filter((u) => !isFaculty(u) && !u.current_grade),
+    [people],
+  );
 
   const cohorts = useMemo(() => {
     const ys = new Set<number>();
