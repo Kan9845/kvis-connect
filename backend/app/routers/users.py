@@ -211,7 +211,7 @@ def get_user(
             selectinload(User.extra_contacts),
         )
     ).first()
-    if not user:
+    if not user or user.is_deleted:
         raise HTTPException(404, detail="User not found")
 
     # A verified KVIS member (or the owner) sees KVIS-only content
@@ -380,7 +380,7 @@ async def replace_launches(
 @router.get("/globe/pins", response_model=list[GlobePin])
 @cached(key="globe", tags=["users"], ttl=settings.CACHE_TTL_LONG)
 def get_globe_pins(session: Session = Depends(get_session)):
-    users = session.exec(select(User)).all()
+    users = session.exec(select(User).where(User.is_deleted == False)).all()
     def _current_job(u: User):
         current = next((c for c in u.career if c.is_current), None) or (u.career[-1] if u.career else None)
         return f"{current.job_title} at {current.employer}" if current else None

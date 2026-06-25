@@ -101,17 +101,21 @@ async def register(body: RegisterRequest, session: Session = Depends(get_session
 
     existing = session.exec(select(User).where(User.email == body.email)).first()
 
-    if existing and existing.email_verified:
+    if existing and existing.email_verified and not existing.is_deleted:
         raise HTTPException(400, detail="Email already registered")
 
     if len(body.password) < 6:
         raise HTTPException(400, detail="Password must be at least 6 characters")
 
-    if existing and not existing.email_verified:
-        # Update credentials in case they changed name/password
+    if existing and (not existing.email_verified or existing.is_deleted):
+        # Re-registering an unverified or previously deleted account: revive it
+        # and require email re-verification before it goes live again.
         existing.hashed_password = hash_password(body.password)
         existing.first_name = body.first_name
         existing.last_name = body.last_name
+        existing.email_verified = False
+        existing.is_deleted = False
+        existing.is_deleted_at = None
         session.add(existing)
         session.commit()
         user = existing
