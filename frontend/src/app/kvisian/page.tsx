@@ -149,6 +149,7 @@ function Portrait({ u }: { u: DirectoryCard }) {
             src={u.profile_pic_url}
             alt={`${u.first_name} ${u.last_name}`}
             fill
+            unoptimized
             sizes="200px"
             className="object-cover grayscale-[30%] group-hover:grayscale-0 transition-[filter] duration-500"
           />

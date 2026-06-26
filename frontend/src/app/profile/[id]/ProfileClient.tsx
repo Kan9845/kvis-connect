@@ -326,6 +326,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                       {user.profile_pic_url ? (
                         <Image src={user.profile_pic_url} alt={`${user.first_name} ${user.last_name}`}
                           fill sizes="(max-width: 640px) 80px, (max-width: 768px) 112px, 160px"
+                          unoptimized
                           className="object-cover" priority />
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center font-black text-2xl sm:text-3xl md:text-4xl"
