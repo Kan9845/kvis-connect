@@ -112,6 +112,7 @@ class ProjectWrite(BaseModel):
     description: Optional[str] = None
     status: str = "ongoing"
     link: Optional[str] = None
+    is_public: bool = True
 
 
 # ─── Publication ──────────────────────────────────────────────────────────────
@@ -119,6 +120,7 @@ class ProjectWrite(BaseModel):
 class PublicationWrite(BaseModel):
     citation: str
     doi: Optional[str] = None
+    is_public: bool = True
 
 
 # ─── Portfolio Link ───────────────────────────────────────────────────────────
@@ -126,6 +128,7 @@ class PublicationWrite(BaseModel):
 class PortfolioLinkWrite(BaseModel):
     type: str
     url: str
+    is_public: bool = True
 
 
 # ─── Extra Contact ───────────────────────────────────────────────────────────
@@ -141,6 +144,7 @@ class ExtraContactWrite(BaseModel):
 class UserLanguageWrite(BaseModel):
     lang: str
     proficiency: Optional[str] = None
+    is_public: bool = True
 
 
 # ─── Research Interest ────────────────────────────────────────────────────────
@@ -159,6 +163,7 @@ class LaunchWrite(BaseModel):
     status: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
+    is_public: bool = True
 
 
 # ─── User ─────────────────────────────────────────────────────────────────────

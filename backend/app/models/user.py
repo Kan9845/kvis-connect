@@ -72,6 +72,7 @@ class Project(SQLModel, table=True):
     description: Optional[str] = None
     status: str = "ongoing"
     link: Optional[str] = None
+    is_public: bool = True
     order_index: int = 0
     user: Optional["User"] = Relationship(back_populates="projects")
 
@@ -81,6 +82,7 @@ class Publication(SQLModel, table=True):
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     citation: str
     doi: Optional[str] = None
+    is_public: bool = True
     order_index: int = 0
     user: Optional["User"] = Relationship(back_populates="publications")
 
@@ -91,6 +93,7 @@ class PortfolioLink(SQLModel, table=True):
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     type: str
     url: str
+    is_public: bool = True
     order_index: int = 0
     user: Optional["User"] = Relationship(back_populates="portfolio_links")
 
@@ -111,6 +114,7 @@ class UserLanguage(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     lang: str
+    is_public: bool = True
     proficiency: Optional[str] = None
     order_index: int = 0
     user: Optional["User"] = Relationship(back_populates="languages")
@@ -135,6 +139,7 @@ class Launch(SQLModel, table=True):
     status: Optional[str] = None
     description: Optional[str] = None
     link: Optional[str] = None
+    is_public: bool = True
     order_index: int = 0
     user: Optional["User"] = Relationship(back_populates="launches")
 

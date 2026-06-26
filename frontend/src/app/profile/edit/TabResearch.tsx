@@ -13,6 +13,7 @@ import { Plus, Trash2, Check } from "lucide-react";
 import {
   SectionHead,
   FieldRow,
+  PrivacyToggle,
   TagPills,
   inputCls,
   textareaCls,
@@ -34,6 +35,7 @@ type LaunchItem = {
   status?: string;
   description?: string;
   link?: string;
+  is_public?: boolean;
 };
 
 interface TabResearchProps {
@@ -49,6 +51,7 @@ interface TabResearchProps {
     description?: string;
     status: string;
     link?: string;
+    is_public?: boolean
   }[];
   setProjects: React.Dispatch<React.SetStateAction<{
     title: string;
@@ -57,11 +60,12 @@ interface TabResearchProps {
     description?: string;
     status: string;
     link?: string;
+    is_public?: boolean
   }[]>>;
-  publications: { citation: string; doi?: string }[];
-  setPublications: React.Dispatch<React.SetStateAction<{ citation: string; doi?: string }[]>>;
-  portfolioLinks: { type: string; url: string }[];
-  setPortfolioLinks: React.Dispatch<React.SetStateAction<{ type: string; url: string }[]>>;
+  publications: { citation: string; doi?: string; is_public?: boolean}[];
+  setPublications: React.Dispatch<React.SetStateAction<{ citation: string; doi?: string; is_public?: boolean}[]>>;
+  portfolioLinks: { type: string; url: string; is_public?: boolean }[];
+  setPortfolioLinks: React.Dispatch<React.SetStateAction<{ type: string; url: string; is_public?: boolean }[]>>;
   launches: LaunchItem[];
   setLaunches: React.Dispatch<React.SetStateAction<LaunchItem[]>>;
   saveResearch: () => Promise<void>;
@@ -142,6 +146,14 @@ export function TabResearch({
               <Trash2 className="h-3 w-3" /> Remove
             </button>
           </div>
+          <PrivacyToggle
+            value={p.is_public ?? true}
+            onChange={(v) =>
+              setProjects((prev) =>
+                prev.map((x, j) => (j === i ? { ...x, is_public: v } : x)),
+              )
+            }
+          />
           <FieldRow label="Title" required>
             <Input
               placeholder="e.g. Machine Learning Model for Climate Prediction"
@@ -242,7 +254,7 @@ export function TabResearch({
           onClick={() =>
             setProjects((prev) => [
               ...prev,
-              { title: "", status: "Ongoing" },
+              { title: "", status: "Ongoing", is_public: true },
             ])
           }
           className="mt-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
@@ -271,6 +283,14 @@ export function TabResearch({
               <Trash2 className="h-3 w-3" /> Remove
             </button>
           </div>
+          <PrivacyToggle
+            value={p.is_public ?? true}
+            onChange={(v) =>
+              setPublications((prev) =>
+                prev.map((x, j) => (j === i ? { ...x, is_public: v } : x)),
+              )
+            }
+          />
           <FieldRow label="Citation" hint="Paste APA style.">
             <Textarea
               placeholder="e.g. Smith, J., Johnson, A., & Lee, M. (2024). Title of research paper. Journal Name, 15(3), 123-145."
@@ -306,7 +326,7 @@ export function TabResearch({
         <button
           type="button"
           onClick={() =>
-            setPublications((prev) => [...prev, { citation: "" }])
+            setPublications((prev) => [...prev, { citation: "", is_public: true }])
           }
           className="mt-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
         >
@@ -320,10 +340,18 @@ export function TabResearch({
         title="Portfolio links"
       />
       {portfolioLinks.map((l, i) => (
-        <div
-          key={i}
-          className="py-3"
-        >
+        <div key={i} className="py-3">
+          <div className="mb-3">
+            <PrivacyToggle
+              value={l.is_public ?? true}
+              onChange={(v) =>
+                setPortfolioLinks((prev) =>
+                  prev.map((x, j) => (j === i ? { ...x, is_public: v } : x)),
+                )
+              }
+            />
+          </div>
+            
           <div className="flex items-center gap-3">
             <Select
               value={l.type}
@@ -344,6 +372,7 @@ export function TabResearch({
                 ))}
               </SelectContent>
             </Select>
+              
             <Input
               placeholder="https://..."
               value={l.url}
@@ -356,12 +385,11 @@ export function TabResearch({
               }
               className={`${inputCls} flex-1`}
             />
+
             <button
               type="button"
               onClick={() =>
-                setPortfolioLinks((prev) =>
-                  prev.filter((_, j) => j !== i),
-                )
+                setPortfolioLinks((prev) => prev.filter((_, j) => j !== i))
               }
               className="text-[var(--kvis-text3)] hover:text-foreground"
             >
@@ -376,7 +404,7 @@ export function TabResearch({
           onClick={() =>
             setPortfolioLinks((prev) => [
               ...prev,
-              { type: "GitHub", url: "" },
+              { type: "GitHub", url: "", is_public: true },
             ])
           }
           className="mt-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"
@@ -404,6 +432,14 @@ export function TabResearch({
               <Trash2 className="h-3 w-3" /> Remove
             </button>
           </div>
+          <PrivacyToggle
+            value={l.is_public ?? true}
+            onChange={(v) =>
+              setLaunches((prev) =>
+                prev.map((x, j) => (j === i ? { ...x, is_public: v } : x)),
+              )
+            }
+          />
           <FieldRow label="Product / Initiative Name" required>
             <Input
               placeholder="e.g. Khee, Leagues of Code TH, KVIS Connect"
@@ -518,7 +554,7 @@ export function TabResearch({
           onClick={() =>
             setLaunches((prev) => [
               ...prev,
-              { name: "", innovation_type: "", role: "" },
+              { name: "", innovation_type: "", role: "", is_public: true },
             ])
           }
           className="mt-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.18em] text-[var(--kvis-text3)] hover:text-foreground transition-colors"

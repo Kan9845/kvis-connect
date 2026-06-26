@@ -551,21 +551,28 @@ def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False)
         "research_interests": [r.interest for r in sorted(user.research_interests, key=lambda x: x.order_index)],
         "projects": [
             {"title": p.title, "advisor": p.advisor, "advisor2": p.advisor2,
-             "description": p.description, "status": p.status, "link": p.link}
+             "description": p.description, "status": p.status, "link": p.link,
+             "is_public": p.is_public}
             for p in sorted(user.projects, key=lambda x: x.order_index)
+            if p.is_public or is_kvis
         ],
         "publications": [
-            {"citation": p.citation, "doi": p.doi}
+            {"citation": p.citation, "doi": p.doi, "is_public": p.is_public}
             for p in sorted(user.publications, key=lambda x: x.order_index)
+            if p.is_public or is_kvis
         ],
         "portfolio_links": [
-            {"type": p.type, "url": p.url}
+            {"type": p.type, "url": p.url, "is_public": p.is_public}
             for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
+            if p.is_public or is_kvis
         ],
         "launches": [
-            {"name": l.name, "innovation_type": l.innovation_type, "innovation_type_other": l.innovation_type_other,
-             "role": l.role, "status": l.status, "description": l.description, "link": l.link}
+            {"name": l.name, "innovation_type": l.innovation_type,
+             "innovation_type_other": l.innovation_type_other, "role": l.role,
+             "status": l.status, "description": l.description, "link": l.link,
+             "is_public": l.is_public}
             for l in sorted(user.launches, key=lambda x: x.order_index)
+            if l.is_public or is_kvis
         ],
         "extra_contacts": [
             {"type": c.type, "value": c.value, "public": c.is_public}
@@ -626,21 +633,20 @@ def _user_to_me(user: User) -> dict:
         "clubs": _parse_json_list(user.clubs),
         "projects": [
             {"title": p.title, "advisor": p.advisor, "advisor2": p.advisor2,
-             "description": p.description, "status": p.status, "link": p.link}
-            for p in sorted(user.projects, key=lambda x: x.order_index)
+             "description": p.description, "status": p.status, "link": p.link,
+             "is_public": p.is_public}
         ],
         "publications": [
-            {"citation": p.citation, "doi": p.doi}
-            for p in sorted(user.publications, key=lambda x: x.order_index)
+            {"citation": p.citation, "doi": p.doi, "is_public": p.is_public}
         ],
         "portfolio_links": [
-            {"type": p.type, "url": p.url}
-            for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
+            {"type": p.type, "url": p.url, "is_public": p.is_public}
         ],
         "launches": [
-            {"name": l.name, "innovation_type": l.innovation_type, "innovation_type_other": l.innovation_type_other,
-             "role": l.role, "status": l.status, "description": l.description, "link": l.link}
-            for l in sorted(user.launches, key=lambda x: x.order_index)
+            {"name": l.name, "innovation_type": l.innovation_type,
+             "innovation_type_other": l.innovation_type_other, "role": l.role,
+             "status": l.status, "description": l.description, "link": l.link,
+             "is_public": l.is_public}
         ],
         "education": _edu_list(user, public_only=False),
         "career": _career_list(user, public_only=False),

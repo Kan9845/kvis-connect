@@ -136,9 +136,9 @@ export interface UserPublic extends UserCard {
   clubs?: ClubLeadership[] | null;
   research_keywords?: string;
   research_interests?: string[];
-  projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
-  publications?: { citation: string; doi?: string }[];
-  portfolio_links?: { type: string; url: string }[];
+  projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string; is_public?: boolean }[];
+  publications?: { citation: string; doi?: string; is_public?: boolean }[];
+  portfolio_links?: { type: string; url: string; is_public?: boolean }[];
   goose_config?: string;
 }
 
@@ -160,9 +160,9 @@ export interface UserMe extends UserPublic {
   interests_public?: boolean;
   research_interests: string[];
   research_keywords?: string;
-  projects: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string }[];
-  publications: { citation: string; doi?: string }[];
-  portfolio_links: { type: string; url: string }[];
+  projects?: { title: string; advisor?: string; advisor2?: string; description?: string; status: string; link?: string; is_public?: boolean }[];
+  publications?: { citation: string; doi?: string; is_public?: boolean }[];
+  portfolio_links?: { type: string; url: string; is_public?: boolean }[];
   languages: { lang: string; proficiency?: string }[];
   hobbies?: Record<string, string[]>;
   kvis_fav_menu?: string;
