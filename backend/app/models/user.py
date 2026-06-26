@@ -114,7 +114,6 @@ class UserLanguage(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
     lang: str
-    is_public: bool = True
     proficiency: Optional[str] = None
     order_index: int = 0
     user: Optional["User"] = Relationship(back_populates="languages")
