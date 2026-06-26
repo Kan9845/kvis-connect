@@ -20,12 +20,27 @@ function parseInterests(t?: string) {
 
 function hostname(url: string) {
   try {
-    const u = new URL(url);
+    const u = new URL(normalizeHref(url));
     const host = u.hostname.replace(/^www\./, "");
     const path = u.pathname.replace(/\/$/, "");
     return path ? host + path : host;
   }
   catch { return url; }
+}
+
+function normalizeHref(raw: string) {
+  const value = raw.trim();
+  if (!value) return value;
+  if (/^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(value) || /^[a-z][a-z0-9+.-]*:/i.test(value)) {
+    return value;
+  }
+  if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+    return `mailto:${value}`;
+  }
+  if (/^(?:localhost|[\w-]+(?:\.[\w-]+)+)(?::\d+)?(?:[/?#]|$)/i.test(value)) {
+    return `https://${value}`;
+  }
+  return value;
 }
 
 function parseTags(t?: string) {
@@ -108,15 +123,16 @@ function BrandIcon({ label, href }: { label: string; href: string }) {
 }
 
 function ContactRow({ label, display, href }: { label: string; display: string; href: string }) {
-  const external = /^https?:/.test(href);
+  const resolvedHref = normalizeHref(href);
+  const external = /^https?:/i.test(resolvedHref);
   return (
     <a
-      href={href}
+      href={resolvedHref}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
       className="group flex items-center gap-4 py-md border-b border-[var(--kvis-border)]"
     >
-      <BrandIcon label={label} href={href} />
+      <BrandIcon label={label} href={resolvedHref} />
       <span className="flex-1 text-sm text-foreground truncate group-hover:underline decoration-2 underline-offset-[5px] decoration-[var(--kvis-purple)]">
         {display}
       </span>
@@ -715,7 +731,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                               )}
                             </div>
                             {p.link && (
-                              <a href={p.link} target="_blank" rel="noopener noreferrer"
+                              <a href={normalizeHref(p.link)} target="_blank" rel="noopener noreferrer"
                                 className="text-[var(--kvis-text3)] hover:text-foreground transition-colors shrink-0 pt-1">
                                 <ExternalLink className="h-4 w-4" />
                               </a>
@@ -741,7 +757,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                             </span>
                             <p className="text-sm leading-relaxed text-foreground">{p.citation}</p>
                             {p.doi && (
-                              <a href={/^https?:/.test(p.doi) ? p.doi : `https://doi.org/${p.doi}`}
+                              <a href={normalizeHref(/^https?:/.test(p.doi) ? p.doi : `https://doi.org/${p.doi}`)}
                                 target="_blank" rel="noopener noreferrer"
                                 className="text-[var(--kvis-text3)] hover:text-foreground transition-colors shrink-0 pt-0.5">
                                 <ExternalLink className="h-4 w-4" />
@@ -788,7 +804,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                               )}
                             </div>
                             {l.link && (
-                              <a href={l.link} target="_blank" rel="noopener noreferrer"
+                              <a href={normalizeHref(l.link)} target="_blank" rel="noopener noreferrer"
                                 className="text-[var(--kvis-text3)] hover:text-foreground transition-colors shrink-0 pt-1">
                                 <ExternalLink className="h-4 w-4" />
                               </a>

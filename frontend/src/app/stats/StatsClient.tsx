@@ -24,7 +24,7 @@ import {
   StaggerItem,
 } from "@/components/ui/motion";
 import { Separator } from "@/components/ui/separator";
-import { cohortColor, isFaculty } from "@/lib/utils";
+import { cohortColor, isFaculty, normalizeCountryLabel } from "@/lib/utils";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -437,7 +437,7 @@ export default function StatsClient() {
     const c = new Map<string, number>();
     filtered.forEach((u) => {
       const e = primaryEducation(u);
-      const country = e?.country;
+      const country = normalizeCountryLabel(e?.country);
       if (!country) return;
       c.set(country, (c.get(country) ?? 0) + 1);
     });

@@ -19,6 +19,7 @@ import {
   facultyPeriodLabel,
   FACULTY_COLOR,
   cohortColor,
+  normalizeCountryLabel,
 } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { AvatarCanvas } from "@/components/avatar/AvatarCanvas";
@@ -537,7 +538,8 @@ function KvisianInner() {
   const countries = useMemo(() => {
     const m = new Map<string, number>();
     rawPeople.forEach((u) => {
-      if (u.country) m.set(u.country, (m.get(u.country) ?? 0) + 1);
+      const country = normalizeCountryLabel(u.country);
+      if (country) m.set(country, (m.get(country) ?? 0) + 1);
     });
     return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
   }, [rawPeople]);
@@ -554,7 +556,7 @@ function KvisianInner() {
   const filtered = useMemo(() => {
     return sourceList.filter((u) => {
       if (activeCohort && u.kvis_year !== parseInt(activeCohort)) return false;
-      if (activeCountry && u.country !== activeCountry) return false;
+      if (activeCountry && normalizeCountryLabel(u.country) !== activeCountry) return false;
       if (activeGrade && u.current_grade !== parseInt(activeGrade))
         return false;
       if (activeField) {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, normalizeCountryLabel } from "@/lib/utils";
 import {
   Command, CommandEmpty, CommandGroup, CommandInput,
   CommandItem, CommandList,
@@ -44,7 +44,7 @@ function normalizeLocationName(
 
 async function fetchCountries(): Promise<string[]> {
   if (countriesCache) return countriesCache;
-  countriesCache = COUNTRIES.map((c) => c.label).sort();
+  countriesCache = Array.from(new Set(COUNTRIES.map((c) => normalizeCountryLabel(c.label)))).sort();
   return countriesCache;
 }
 
@@ -112,6 +112,7 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [countries, setCountries] = useState<string[]>([]);
+  const normalizedValue = normalizeCountryLabel(value);
 
   useEffect(() => {
     fetchCountries().then(setCountries);
@@ -139,8 +140,8 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
           style={{ borderColor: variant === "bordered" ? (borderColor ?? "var(--sep-input)") : "var(--sep-input)" }}
           onClick={() => setOpen((o) => !o)}
         >
-          <span className={cn(value ? "text-foreground" : "text-foreground/40")}>
-            {value || "Select country..."}
+          <span className={cn(normalizedValue ? "text-foreground" : "text-foreground/40")}>
+            {normalizedValue || "Select country..."}
           </span>
           <ChevronsUpDown className="h-4 w-4 opacity-40 shrink-0" />
         </button>
@@ -153,12 +154,12 @@ export function CountrySelect({ value, onChange, borderColor, variant = "bordere
               ? <CommandEmpty>No match</CommandEmpty>
               : <CommandGroup>
                   <CommandItem value="" onSelect={() => { onChange(""); setOpen(false); setQuery(""); }}>
-                    <Check className={cn("mr-2 h-4 w-4 shrink-0", !value ? "opacity-100" : "opacity-0")} />
+                    <Check className={cn("mr-2 h-4 w-4 shrink-0", !normalizedValue ? "opacity-100" : "opacity-0")} />
                     Any country
                   </CommandItem>
                   {filtered.map((c) => (
-                    <CommandItem key={c} value={c} onSelect={() => { onChange(value === c ? "" : c); setOpen(false); setQuery(""); }}>
-                      <Check className={cn("mr-2 h-4 w-4 shrink-0", value === c ? "opacity-100" : "opacity-0")} />
+                    <CommandItem key={c} value={c} onSelect={() => { onChange(normalizedValue === c ? "" : c); setOpen(false); setQuery(""); }}>
+                      <Check className={cn("mr-2 h-4 w-4 shrink-0", normalizedValue === c ? "opacity-100" : "opacity-0")} />
                       {c}
                     </CommandItem>
                   ))}

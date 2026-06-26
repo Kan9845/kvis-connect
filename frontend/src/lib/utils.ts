@@ -44,6 +44,16 @@ export function formatDate(iso: string) {
   });
 }
 
+const COUNTRY_LABEL_ALIASES: Record<string, string> = {
+  "Korea, Republic of": "South Korea",
+};
+
+export function normalizeCountryLabel(country?: string | null) {
+  const value = country?.trim();
+  if (!value) return "";
+  return COUNTRY_LABEL_ALIASES[value] ?? value;
+}
+
 const PURPLE_SHADES = [
   { color: 'var(--cohort-p1)', hex: '#6d28d9', dark: '#4c1d95', soft: '#ede9fe' },
   { color: 'var(--cohort-p2)', hex: '#7c3aed', dark: '#5b21b6', soft: '#f0ebff' },

@@ -37,7 +37,7 @@ import { userApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
 import type { GlobePin } from "@/lib/types";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
-import { cohortColor, cohortColorHex } from "@/lib/utils";
+import { cohortColor, cohortColorHex, normalizeCountryLabel } from "@/lib/utils";
 import { NotificationBell } from "@/components/NotificationBell";
 
 function AlumniSearch({
@@ -48,6 +48,7 @@ function AlumniSearch({
   dark?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -65,13 +66,19 @@ function AlumniSearch({
           .filter((p) => {
             const q = query.toLowerCase();
             const name = `${p.first_name} ${p.last_name} ${p.nickname ?? ""}`.toLowerCase();
+            const country = normalizeCountryLabel(p.country).toLowerCase();
             return (
               name.includes(q) ||
-              p.country?.toLowerCase().includes(q) ||
+              country.includes(q) ||
               p.current_job?.toLowerCase().includes(q)
             );
           })
           .slice(0, 8);
+
+  useEffect(() => {
+    setOpen(false);
+    setQuery("");
+  }, [pathname]);
 
   useEffect(() => {
     function handle(e: MouseEvent) {
@@ -91,10 +98,14 @@ function AlumniSearch({
         <input
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
+            const next = e.target.value;
+            setQuery(next);
+            setOpen(next.trim().length > 0);
           }}
-          onFocus={() => setOpen(true)}
+          onFocus={() => setOpen(query.trim().length > 0)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setOpen(false);
+          }}
           placeholder="Search alumni..."
           className={`flex-1 py-2.5 text-sm bg-transparent outline-none w-full ${dark ? "text-white placeholder:text-white/60" : "text-foreground placeholder:text-muted-foreground"}`}
         />
@@ -107,8 +118,9 @@ function AlumniSearch({
         >
           {results.map((p) => (
             <button
+              type="button"
               key={p.user_id}
-              onMouseDown={() => {
+              onClick={() => {
                 router.push(`/profile/${p.slug}`);
                 setOpen(false);
                 setQuery("");
@@ -133,12 +145,8 @@ function AlumniSearch({
                 <p className="text-sm font-medium text-foreground transition-colors truncate">
                   {p.first_name} {p.last_name}
                 </p>
-                <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                  {[p.current_job, p.country].filter(Boolean).map((item, i, arr) => (
-                    <span key={item}>
-                      {item}{i < arr.length - 1 && <Dot className="h-3 w-3 shrink-0" aria-hidden />}
-                    </span>
-                  ))}
+                <p className="text-xs text-muted-foreground truncate">
+                  {[p.place, normalizeCountryLabel(p.country)].filter(Boolean).join(", ")}
                 </p>
               </div>
             </button>
