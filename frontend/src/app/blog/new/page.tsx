@@ -237,7 +237,7 @@ export default function NewBlogPage() {
               <div>
                 {/* Preview + remove */}
                 {watch("cover_image_url") && (
-                  <div className="relative mb-4 group w-full aspect-[2/1] overflow-hidden border" style={{ borderColor: P.rule }}>
+                  <div className="relative mb-4 group w-full aspect-video overflow-hidden border" style={{ borderColor: P.rule }}>
                     <img
                       src={watch("cover_image_url") ?? ""}
                       alt="Cover preview"
