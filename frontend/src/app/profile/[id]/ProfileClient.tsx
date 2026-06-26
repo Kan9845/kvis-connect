@@ -47,6 +47,25 @@ function parseTags(t?: string) {
   return (t ?? "").split(",").map((x) => x.trim()).filter(Boolean);
 }
 
+function parseHobbiesValue(hobbies: unknown): Record<string, any> {
+  if (!hobbies) return {};
+
+  if (typeof hobbies === "string") {
+    try {
+      const parsed = JSON.parse(hobbies);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? parsed
+        : {};
+    } catch {
+      return {};
+    }
+  }
+
+  return typeof hobbies === "object" && !Array.isArray(hobbies)
+    ? (hobbies as Record<string, any>)
+    : {};
+}
+
 function SectionHead({ numeral, kicker }: { numeral: string; kicker: React.ReactNode }) {
   return (
     <header className="pt-xl pb-md">
@@ -276,8 +295,14 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   if (user.website_url && canSee(user.website_public ?? true)) contacts.push({ label: "Website", display: hostname(user.website_url), href: user.website_url });
   if (user.line_id && canSee(user.line_id_public ?? true)) contacts.push({ label: "LINE", display: user.line_id, href: `https://line.me/ti/p/~${user.line_id}` });
   (user.extra_contacts ?? []).forEach((ec: any) => {
-    if (!ec.public) return;
-    contacts.push({ label: ec.type, display: ec.value, href: ec.value.startsWith("http") ? ec.value : `mailto:${ec.value}` });
+    const value = typeof ec.value === "string" ? ec.value : "";
+    if (!ec.public || !value) return;
+    
+    contacts.push({
+      label: ec.type,
+      display: value,
+      href: value.startsWith("http") ? value : `mailto:${value}`,
+    });
   });
   (user.portfolio_links ?? []).forEach((pl) => {
     contacts.push({ label: pl.type, display: hostname(pl.url), href: pl.url });
@@ -291,9 +316,11 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
   const hasPersonality = !!me && (!!user.mbti || !!user.zodiac || !!user.chronotype);
 
-  const hasHobbies = !!me && !!user.hobbies && Object.values(
-    typeof user.hobbies === 'string' ? JSON.parse(user.hobbies) : user.hobbies
-  ).some((v: any) => Array.isArray(v) ? v.length > 0 : !!v);
+  const hobbies = parseHobbiesValue(user.hobbies);
+
+  const hasHobbies = !!me && Object.values(hobbies).some((v: any) =>
+    Array.isArray(v) ? v.length > 0 : !!v,
+  );
 
   const hasNostalgia = !!me && !!(user.kvis_fav_menu || user.kvis_fav_event || user.kvis_fav_area);
   const hasActivities = (user.activities?.length ?? 0) > 0;
@@ -426,25 +453,25 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                           {cohortLabel(cohortYear)}
                         </span>
                       )}
-                  
+
                       {user.current_status && (() => {
                         const label = CURRENT_STATUS_OPTIONS.flatMap((g) => g.options).find(
                           (o) => o.value === user.current_status,
                         )?.label;
-                      
+
                         return label ? (
                           <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
                             {label}
                           </span>
                         ) : null;
                       })()}
-                  
+
                       {user.province_of_origin && (
                         <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
                           Origin: {user.province_of_origin}
                         </span>
                       )}
-                  
+
                       {(user.interests_public !== false || !!me) &&
                         interests.slice(0, 4).map((t) => (
                           <span
@@ -945,7 +972,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
               <section>
                 <SectionHead numeral={numeralFor("hobbies")} kicker="Hobbies & Interests" />
                 <div className="pb-lg border-b border-[var(--kvis-border)]">
-                  {Object.entries(typeof user.hobbies === 'string' ? JSON.parse(user.hobbies) : user.hobbies)
+                  {Object.entries(hobbies)
                     .filter(([_, v]: any) => Array.isArray(v) ? v.length > 0 : !!v)
                     .map(([category, items]: any) => (
                       <div key={category} className="pt-lg">
