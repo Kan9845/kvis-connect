@@ -31,6 +31,7 @@ export const CURRENT_STATUS_OPTIONS = [
   {
     group: "Professional",
     options: [
+      { value: "working_academia", label: "Working (Academia)" },
       { value: "working", label: "Working (Industry / Sector)" },
       { value: "founder", label: "Business Owner / Founder" },
       { value: "gap", label: "Gap Year / Exploring" },
