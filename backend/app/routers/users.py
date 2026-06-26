@@ -68,11 +68,29 @@ COUNTRY_CODES = {
     "Zimbabwe": "zw",
 }
 
+COUNTRY_ALIASES = {
+    "HK": "Hong Kong",
+    "Hong Kong SAR": "Hong Kong",
+    "Hong Kong SAR China": "Hong Kong",
+    "Hong Kong S.A.R.": "Hong Kong",
+}
+
+COUNTRY_FALLBACK_COORDS = {
+    "Hong Kong": (22.396428, 114.109497),
+}
+
+def _canonical_country(country: str | None) -> str | None:
+    if not country:
+        return None
+    country = country.strip()
+    return COUNTRY_ALIASES.get(country, country)
+
 async def _geocode(query: str, country: str = None) -> tuple[float, float] | None:
     try:
+        canonical_country = _canonical_country(country)
         params = {"q": query, "format": "json", "limit": 1}
-        if country and country in COUNTRY_CODES:
-            params["countrycodes"] = COUNTRY_CODES[country]
+        if canonical_country and canonical_country in COUNTRY_CODES:
+            params["countrycodes"] = COUNTRY_CODES[canonical_country]
         async with httpx.AsyncClient(timeout=5.0) as client:
             r = await client.get(
                 "https://nominatim.openstreetmap.org/search",
@@ -131,22 +149,26 @@ async def update_me(
     if name_changed:
         user.slug = unique_user_slug(session, user.first_name, user.last_name, exclude_id=user.id)
     if any(k in data for k in ("place", "place_level2", "country")):
+        canonical_country = _canonical_country(user.country)
+
         geo_query = ", ".join(filter(None, [
             user.place,
             user.place_level2,
-            user.country,
+            canonical_country,
         ]))
         coords = None
         if geo_query:
-            coords = await _geocode(geo_query, user.country)
-        if not coords and user.country:
-            coords = await _geocode(user.country, user.country)
+            coords = await _geocode(geo_query, canonical_country)
+        if not coords and canonical_country:
+            coords = await _geocode(canonical_country, canonical_country)
+        if not coords and canonical_country in COUNTRY_FALLBACK_COORDS:
+            coords = COUNTRY_FALLBACK_COORDS[canonical_country]
         if coords:
             user.latitude, user.longitude = coords
     user.updated_at = datetime.utcnow()
     session.add(user)
     session.commit()
-    await invalidate_tags("users", f"user:{old_slug}", f"user:{user.slug}")
+    await invalidate_tags("users", f"user:{old_slug}", f"user:{user.slug}", "globe", "search")
     return _user_to_me(_load_me(session, user.id))
 
 
