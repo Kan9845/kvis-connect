@@ -2,6 +2,7 @@ import uuid
 from pydantic import BaseModel
 from typing import Optional, List, Any
 from datetime import datetime
+from pydantic import Field
 
 
 # ─── Education ────────────────────────────────────────────────────────────────
@@ -205,7 +206,7 @@ class UserPublic(BaseModel):
     instagram_public: bool = True
     website_public: bool = True
     line_id_public: bool = True
-    extra_contacts: List[Any] = []
+    extra_contacts: List[Any] = Field(default_factory=list)
     line_id: Optional[str] = None
     # Research (JSON-serialized lists/objects stored as text in DB)
     research_interests: List[str] = []
@@ -235,7 +236,7 @@ class UserMe(UserPublic):
     line_id: Optional[str] = None
     contact_email: Optional[str] = None
     contact_email_public: bool = True
-    extra_contacts: List[Any] = []
+    extra_contacts: List[Any] = Field(default_factory=list)
     email_verified: bool
     is_verified: bool
     kvis_email: Optional[str] = None

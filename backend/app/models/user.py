@@ -182,7 +182,6 @@ class User(SQLModel, table=True):
     instagram_url: Optional[str] = None
     line_id: Optional[str] = None
     website_url: Optional[str] = None
-    extra_contacts: Optional[str] = None   # JSON list stored as text
     contact_email: Optional[str] = None
     contact_email_public: bool = True
     

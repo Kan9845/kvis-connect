@@ -165,10 +165,27 @@ async def upload_blog_image(
         s3_kwargs["region_name"] = settings.S3_REGION
 
     s3 = boto3.client("s3", **s3_kwargs)
-    ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
+    ext_by_type = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+    }
+    if file.content_type not in ext_by_type:
+        raise HTTPException(400, detail="Only JPG, PNG, and WebP images are supported")
+    
+    ext = ext_by_type[file.content_type]
     key = f"blogs/{current_user.id}/{uuid.uuid4()}.{ext}"
-    s3.upload_fileobj(file.file, settings.S3_BUCKET, key, ExtraArgs={"ContentType": file.content_type})
 
+    s3.upload_fileobj(
+        file.file,
+        settings.S3_BUCKET,
+        key,
+        ExtraArgs={
+            "ContentType": file.content_type,
+            # Only add this if your S3 provider/bucket supports ACLs:
+            # "ACL": "public-read",
+        },
+    )
     public_url = getattr(settings, "S3_PUBLIC_URL", "")
     if public_url:
         url = f"{public_url}/{key}"

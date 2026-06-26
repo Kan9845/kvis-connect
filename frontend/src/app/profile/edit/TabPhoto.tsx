@@ -281,7 +281,7 @@ export function TabPhoto({
             </Button>
             {profileMode === "upload" && (
               <label className="inline-flex items-center gap-2 cursor-pointer px-6 py-3 text-xs font-bold uppercase tracking-[0.28em] border border-foreground/30 text-foreground hover:bg-foreground hover:text-background transition-colors">
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePicChange} />
+                <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handlePicChange} />
                 <Upload className="h-3.5 w-3.5" /> Choose file
               </label>
             )}
