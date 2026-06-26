@@ -66,6 +66,19 @@ function parseHobbiesValue(hobbies: unknown): Record<string, any> {
     : {};
 }
 
+function parseGooseConfig(value: unknown) {
+  if (!value || typeof value !== "string") return null;
+
+  try {
+    const parsed = JSON.parse(value);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 function SectionHead({ numeral, kicker }: { numeral: string; kicker: React.ReactNode }) {
   return (
     <header className="pt-xl pb-md">
@@ -268,6 +281,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   const isMe = me?.slug === slug;
   const canSee = (isPublic: boolean | undefined) => (isPublic ?? true) || !!me;
   const initials = `${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase();
+  const gooseConfig = parseGooseConfig(user.goose_config);
   const interests = parseInterests(user.interests);
   const currentRole = user.career?.find((c) => c.is_current) ?? user.career?.[0];
   const currentEdu = user.education?.find((e) => e.is_current);
@@ -295,17 +309,24 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   if (user.website_url && canSee(user.website_public ?? true)) contacts.push({ label: "Website", display: hostname(user.website_url), href: user.website_url });
   if (user.line_id && canSee(user.line_id_public ?? true)) contacts.push({ label: "LINE", display: user.line_id, href: `https://line.me/ti/p/~${user.line_id}` });
   (user.extra_contacts ?? []).forEach((ec: any) => {
-    const value = typeof ec.value === "string" ? ec.value : "";
-    if (!ec.public || !value) return;
-    
+    const value = typeof ec?.value === "string" ? ec.value.trim() : "";
+    if (ec?.public === false || !value) return;
+
     contacts.push({
       label: ec.type,
       display: value,
       href: value.startsWith("http") ? value : `mailto:${value}`,
     });
   });
-  (user.portfolio_links ?? []).forEach((pl) => {
-    contacts.push({ label: pl.type, display: hostname(pl.url), href: pl.url });
+  (user.portfolio_links ?? []).forEach((pl: any) => {
+    const url = typeof pl?.url === "string" ? pl.url.trim() : "";
+    if (!url) return;
+
+    contacts.push({
+      label: pl.type,
+      display: hostname(url),
+      href: url,
+    });
   });
 
   const hasResearch =
@@ -360,8 +381,8 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
 
                 {/* Avatar */}
                 <div className="relative overflow-hidden shrink-0 w-20 sm:w-28 md:w-40 rounded-full">
-                  {user.goose_config ? (
-                    <AvatarCanvas config={(() => { try { return JSON.parse(user.goose_config); } catch { return {}; } })()} backgroundColor="var(--kvis-green)" />
+                  {gooseConfig ? (
+                    <AvatarCanvas config={gooseConfig as any} backgroundColor="var(--kvis-green)" />
                   ) : (
                     <div className="relative w-full" style={{ paddingBottom: "100%" }}>
                       {user.profile_pic_url ? (
@@ -557,8 +578,15 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     }
                     if (isMed && (e.med_specialties ?? []).length > 0) metaParts.push((e.med_specialties ?? []).join(", "));
                     if (isMed && e.med_hospital) metaParts.push(e.med_hospital);
-                    if (e.scholarship?.length) {
-                      metaParts.push(`${e.scholarship.join(", ")} Scholar`);
+                    const rawScholarship = e.scholarship as unknown;
+                    const scholarships = Array.isArray(rawScholarship)
+                      ? rawScholarship
+                      : typeof rawScholarship === "string" && rawScholarship
+                        ? [rawScholarship]
+                        : [];
+
+                    if (scholarships.length) {
+                      metaParts.push(`${scholarships.join(", ")} Scholar`);
                     }
                     const years = e.start_year || e.end_year || e.is_current
                       ? `${e.start_year ?? "?"} - ${e.is_current ? "Present" : e.end_year ?? "?"}`
