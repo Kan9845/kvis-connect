@@ -635,18 +635,23 @@ def _user_to_me(user: User) -> dict:
             {"title": p.title, "advisor": p.advisor, "advisor2": p.advisor2,
              "description": p.description, "status": p.status, "link": p.link,
              "is_public": p.is_public}
+            for p in sorted(user.projects, key=lambda x: x.order_index)
         ],
         "publications": [
             {"citation": p.citation, "doi": p.doi, "is_public": p.is_public}
+            for p in sorted(user.publications, key=lambda x: x.order_index)
         ],
         "portfolio_links": [
             {"type": p.type, "url": p.url, "is_public": p.is_public}
+            for p in sorted(user.portfolio_links, key=lambda x: x.order_index)
         ],
         "launches": [
             {"name": l.name, "innovation_type": l.innovation_type,
-             "innovation_type_other": l.innovation_type_other, "role": l.role,
-             "status": l.status, "description": l.description, "link": l.link,
+             "innovation_type_other": l.innovation_type_other,
+             "role": l.role, "status": l.status,
+             "description": l.description, "link": l.link,
              "is_public": l.is_public}
+            for l in sorted(user.launches, key=lambda x: x.order_index)
         ],
         "education": _edu_list(user, public_only=False),
         "career": _career_list(user, public_only=False),
