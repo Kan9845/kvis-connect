@@ -149,8 +149,13 @@ function StoryCard({ blog, ringColor }: { blog: BlogRead; ringColor: string }) {
         style={{ background: "var(--kvis-bg)" }}>
         <div className="relative w-full aspect-[4/3] overflow-hidden flex-shrink-0">
           {blog.cover_image_url ? (
-            <Image src={blog.cover_image_url} alt={blog.title} fill
-              className="object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+            <Image
+              src={blog.cover_image_url}
+              alt={blog.title}
+              fill
+              unoptimized
+              className="object-cover group-hover:scale-[1.03] transition-transform duration-500"
+            />
           ) : (
             <div style={{
               position: "absolute", inset: 0,

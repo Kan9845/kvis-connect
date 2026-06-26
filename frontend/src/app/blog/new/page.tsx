@@ -270,7 +270,13 @@ export default function NewBlogPage() {
                     {coverUploading ? "Uploading…" : "Upload image"}
                   </button>
                 </div>
-                <input ref={coverImageRef} type="file" accept="image/*" className="hidden" onChange={handleCoverUpload} />
+                <input
+                  ref={coverImageRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleCoverUpload}
+                />
                 <FieldError msg={errors.cover_image_url?.message} />
               </div>
             </section>
