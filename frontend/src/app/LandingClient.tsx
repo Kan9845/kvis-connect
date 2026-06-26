@@ -13,10 +13,12 @@ import {
   type PointerEvent,
 } from "react";
 import { motion } from "framer-motion";
-import { SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AlumniGlobe = dynamic(() => import("@/components/globe/AlumniGlobe"), {
   ssr: false,
@@ -69,6 +71,16 @@ export function LandingClient({ initialPins }: Props) {
   }, []);
   const { resolvedTheme } = useTheme();
   const isDarkSky = resolvedTheme !== "light";
+
+  const router = useRouter();
+  const { user } = useAuth();
+  const [q, setQ] = useState("");
+  const canUseKvisianSearch = !!user;
+
+  const goToKvisianSearch = () => {
+    const value = q.trim();
+    router.push(`/kvisian${value ? `?q=${encodeURIComponent(value)}` : ""}`);
+  };
 
   useEffect(() => {
     setVariant(isDarkSky ? "dark" : "light");
@@ -294,7 +306,7 @@ export function LandingClient({ initialPins }: Props) {
           <p
             className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}
           >
-            Filter Alumni
+            {canUseKvisianSearch ? "Search Kvisians" : "Filter Alumni"}
           </p>
           <p
             className={`text-xs mt-0.5 ${isDarkSky ? "text-white/70" : "text-slate-600"}`}
@@ -312,11 +324,40 @@ export function LandingClient({ initialPins }: Props) {
         </Button>
       </div>
       <div className="flex-1 overflow-y-auto p-4">
-        <SearchFilters
-          values={searchParams}
-          onChange={setSearchParams}
-          dark={isDarkSky}
-        />
+        {canUseKvisianSearch ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              goToKvisianSearch();
+            }}
+            className={`flex items-center gap-3 px-3 py-2 border rounded-md ${
+              isDarkSky ? "border-white/20 bg-white/5" : "border-[var(--kvis-border)]"
+            }`}
+          >
+            <Search className={`h-4 w-4 shrink-0 ${isDarkSky ? "text-white/50" : "text-muted-foreground"}`} />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search anything (e.g. name, university, interest, etc)"
+              className={`flex-1 bg-transparent border-0 text-sm focus:outline-none ${
+                isDarkSky
+                  ? "text-white placeholder:text-white/40"
+                  : "text-foreground placeholder:text-muted-foreground/50"
+              }`}
+            />
+            {q && (
+              <button type="button" onClick={() => setQ("")}>
+                <X className={`h-3.5 w-3.5 ${isDarkSky ? "text-white/50" : "text-muted-foreground"}`} />
+              </button>
+            )}
+          </form>
+        ) : (
+          <SearchFilters
+            values={searchParams}
+            onChange={setSearchParams}
+            dark={isDarkSky}
+          />
+        )}
       </div>
     </>
   );
@@ -349,7 +390,7 @@ export function LandingClient({ initialPins }: Props) {
           style={{ borderWidth: "1.5px" }}
         >
           <SlidersHorizontal className="h-3.5 w-3.5" />
-          Filter Alumni
+          {canUseKvisianSearch ? "Search Kvisians" : "Filter Alumni"}
         </Button>
       )}
 
@@ -405,7 +446,7 @@ export function LandingClient({ initialPins }: Props) {
                   <p
                     className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}
                   >
-                    Filter Alumni
+                    {canUseKvisianSearch ? "Search Kvisians" : "Filter Alumni"}
                   </p>
                   <p
                     className={`text-xs mt-0.5 ${isDarkSky ? "text-white/60" : "text-slate-500"}`}
@@ -426,13 +467,15 @@ export function LandingClient({ initialPins }: Props) {
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-              <SearchFilters
-                values={searchParams}
-                onChange={() => {}}
-                dark={isDarkSky}
-                forceSectionsClosed
-                measureOnly
-              />
+              {!canUseKvisianSearch && (
+                <SearchFilters
+                  values={searchParams}
+                  onChange={() => {}}
+                  dark={isDarkSky}
+                  forceSectionsClosed
+                  measureOnly
+                />
+              )}
             </div>
           </div>
 
@@ -476,7 +519,7 @@ export function LandingClient({ initialPins }: Props) {
                   <p
                     className={`font-semibold text-sm ${isDarkSky ? "text-white" : "text-slate-900"}`}
                   >
-                    Filter Alumni
+                    {canUseKvisianSearch ? "Search Kvisians" : "Filter Alumni"}
                   </p>
                   <p
                     className={`text-xs mt-0.5 ${isDarkSky ? "text-white/60" : "text-slate-500"}`}
@@ -504,11 +547,35 @@ export function LandingClient({ initialPins }: Props) {
               onPointerUp={handleContentDragEnd}
               onPointerCancel={handleContentDragEnd}
             >
-              <SearchFilters
-                values={searchParams}
-                onChange={setSearchParams}
-                dark={isDarkSky}
-              />
+              {canUseKvisianSearch ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    goToKvisianSearch();
+                  }}
+                  className={`flex items-center gap-3 px-3 py-2 border rounded-md ${
+                    isDarkSky ? "border-white/20 bg-white/5" : "border-[var(--kvis-border)]"
+                  }`}
+                >
+                  <Search className={`h-4 w-4 shrink-0 ${isDarkSky ? "text-white/50" : "text-muted-foreground"}`} />
+                  <input
+                    value={q}
+                    onChange={(e) => setQ(e.target.value)}
+                    placeholder="Search anything"
+                    className={`flex-1 bg-transparent border-0 text-sm focus:outline-none ${
+                      isDarkSky
+                        ? "text-white placeholder:text-white/40"
+                        : "text-foreground placeholder:text-muted-foreground/50"
+                    }`}
+                  />
+                </form>
+              ) : (
+                <SearchFilters
+                  values={searchParams}
+                  onChange={setSearchParams}
+                  dark={isDarkSky}
+                />
+              )}
             </div>
           </motion.div>
         </>
