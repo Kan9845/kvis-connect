@@ -549,7 +549,7 @@ export default function BlogDetailClient({ params }: { params: { slug: string } 
 
         {blog.cover_image_url && (
           <FadeUp delay={0.1}>
-            <div className="relative w-full aspect-video overflow-hidden">
+            <div className="relative w-full aspect-video overflow-hidden mb-12 md:mb-16">
               <Image src={blog.cover_image_url} alt={blog.title} fill unoptimized className="object-cover" />
             </div>
           </FadeUp>
