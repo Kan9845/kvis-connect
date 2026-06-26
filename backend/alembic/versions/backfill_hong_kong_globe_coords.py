@@ -3,7 +3,7 @@
 from alembic import op
 
 revision = "backfill_hk_coords"
-down_revision = "<put_current_latest_revision_here>"
+down_revision = "1919d14b75c4"
 branch_labels = None
 depends_on = None
 
