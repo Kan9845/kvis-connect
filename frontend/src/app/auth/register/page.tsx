@@ -250,10 +250,18 @@ function RegisterInner() {
               href="https://line.me/R/ti/p/@128dzhku"
               target="_blank"
               rel="noopener noreferrer"
-              className="underline underline-offset-[3px] hover:opacity-80 transition-opacity"
-              style={{ color: P.text3, textDecorationColor: P.text3 }}
+              className="underline underline-offset-2"
             >
               Contact KVIS IT to reset your password
+            </a>{" "}
+            or{" "}
+            <a
+              href="https://forms.gle/cQMG64bXT41B4DgC9"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              fill out this form
             </a>
           </p>
         </div>
