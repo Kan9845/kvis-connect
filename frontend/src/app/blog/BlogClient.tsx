@@ -80,7 +80,7 @@ function CardBanner({
       }}
     >
       {blog.cover_image_url ? (
-        <Image src={blog.cover_image_url} alt={blog.title} fill unoptimized className="object-contain bg-black/5" />
+        <Image src={blog.cover_image_url} alt={blog.title} fill unoptimized className="object-cover" />
       ) : (
         <div
           style={{

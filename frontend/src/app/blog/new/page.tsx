@@ -241,7 +241,7 @@ export default function NewBlogPage() {
                     <img
                       src={watch("cover_image_url") ?? ""}
                       alt="Cover preview"
-                      className="w-full h-full object-contain bg-black/5"
+                      className="w-full h-full object-cover"
                     />
                     <button
                       type="button"
