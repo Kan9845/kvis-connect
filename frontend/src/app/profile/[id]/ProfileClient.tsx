@@ -143,6 +143,9 @@ function ContactRow({ label, display, href }: { label: string; display: string; 
 
 function StoryCard({ blog, ringColor }: { blog: BlogRead; ringColor: string }) {
   const tags = parseTags(blog.tags);
+  const authorYear = blog.author.kvis_year;
+  const fallbackColor =
+    typeof authorYear === "number" ? cohortColorHex(authorYear) : FACULTY_COLOR_HEX;
   return (
     <Link href={`/blog/${blog.slug}`} className="group block h-full">
       <div className="overflow-hidden border border-[var(--kvis-border)] transition-all duration-300 group-hover:border-[var(--kvis-purple)] h-full flex flex-col"
@@ -159,7 +162,7 @@ function StoryCard({ blog, ringColor }: { blog: BlogRead; ringColor: string }) {
           ) : (
             <div style={{
               position: "absolute", inset: 0,
-              backgroundImage: `repeating-linear-gradient(135deg, ${cohortColorHex(blog.author.kvis_year)} 0, ${cohortColorHex(blog.author.kvis_year)} 1px, transparent 0, transparent 50%)`,
+              backgroundImage: `repeating-linear-gradient(135deg, ${fallbackColor} 0, ${fallbackColor} 1px, transparent 0, transparent 50%)`,
               backgroundSize: "8px 8px",
             }}>
               <div style={{ position: "absolute", inset: 0, background: "var(--background)", opacity: 0.82 }} />
@@ -249,7 +252,13 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
   const interests = parseInterests(user.interests);
   const currentRole = user.career?.find((c) => c.is_current) ?? user.career?.[0];
   const currentEdu = user.education?.find((e) => e.is_current);
-  const ringColor = isFaculty(user) ? FACULTY_COLOR : cohortColorHex(user.kvis_year);
+  const cohortYear =
+    !isFaculty(user) && typeof user.kvis_year === "number"
+      ? user.kvis_year
+      : undefined;
+
+  const ringColor =
+    cohortYear === undefined ? FACULTY_COLOR : cohortColorHex(cohortYear);
 
   // Group research interests by category
   const groupedInterests = RESEARCH_CATEGORIES
@@ -280,7 +289,7 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
     (user.publications?.length ?? 0) > 0 ||
     ((user as any).launches?.length ?? 0) > 0;
 
-  const hasPersonality = !!me && (!!user.zodiac || !!user.chronotype);
+  const hasPersonality = !!me && (!!user.mbti || !!user.zodiac || !!user.chronotype);
 
   const hasHobbies = !!me && !!user.hobbies && Object.values(
     typeof user.hobbies === 'string' ? JSON.parse(user.hobbies) : user.hobbies
@@ -336,7 +345,8 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                       ) : (
                         <div className="absolute inset-0 flex items-center justify-center font-black text-2xl sm:text-3xl md:text-4xl"
                           style={{
-                            background: isFaculty(user) ? FACULTY_COLOR_HEX : cohortColorHex(user.kvis_year),
+                            background:
+                              cohortYear === undefined ? FACULTY_COLOR_HEX : cohortColorHex(cohortYear),
                             color: "white",
                           }}>
                           {initials}
@@ -400,37 +410,50 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     </p>
                   )}
 
-                  {(interests.length > 0 || user.mbti || user.province_of_origin || user.current_status || (!isFaculty(user) && !user.current_grade && user.kvis_year)) && (
-                    <div className="flex items-center gap-sm flex-wrap mt-md">
-                      {!isFaculty(user) && !user.current_grade && user.kvis_year && (
-                        <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1"
-                          style={{ background: cohortColorSoftHex(user.kvis_year), color: cohortColorHex(user.kvis_year) }}>
-                          {cohortLabel(user.kvis_year)}
+                  {(interests.length > 0 ||
+                    user.province_of_origin ||
+                    user.current_status ||
+                    (!user.current_grade && cohortYear !== undefined)) && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {cohortYear !== undefined && !user.current_grade && (
+                        <span
+                          className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1"
+                          style={{
+                            background: cohortColorSoftHex(cohortYear),
+                            color: cohortColorHex(cohortYear),
+                          }}
+                        >
+                          {cohortLabel(cohortYear)}
                         </span>
                       )}
+                  
                       {user.current_status && (() => {
-                        const label = CURRENT_STATUS_OPTIONS.flatMap(g => g.options).find(o => o.value === user.current_status)?.label;
+                        const label = CURRENT_STATUS_OPTIONS.flatMap((g) => g.options).find(
+                          (o) => o.value === user.current_status,
+                        )?.label;
+                      
                         return label ? (
                           <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
                             {label}
                           </span>
                         ) : null;
                       })()}
+                  
                       {user.province_of_origin && (
                         <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
                           Origin: {user.province_of_origin}
                         </span>
                       )}
-                      {user.mbti && (
-                        <span className="text-xs font-bold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
-                          {user.mbti}
-                        </span>
-                      )}
-                      {(user.interests_public !== false || !!me) && interests.slice(0, 4).map(t => (
-                        <span key={t} className="text-xs font-semibold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]">
-                          {t}
-                        </span>
-                      ))}
+                  
+                      {(user.interests_public !== false || !!me) &&
+                        interests.slice(0, 4).map((t) => (
+                          <span
+                            key={t}
+                            className="text-xs font-semibold uppercase tracking-[0.1em] px-2.5 py-1 border border-[var(--kvis-border)] text-[var(--kvis-text3)]"
+                          >
+                            {t}
+                          </span>
+                        ))}
                     </div>
                   )}
                 </div>
@@ -849,6 +872,16 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
               <section>
                 <SectionHead numeral={numeralFor("personality")} kicker="Vibe" />
                 <div className="flex items-start gap-2xl flex-wrap pb-lg border-b border-[var(--kvis-border)]">
+                  {user.mbti && (
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-1">
+                        MBTI
+                      </p>
+                      <p className="text-2xl font-bold text-foreground tracking-[-0.01em]">
+                        {user.mbti}
+                      </p>
+                    </div>
+                  )}
                   {user.zodiac && (
                     <div>
                       <p className="text-xs uppercase tracking-[0.26em] font-bold text-[var(--kvis-text3)] mb-1">Zodiac</p>
