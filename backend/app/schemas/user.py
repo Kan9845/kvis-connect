@@ -16,7 +16,7 @@ class EducationRead(BaseModel):
     country: str
     state: Optional[str] = None
     city: Optional[str] = None
-    scholarship: Optional[str] = None
+    scholarship: Optional[List[str]] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
     is_current: bool = False
@@ -45,7 +45,7 @@ class EducationWrite(BaseModel):
     country: str
     state: Optional[str] = None
     city: Optional[str] = None
-    scholarship: Optional[str] = None
+    scholarship: Optional[List[str]] = None
     start_year: Optional[int] = None
     end_year: Optional[int] = None
     is_current: bool = False

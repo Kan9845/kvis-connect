@@ -92,7 +92,6 @@ export function TabEducation({
   setEducation,
   saveEducation,
 }: TabEducationProps) {
-  const [scholarshipOther, setScholarshipOther] = useState<Record<number, string>>({});
   const [errors, setErrors] = useState<Record<number, EduErrors>>({});
 
   const handleSave = async () => {
@@ -107,19 +106,6 @@ export function TabEducation({
     });
     setErrors(newErrors);
     if (hasError) return;
-
-    if (Object.keys(scholarshipOther).length > 0) {
-      setEducation((prev) =>
-        prev.map((edu, i) => {
-          const custom = scholarshipOther[i]?.trim();
-          if (edu.scholarship === "Other" && custom) {
-            return { ...edu, scholarship: custom };
-          }
-          return edu;
-        }),
-      );
-      await new Promise((r) => setTimeout(r, 0));
-    }
 
     await saveEducation();
     setErrors({});
@@ -646,68 +632,19 @@ export function TabEducation({
           </FieldRow>
 
           {/* ── Scholarship ──────────────────────────────────────────────── */}
-          <FieldRow label="Scholarship">
-            <Select
-              value={
-                SCHOLARSHIP_NAMES.includes(edu.scholarship ?? "")
-                  ? (edu.scholarship ?? "")
-                  : edu.scholarship
-                    ? "Other"
-                    : ""
-              }
-              onValueChange={(v) => {
+          <FieldRow label="Scholarships">
+            <TagPills
+              options={SCHOLARSHIP_NAMES}
+              selected={edu.scholarship ?? []}
+              onChange={(v) =>
                 setEducation((prev) =>
-                  prev.map((x, j) =>
-                    j === i ? { ...x, scholarship: v } : x,
-                  ),
-                );
-                if (v !== "Other") {
-                  setScholarshipOther((prev) => {
-                    const next = { ...prev };
-                    delete next[i];
-                    return next;
-                  });
-                } else {
-                  const stored = education[i]?.scholarship;
-                  if (stored && !SCHOLARSHIP_NAMES.includes(stored)) {
-                    setScholarshipOther((prev) => ({ ...prev, [i]: stored }));
-                  }
-                }
-              }}
-            >
-              <SelectTrigger className={selectTriggerCls}>
-                <SelectValue placeholder="Select scholarship" />
-              </SelectTrigger>
-              <SelectContent>
-                {SCHOLARSHIP_NAMES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  prev.map((x, j) => (j === i ? { ...x, scholarship: v } : x)),
+                )
+              }
+            />
           </FieldRow>
 
-          {(edu.scholarship === "Other" ||
-            (edu.scholarship &&
-              !SCHOLARSHIP_NAMES.includes(edu.scholarship))) && (
-            <FieldRow label="Please specify" hint="Name of your scholarship.">
-              <Input
-                placeholder="e.g. Royal Thai Government Scholarship"
-                value={scholarshipOther[i] ?? ""}
-                onChange={(e) =>
-                  setScholarshipOther((prev) => ({
-                    ...prev,
-                    [i]: e.target.value,
-                  }))
-                }
-                className={inputCls}
-                autoFocus
-              />
-            </FieldRow>
-          )}
-
-          {edu.scholarship && (
+          {(edu.scholarship?.length ?? 0) > 0 && (
             <>
               <FieldRow label="Funding type">
                 <Select
@@ -783,6 +720,7 @@ export function TabEducation({
                 degree: "",
                 major: "",
                 country: "",
+                scholarship: [],
                 is_public: true,
               },
             ])

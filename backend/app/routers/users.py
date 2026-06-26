@@ -274,10 +274,16 @@ async def replace_education(
     import json as _json
     for item in items:
         data = item.model_dump()
+
+        if data.get("scholarship") is not None:
+            data["scholarship"] = _json.dumps(data["scholarship"])
+
         if data.get("med_specialties") is not None:
             data["med_specialties"] = _json.dumps(data["med_specialties"])
+
         if data.get("minors") is not None:
             data["minors"] = _json.dumps(data["minors"])
+
         session.add(Education(user_id=current_user.id, **data))
     session.commit()
     await invalidate_tags("users", f"user:{current_user.slug}")
@@ -461,7 +467,8 @@ def _edu_list(user: User, public_only: bool = False):
             "major": e.major, "major2": e.major2, "minor1": e.minor1,
             "minors": _json.loads(e.minors) if isinstance(e.minors, str) else (e.minors or ([e.minor1] if e.minor1 else [])),
             "country": e.country, "state": e.state, "city": e.city,
-            "scholarship": e.scholarship, "scholarship_type": e.scholarship_type,
+            "scholarship": _json.loads(e.scholarship) if isinstance(e.scholarship, str) and e.scholarship.startswith("[") else ([e.scholarship] if e.scholarship else []), 
+            "scholarship_type": e.scholarship_type,
             "scholarship_bond": e.scholarship_bond,
             "start_year": e.start_year, "end_year": e.end_year,
             "is_current": getattr(e, "is_current", False),

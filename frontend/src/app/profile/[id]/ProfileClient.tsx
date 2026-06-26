@@ -502,7 +502,9 @@ export default function ProfileClient({ params }: { params: { id: string } }) {
                     }
                     if (isMed && (e.med_specialties ?? []).length > 0) metaParts.push((e.med_specialties ?? []).join(", "));
                     if (isMed && e.med_hospital) metaParts.push(e.med_hospital);
-                    if (e.scholarship) metaParts.push(`${e.scholarship} Scholar`);
+                    if (e.scholarship?.length) {
+                      metaParts.push(`${e.scholarship.join(", ")} Scholar`);
+                    }
                     const years = e.start_year || e.end_year || e.is_current
                       ? `${e.start_year ?? "?"} - ${e.is_current ? "Present" : e.end_year ?? "?"}`
                       : undefined;

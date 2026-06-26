@@ -7,7 +7,7 @@ export interface Education {
   country: string;
   state?: string;
   city?: string;
-  scholarship?: string;
+  scholarship?: string[];
   start_year?: number;
   end_year?: number;
   is_current?: boolean;
