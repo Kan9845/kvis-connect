@@ -298,6 +298,7 @@ export function AboutClient() {
                                   src={c.image}
                                   alt={c.name}
                                   fill
+                                  unoptimized
                                   className="object-cover"
                                   sizes="(max-width: 768px) 50vw, 33vw"
                                 />
