@@ -13,9 +13,21 @@ import { FeedbackSection } from "./FeedbackSection";
 
 const STAT_STRIP = [
   { value: "2014", label: "Year founded", color: "var(--kvis-green-light)" },
-  { value: "72", label: "Students per cohort", color: "var(--kvis-purple-light)" },
-  { value: "100%", label: "Scholarship coverage", color: "var(--kvis-green-light)" },
-  { value: "600+", label: "Alumni worldwide", color: "var(--kvis-purple-light)" },
+  {
+    value: "72",
+    label: "Students per cohort",
+    color: "var(--kvis-purple-light)",
+  },
+  {
+    value: "100%",
+    label: "Scholarship coverage",
+    color: "var(--kvis-green-light)",
+  },
+  {
+    value: "600+",
+    label: "Alumni worldwide",
+    color: "var(--kvis-purple-light)",
+  },
 ];
 
 const CONTRIBUTORS: {
@@ -50,7 +62,7 @@ const CONTRIBUTORS: {
     role: "Founding Fullstack Engineer",
     batch: "KVIS 7",
     initials: "NP",
-    image: "/narue.png",
+    image: "/narue.jpg",
     instagram: "l2h0_lv4l2u",
     slug: "naruesorn-prabpon",
   },
@@ -87,7 +99,8 @@ export function AboutClient() {
             <header className="py-xl lg:py-layout flex items-start justify-between gap-6">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)] flex items-center">
-                  KVIS Connect <Dot className="h-6 w-6 shrink-0" aria-hidden /> About
+                  KVIS Connect <Dot className="h-6 w-6 shrink-0" aria-hidden />{" "}
+                  About
                 </p>
                 <h1 className="font-display text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] leading-[0.95]">
                   <span className="font-light text-foreground">About </span>
@@ -147,17 +160,41 @@ export function AboutClient() {
                   style={{ lineHeight: 1.85 }}
                 >
                   <p>
-                    Founded in 2014 through the support of the PTT Group, Kamnoetvidya Science Academy (KVIS) is a private boarding high school (Grades 10–12) located in Rayong as part of the Eastern Economic Corridor of Innovation (EECi) project. The school was established to support upper secondary students who show a strong aptitude for mathematics and science, providing an education with English as the main language of instruction. To ensure that talented students from various backgrounds can access these opportunities, the school provides 100% scholarships to its students.
+                    Founded in 2014 through the support of the PTT Group,
+                    Kamnoetvidya Science Academy (KVIS) is a private boarding
+                    high school (Grades 10–12) located in Rayong as part of the
+                    Eastern Economic Corridor of Innovation (EECi) project. The
+                    school was established to support upper secondary students
+                    who show a strong aptitude for mathematics and science,
+                    providing an education with English as the main language of
+                    instruction. To ensure that talented students from various
+                    backgrounds can access these opportunities, the school
+                    provides 100% scholarships to its students.
                   </p>
                   <p>
-                    The school&apos;s goal is to contribute to Thailand&apos;s scientific community by helping prepare students for further studies at research universities. Through a focused curriculum and academic collaboration with external organizations, communities, and other schools, KVIS works to support the country&apos;s need for skilled personnel in science and technology. The institution strives to be a helpful part of the educational ecosystem, sharing resources and learning alongside its peers and partners.
+                    The school&apos;s goal is to contribute to Thailand&apos;s
+                    scientific community by helping prepare students for further
+                    studies at research universities. Through a focused
+                    curriculum and academic collaboration with external
+                    organizations, communities, and other schools, KVIS works to
+                    support the country&apos;s need for skilled personnel in
+                    science and technology. The institution strives to be a
+                    helpful part of the educational ecosystem, sharing resources
+                    and learning alongside its peers and partners.
                   </p>
                   <p>
-                    Beyond academic learning, the school places a strong emphasis on nurturing well-rounded individuals who are mindful of their social responsibilities. Students are encouraged to care for their physical and mental health, appreciate arts and culture, and develop a genuine love for lifelong research. Ultimately, the hope is that graduates will use their education to give back to society, collaborating with others to help build a sustainable, thoughtful, and harmonious community.
+                    Beyond academic learning, the school places a strong
+                    emphasis on nurturing well-rounded individuals who are
+                    mindful of their social responsibilities. Students are
+                    encouraged to care for their physical and mental health,
+                    appreciate arts and culture, and develop a genuine love for
+                    lifelong research. Ultimately, the hope is that graduates
+                    will use their education to give back to society,
+                    collaborating with others to help build a sustainable,
+                    thoughtful, and harmonious community.
                   </p>
                 </div>
               </div>
-
             </section>
           </FadeUp>
 
@@ -233,58 +270,67 @@ export function AboutClient() {
                     const N = CONTRIBUTORS.length;
                     const lastRowCount = N % 3 || 3;
                     const isLastOddMobile = i === N - 1 && N % 2 !== 0;
-                    const isFirstOfCenteredRow = lastRowCount < 3 && i === N - lastRowCount;
+                    const isFirstOfCenteredRow =
+                      lastRowCount < 3 && i === N - lastRowCount;
                     const mdColStart = isFirstOfCenteredRow
                       ? `md:col-start-${lastRowCount === 2 ? 2 : 3}`
                       : "";
-                    const itemClass = [isLastOddMobile ? "col-span-2" : "", "md:col-span-2", mdColStart].filter(Boolean).join(" ");
+                    const itemClass = [
+                      isLastOddMobile ? "col-span-2" : "",
+                      "md:col-span-2",
+                      mdColStart,
+                    ]
+                      .filter(Boolean)
+                      .join(" ");
                     return (
-                    <StaggerItem key={i} className={itemClass}>
-                      <div className={`group${isLastOddMobile ? " w-1/2 md:w-full mx-auto md:mx-0" : ""}`}>
-                        <Link href={`/profile/${c.slug}`} className="block">
-                          <div
-                            className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
-                            style={{ aspectRatio: "1 / 1" }}
-                          >
-                            {c.image ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={c.image}
-                                alt={c.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-3xl font-black text-[var(--kvis-purple-light)]">
-                                {c.initials}
-                              </span>
-                            )}
-                          </div>
+                      <StaggerItem key={i} className={itemClass}>
+                        <div
+                          className={`group${isLastOddMobile ? " w-1/2 md:w-full mx-auto md:mx-0" : ""}`}
+                        >
+                          <Link href={`/profile/${c.slug}`} className="block">
+                            <div
+                              className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
+                              style={{ aspectRatio: "1 / 1" }}
+                            >
+                              {c.image ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={c.image}
+                                  alt={c.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-3xl font-black text-[var(--kvis-purple-light)]">
+                                  {c.initials}
+                                </span>
+                              )}
+                            </div>
 
-                          <div className="flex flex-col gap-0.5 mb-1">
-                            <p className="text-xs font-semibold text-[var(--kvis-ink)] group-hover:underline underline-offset-2">
-                              {c.name}
-                            </p>
-                            <p className="text-xs font-medium text-[var(--kvis-purple-light)]">
-                              {c.role}
-                            </p>
-                            <p className="text-xs font-semibold text-[var(--kvis-green-light)]">
-                              {c.batch}
-                            </p>
-                          </div>
-                        </Link>
-                        {c.instagram && (
-                          <a
-                            href={`https://instagram.com/${c.instagram}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-xs font-medium text-[var(--kvis-text3)]"
-                          >
-                            <Instagram className="h-3 w-3 shrink-0" />
-                            <span>@{c.instagram}</span>
-                          </a>
-                        )}
-                      </div>
-                    </StaggerItem>
+                            <div className="flex flex-col gap-0.5 mb-1">
+                              <p className="text-xs font-semibold text-[var(--kvis-ink)] group-hover:underline underline-offset-2">
+                                {c.name}
+                              </p>
+                              <p className="text-xs font-medium text-[var(--kvis-purple-light)]">
+                                {c.role}
+                              </p>
+                              <p className="text-xs font-semibold text-[var(--kvis-green-light)]">
+                                {c.batch}
+                              </p>
+                            </div>
+                          </Link>
+                          {c.instagram && (
+                            <a
+                              href={`https://instagram.com/${c.instagram}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-xs font-medium text-[var(--kvis-text3)]"
+                            >
+                              <Instagram className="h-3 w-3 shrink-0" />
+                              <span>@{c.instagram}</span>
+                            </a>
+                          )}
+                        </div>
+                      </StaggerItem>
                     );
                   })}
                 </div>
