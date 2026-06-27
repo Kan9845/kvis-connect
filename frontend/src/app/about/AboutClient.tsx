@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Instagram, Dot } from "lucide-react";
 import {
   PageEntrance,
@@ -289,15 +290,16 @@ export function AboutClient() {
                         >
                           <Link href={`/profile/${c.slug}`} className="block">
                             <div
-                              className="w-full mb-3 flex items-center justify-center overflow-hidden bg-[var(--kvis-purple-soft)]"
+                              className="relative w-full mb-3 overflow-hidden bg-[var(--kvis-purple-soft)]"
                               style={{ aspectRatio: "1 / 1" }}
                             >
                               {c.image ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
+                                <Image
                                   src={c.image}
                                   alt={c.name}
-                                  className="w-full h-full object-cover"
+                                  fill
+                                  className="object-cover"
+                                  sizes="(max-width: 768px) 50vw, 33vw"
                                 />
                               ) : (
                                 <span className="text-3xl font-black text-[var(--kvis-purple-light)]">
