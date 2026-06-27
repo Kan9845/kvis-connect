@@ -340,7 +340,11 @@ function readCssVar(name: string, fallback: string) {
   );
 }
 
-export default function StatsClient() {
+export default function StatsClient({
+  initialPeople = [],
+}: {
+  initialPeople?: UserCard[];
+}) {
   const [cohort, setCohort] = useState<number | null>(null);
   const { resolvedTheme } = useTheme();
   const [chartTickColor, setChartTickColor] = useState("oklch(60% 0.006 294)");
@@ -357,6 +361,7 @@ export default function StatsClient() {
           UserCard[]
         >("/api/search", { params: { sort: "kvis_year", order: "asc", limit: 1000 } })
         .then((r) => r.data),
+    initialData: initialPeople,
     staleTime: 5 * 60 * 1000,
   });
 

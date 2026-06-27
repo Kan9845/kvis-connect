@@ -33,19 +33,31 @@ import { useTheme } from "next-themes";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { userApi } from "@/lib/api";
+import api, { userApi } from "@/lib/api";
 import { keys } from "@/lib/cache/keys";
-import type { GlobePin } from "@/lib/types";
+import type { DirectoryCard, GlobePin } from "@/lib/types";
 import { useNavbarVariant } from "@/contexts/NavbarVariantContext";
 import { cohortColor, cohortColorHex, normalizeCountryLabel } from "@/lib/utils";
 import { NotificationBell } from "@/components/NotificationBell";
 
+type SearchResultItem = {
+  key: string;
+  slug: string;
+  first_name: string;
+  last_name: string;
+  profile_pic_url?: string;
+  kvis_year?: number | null;
+  subtitle: string;
+};
+
 function AlumniSearch({
   solid = false,
   dark = false,
+  loggedIn = false,
 }: {
   solid?: boolean;
   dark?: boolean;
+  loggedIn?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -59,21 +71,100 @@ function AlumniSearch({
     staleTime: 5 * 60 * 1000,
   });
 
-  const results: GlobePin[] =
-    query.trim().length === 0
-      ? []
+  const { data: directory = [] } = useQuery<DirectoryCard[]>({
+    queryKey: ["directory"],
+    queryFn: () => api.get<DirectoryCard[]>("/api/search/directory").then((r) => r.data),
+    staleTime: 5 * 60 * 1000,
+    enabled: loggedIn,
+  });
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const results: SearchResultItem[] = normalizedQuery.length === 0
+    ? []
+    : loggedIn
+      ? directory
+          .filter((u) => {
+            const haystack = [
+              u.first_name,
+              u.last_name,
+              u.nickname,
+              u.country,
+              u.place,
+              u.place_level2,
+              u.province_of_origin,
+              u.mbti,
+              u.interests,
+              u.job_title,
+              u.employer,
+              u.industry_sector,
+              u.edu_major,
+              u.edu_degree,
+              u.edu_uni,
+              u.edu_scholarships,
+              typeof u.hobbies === "string" ? u.hobbies : u.hobbies ? JSON.stringify(u.hobbies) : null,
+              u.research_interests_text,
+              u.all_edu_unis,
+              u.all_edu_locations,
+              u.all_job_titles,
+              u.all_employers,
+              u.all_career_locations,
+              u.activities,
+              u.competitions,
+              u.experience_camps,
+              u.clubs,
+              u.all_launches,
+              u.kvis_year
+                ? `KVIS ${u.kvis_year} KVIS${u.kvis_year} K${u.kvis_year} Class of ${2017 + u.kvis_year}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
+            return haystack.includes(normalizedQuery);
+          })
+          .map((u) => ({
+            key: u.id,
+            slug: u.slug,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            profile_pic_url: u.profile_pic_url,
+            kvis_year: u.kvis_year,
+            subtitle: [
+              u.job_title,
+              u.employer ? `@ ${u.employer}` : null,
+              u.place,
+              normalizeCountryLabel(u.country),
+            ]
+              .filter(Boolean)
+              .join(" "),
+          }))
+          .slice(0, 8)
       : pins
           .filter((p) => {
-            const q = query.toLowerCase();
             const name = `${p.first_name} ${p.last_name} ${p.nickname ?? ""}`.toLowerCase();
             const country = normalizeCountryLabel(p.country).toLowerCase();
             return (
-              name.includes(q) ||
-              country.includes(q) ||
-              p.current_job?.toLowerCase().includes(q)
+              name.includes(normalizedQuery) ||
+              country.includes(normalizedQuery) ||
+              p.current_job?.toLowerCase().includes(normalizedQuery)
             );
           })
+          .map((p) => ({
+            key: p.user_id,
+            slug: p.slug,
+            first_name: p.first_name,
+            last_name: p.last_name,
+            profile_pic_url: p.profile_pic_url,
+            kvis_year: p.kvis_year,
+            subtitle: [p.place, normalizeCountryLabel(p.country)].filter(Boolean).join(", "),
+          }))
           .slice(0, 8);
+
+  const goToSearch = () => {
+    const value = query.trim();
+    router.push(`/kvisian${value ? `?q=${encodeURIComponent(value)}` : ""}`);
+    setOpen(false);
+  };
 
   useEffect(() => {
     setOpen(false);
@@ -91,7 +182,13 @@ function AlumniSearch({
 
   return (
     <div ref={wrapRef} className="relative flex-1">
-      <div className="flex items-center gap-2 px-4">
+      <form
+        className="flex items-center gap-2 px-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          goToSearch();
+        }}
+      >
         <Search
           className={`h-4 w-4 shrink-0 ${dark ? "text-white/70" : "text-muted-foreground"}`}
         />
@@ -106,10 +203,10 @@ function AlumniSearch({
           onKeyDown={(e) => {
             if (e.key === "Escape") setOpen(false);
           }}
-          placeholder="Search alumni..."
+          placeholder="Search anything..."
           className={`flex-1 py-2.5 text-sm bg-transparent outline-none w-full ${dark ? "text-white placeholder:text-white/60" : "text-foreground placeholder:text-muted-foreground"}`}
         />
-      </div>
+      </form>
 
       {open && results.length > 0 && (
         <div
@@ -119,7 +216,7 @@ function AlumniSearch({
           {results.map((p) => (
             <button
               type="button"
-              key={p.user_id}
+              key={p.key}
               onClick={() => {
                 router.push(`/profile/${p.slug}`);
                 setOpen(false);
@@ -145,9 +242,7 @@ function AlumniSearch({
                 <p className="text-sm font-medium text-foreground transition-colors truncate">
                   {p.first_name} {p.last_name}
                 </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {[p.place, normalizeCountryLabel(p.country)].filter(Boolean).join(", ")}
-                </p>
+                <p className="text-xs text-muted-foreground truncate">{p.subtitle}</p>
               </div>
             </button>
           ))}
@@ -337,7 +432,7 @@ function MobileNavPanel({
               : "1px solid var(--kvis-rule)",
           }}
         >
-          <AlumniSearch dark={dark} />
+          <AlumniSearch dark={dark} loggedIn={!!user} />
         </div>
       </div>
 
@@ -607,7 +702,7 @@ export function Navbar() {
                   : "1px solid var(--kvis-rule)",
               }}
             >
-              <AlumniSearch dark={dark} />
+              <AlumniSearch dark={dark} loggedIn={!!user} />
             </div>
             <div
               className="flex items-center rounded-full overflow-hidden shrink-0 w-auto"
@@ -749,7 +844,7 @@ export function Navbar() {
         {/* Desktop nav */}
         <div className="hidden nav:flex items-center gap-3">
           <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-visible w-56">
-            <AlumniSearch solid />
+            <AlumniSearch solid loggedIn={!!user} />
           </div>
           <div className="flex items-center bg-muted/50 border border-border rounded-full overflow-hidden shrink-0">
             <NavLink

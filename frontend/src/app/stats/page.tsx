@@ -8,7 +8,7 @@ import StatsClient from "./StatsClient";
 
 export default async function StatsPage() {
   const qc = getQueryClient();
-  await qc.prefetchQuery({
+  const people = await qc.fetchQuery({
     queryKey: keys.stats.alumni(),
     queryFn: () =>
       api
@@ -20,7 +20,7 @@ export default async function StatsPage() {
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <StatsClient />
+      <StatsClient initialPeople={people} />
     </HydrationBoundary>
   );
 }

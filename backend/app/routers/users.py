@@ -105,6 +105,51 @@ async def _geocode(query: str, country: str = None) -> tuple[float, float] | Non
     return None
 
 
+def _geocode_sync(query: str, country: str = None) -> tuple[float, float] | None:
+    try:
+        canonical_country = _canonical_country(country)
+        params = {"q": query, "format": "json", "limit": 1}
+        if canonical_country and canonical_country in COUNTRY_CODES:
+            params["countrycodes"] = COUNTRY_CODES[canonical_country]
+        with httpx.Client(timeout=5.0) as client:
+            r = client.get(
+                "https://nominatim.openstreetmap.org/search",
+                params=params,
+                headers={"User-Agent": "kvis-connect/1.0 (contact@kvis.ac.th)"},
+            )
+            results = r.json()
+            if results:
+                return float(results[0]["lat"]), float(results[0]["lon"])
+    except Exception:
+        pass
+    return None
+
+
+def _resolved_globe_location(u: User) -> tuple[float | None, float | None, str | None]:
+    label = u.place or u.place_level2
+    country = _canonical_country(u.country) or u.country
+
+    if u.latitude is None or u.longitude is None:
+        return None, None, label
+
+    # Historical bad data exists with Thai/Japan labels saved under Antarctica,
+    # which geocodes to a fixed point in the Southern Ocean. Repair those pins
+    # at read time so the globe stays trustworthy even before each profile is re-saved.
+    suspicious_antarctica = country == "Antarctica" and bool(label)
+    frozen_ocean_point = abs(u.latitude - (-72.8438691)) < 1e-6 and abs(u.longitude) < 1e-6
+
+    if suspicious_antarctica or frozen_ocean_point:
+        repair_query = ", ".join(filter(None, [u.place, u.place_level2]))
+        if repair_query:
+            repaired = _geocode_sync(repair_query)
+            if repaired:
+                return repaired[0], repaired[1], label
+        if frozen_ocean_point:
+            return None, None, label
+
+    return u.latitude, u.longitude, label
+
+
 def _load_me(session: Session, user_id) -> User:
     return session.exec(
         select(User)
@@ -433,26 +478,30 @@ def get_globe_pins(session: Session = Depends(get_session)):
         current = next((c for c in u.career if c.is_current), None) or (u.career[-1] if u.career else None)
         return f"{current.job_title} at {current.employer}" if current else None
 
-    return [
-        GlobePin(
-            user_id=u.id,
-            slug=u.slug,
-            first_name=u.first_name,
-            last_name=u.last_name,
-            latitude=u.latitude,
-            longitude=u.longitude,
-            place=u.place,
-            kvis_year=u.kvis_year,
-            profile_pic_url=u.profile_pic_url,
-            mbti=u.mbti,
-            current_job=_current_job(u),
-            country=u.country,
-            teach_start_year=u.teach_start_year,
-            is_current_teacher=u.is_current_teacher,
+    pins: list[GlobePin] = []
+    for u in users:
+        latitude, longitude, label = _resolved_globe_location(u)
+        if latitude is None or longitude is None:
+            continue
+        pins.append(
+            GlobePin(
+                user_id=u.id,
+                slug=u.slug,
+                first_name=u.first_name,
+                last_name=u.last_name,
+                latitude=latitude,
+                longitude=longitude,
+                place=label,
+                kvis_year=u.kvis_year,
+                profile_pic_url=u.profile_pic_url,
+                mbti=u.mbti,
+                current_job=_current_job(u),
+                country=u.country,
+                teach_start_year=u.teach_start_year,
+                is_current_teacher=u.is_current_teacher,
+            )
         )
-        for u in users
-        if u.latitude is not None and u.longitude is not None
-    ]
+    return pins
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────

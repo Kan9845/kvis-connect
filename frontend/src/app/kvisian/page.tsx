@@ -446,7 +446,7 @@ function KvisianInner() {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      router.replace("/auth/register");
+      router.replace("/auth/login");
       return;
     }
     if (user.profile_setup_done === false) {
