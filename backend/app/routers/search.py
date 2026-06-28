@@ -229,7 +229,7 @@ def _to_card(user: User) -> dict:
                 "id": e.id, "uni_name": e.uni_name, "degree": e.degree,
                 "field_of_study": getattr(e, "field_of_study", None),
                 "major": e.major, "country": e.country, "state": e.state,
-                "scholarship": e.scholarship, "start_year": e.start_year,
+                "scholarship": [e.scholarship] if isinstance(e.scholarship, str) else (e.scholarship or None), "start_year": e.start_year,
                 "end_year": e.end_year, "is_public": getattr(e, "is_public", True),
                 "major2": getattr(e, "major2", None), "minor1": getattr(e, "minor1", None),
                 "minors": (lambda v, m1: __import__("json").loads(v) if isinstance(v, str) else (v or ([m1] if m1 else [])))(getattr(e, "minors", None), getattr(e, "minor1", None)),
