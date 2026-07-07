@@ -600,6 +600,9 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   const [countryFeatures, setCountryFeatures] = useState<any[]>([]);
   const [zoomLevel, setZoomLevel] = useState(0);
   const zoomLevelRef = useRef(0);
+  // Once the user interacts with the globe (drag / zoom / zoom-to-pin), stop
+  // auto-rotation for good — nothing should ever resume the spin afterwards.
+  const userInteractedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -657,6 +660,11 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
   useEffect(() => {
     let rafId = 0;
     let controls: { autoRotate: boolean; autoRotateSpeed: number; addEventListener: Function; removeEventListener: Function } | null = null;
+    // Fired when the user grabs/zooms the globe: kill auto-rotation permanently.
+    const stopSpin = () => {
+      userInteractedRef.current = true;
+      if (controls) controls.autoRotate = false;
+    };
     const handler = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
@@ -676,9 +684,10 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
       const g = globeRef.current;
       if (g) {
         controls = g.controls();
-        controls!.autoRotate = true;
+        controls!.autoRotate = !userInteractedRef.current;
         controls!.autoRotateSpeed = 0.2;
         controls!.addEventListener("change", handler);
+        controls!.addEventListener("start", stopSpin);
         clearInterval(id);
       } else if (tries > 100) {
         clearInterval(id);
@@ -687,6 +696,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     return () => {
       clearInterval(id);
       controls?.removeEventListener("change", handler);
+      controls?.removeEventListener("start", stopSpin);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
@@ -695,7 +705,7 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     if (!globeRef.current) return;
     if (!filteredPins || filteredPins.length === 0) {
       if (filteredPins !== undefined) return;
-      globeRef.current.controls().autoRotate = true;
+      if (!userInteractedRef.current) globeRef.current.controls().autoRotate = true;
       return;
     }
     const validPins = filteredPins.filter(hasValidGlobeCoords);
@@ -717,19 +727,13 @@ function AlumniGlobeImpl({ pins, filteredPins }: AlumniGlobeProps) {
     routerRef.current.push(`/profile/${slug}`);
   }, []);
 
-  const resumeTimerRef = useRef<number | null>(null);
-
   const handleZoomTo = useCallback((lat: number, lng: number) => {
     const g = globeRef.current;
     if (!g) return;
+    // Zooming to a pin is a user action: stop rotation for good, no resume.
+    userInteractedRef.current = true;
     g.controls().autoRotate = false;
     g.pointOfView({ lat, lng, altitude: 1.0 }, 800);
-    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
-    resumeTimerRef.current = window.setTimeout(() => {
-      globeRef.current?.controls().autoRotate === false &&
-        (globeRef.current.controls().autoRotate = true);
-      resumeTimerRef.current = null;
-    }, 5000);
   }, []);
 
   const htmlElementFn = useCallback(
