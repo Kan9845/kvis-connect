@@ -445,11 +445,7 @@ function KvisianInner() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
-      router.replace("/auth/login");
-      return;
-    }
-    if (user.profile_setup_done === false) {
+    if (user?.profile_setup_done === false) {
       router.replace("/onboarding");
     }
   }, [authLoading, user, router]);
@@ -723,7 +719,41 @@ function KvisianInner() {
   }
 
   if (!user) {
-    return null;
+    return (
+      <PageEntrance>
+        <div className="min-h-full bg-background">
+          <div className="mx-auto max-w-4xl px-4 md:px-6 py-xl lg:py-layout">
+            <header className="pb-7 border-b border-[var(--sep-strong)]">
+              <p className="text-xs font-bold uppercase tracking-[0.3em] mb-3 text-[var(--kvis-green-light)]">
+                KVIS Connect · Directory
+              </p>
+              <h1 className="font-display text-5xl md:text-6xl font-black tracking-[-0.03em] leading-[0.95]">
+                Join KVIS Connect
+              </h1>
+              <p className="mt-4 text-sm md:text-base text-muted-foreground max-w-[58ch] leading-relaxed">
+                Sign in to browse the KVISian directory, find alumni, students, and faculty,
+                and connect with the wider KVIS community.
+              </p>
+            </header>
+    
+            <div className="pt-8 flex flex-wrap gap-3">
+              <Link
+                href="/auth/login?next=/kvisian"
+                className="px-5 py-3 text-xs font-bold uppercase tracking-[0.22em] bg-foreground text-background"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/auth/register"
+                className="px-5 py-3 text-xs font-bold uppercase tracking-[0.22em] border border-[var(--kvis-border)] text-foreground"
+              >
+                Join now
+              </Link>
+            </div>
+          </div>
+        </div>
+      </PageEntrance>
+    );
   }
 
   return (
