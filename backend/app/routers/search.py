@@ -47,6 +47,7 @@ def directory_list(session: Session = Depends(get_session)):
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
             u.profile_pic_url, u.goose_config, u.country, u.place, u.place_level2,
             u.province_of_origin, u.mbti, u.interests,
+            u.kvis_fav_menu, u.kvis_fav_event, u.kvis_fav_area,
             u.is_verified,
             (SELECT string_agg(interest, ' ') FROM research_interest
              WHERE user_id = u.id) AS research_interests_text,
