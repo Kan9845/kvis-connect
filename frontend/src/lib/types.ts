@@ -297,6 +297,9 @@ export interface DirectoryCard {
   edu_uni?: string;
   hobbies?: any;
   research_interests_text?: string | null;
+  kvis_fav_menu?: string | null;
+  kvis_fav_event?: string | null;
+  kvis_fav_area?: string | null;
   place_level2?: string;
   province_of_origin?: string | null;
   edu_scholarships?: string | null;

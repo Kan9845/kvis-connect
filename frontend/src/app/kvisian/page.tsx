@@ -587,6 +587,9 @@ function KvisianInner() {
           u.edu_scholarships,
           u.hobbies ? (typeof u.hobbies === 'string' ? u.hobbies : JSON.stringify(u.hobbies)) : null,
           u.research_interests_text,
+          u.kvis_fav_menu,
+          u.kvis_fav_event,
+          u.kvis_fav_area,
           // all education + career entries (not just the most recent)
           u.all_edu_unis,
           u.all_edu_locations,
