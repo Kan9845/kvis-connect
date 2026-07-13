@@ -11,6 +11,7 @@ from app.core.database import get_session
 from app.core.deps import get_current_user
 from app.core.cache import cached, invalidate_tags
 from app.core.config import settings
+from app.core.images import compress_image
 from app.models.user import User
 from app.models.blog import Blog
 from app.schemas.blog import BlogRead, BlogDetail, BlogCreate, BlogUpdate
@@ -172,14 +173,14 @@ async def upload_blog_image(
     }
     if file.content_type not in ext_by_type:
         raise HTTPException(400, detail="Only JPG, PNG, and WebP images are supported")
-    ext = ext_by_type[file.content_type]
-    key = f"blogs/{current_user.id}/{uuid.uuid4()}.{ext}"
+    body = compress_image(file.file, max_dim=1600)
+    key = f"blogs/{current_user.id}/{uuid.uuid4()}.webp"
 
     s3.upload_fileobj(
-        file.file,
+        body,
         settings.S3_BUCKET,
         key,
-        ExtraArgs={"ContentType": file.content_type},
+        ExtraArgs={"ContentType": "image/webp", "CacheControl": "public, max-age=31536000, immutable", "Metadata": {"compressed": "1"}},
     )
     public_url = getattr(settings, "S3_PUBLIC_URL", "")
     if public_url:

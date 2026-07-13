@@ -1,6 +1,8 @@
 import uuid
 from sqlmodel import SQLModel, Field, Relationship
-from typing import Optional, List
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
+from typing import Optional, List, Any
 from datetime import datetime
 
 
@@ -143,6 +145,17 @@ class Launch(SQLModel, table=True):
     user: Optional["User"] = Relationship(back_populates="launches")
 
 
+class SocialLink(SQLModel, table=True):
+    __tablename__ = "social_link"
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    user_id: uuid.UUID = Field(foreign_key="user.id", index=True)
+    platform: str   # facebook | linkedin | instagram | line | website
+    value: str
+    is_public: bool = True
+    order_index: int = 0
+    user: Optional["User"] = Relationship(back_populates="social_links")
+
+
 class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
@@ -180,20 +193,9 @@ class User(SQLModel, table=True):
     is_current_teacher: bool = Field(default=False, index=True)
     teach_department: Optional[str] = None
 
-    # Contact & social
-    facebook_url: Optional[str] = None
-    linkedin_url: Optional[str] = None
-    instagram_url: Optional[str] = None
-    line_id: Optional[str] = None
-    website_url: Optional[str] = None
+    # Contact (social links now live in the social_link table)
     contact_email: Optional[str] = None
     contact_email_public: bool = True
-    
-    linkedin_public: bool = True
-    facebook_public: bool = True
-    instagram_public: bool = True
-    website_public: bool = True
-    line_id_public: bool = True
 
     # Location
     place: Optional[str] = None
@@ -222,9 +224,9 @@ class User(SQLModel, table=True):
     kvis_fav_event: Optional[str] = None
     kvis_fav_area: Optional[str] = None
     activities: Optional[str] = None   # JSON list of {title, year?, description?}
-    competitions: Optional[str] = None  # JSON
-    experience_camps: Optional[str] = None  # JSON
-    clubs: Optional[str] = None  # JSON
+    competitions: Optional[Any] = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    experience_camps: Optional[Any] = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    clubs: Optional[Any] = Field(default=None, sa_column=Column(JSONB, nullable=True))
 
     profile_setup_done: bool = False
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -240,3 +242,4 @@ class User(SQLModel, table=True):
     languages: List["UserLanguage"] = Relationship(back_populates="user")
     research_interests: List["ResearchInterest"] = Relationship(back_populates="user")
     launches: List["Launch"] = Relationship(back_populates="user")
+    social_links: List["SocialLink"] = Relationship(back_populates="user")

@@ -43,7 +43,10 @@ def directory_list(session: Session = Depends(get_session)):
         SELECT
             u.id::text, u.slug, u.first_name, u.last_name, u.nickname, u.kvis_year,
             u.current_grade,
-            u.hobbies, u.activities, u.competitions, u.experience_camps, u.clubs,
+            u.hobbies, u.activities,
+            u.competitions::text AS competitions,
+            u.experience_camps::text AS experience_camps,
+            u.clubs::text AS clubs,
             u.teach_start_year, u.teach_end_year, u.is_current_teacher,
             u.profile_pic_url, u.goose_config, u.country, u.place, u.place_level2,
             u.province_of_origin, u.mbti, u.interests,

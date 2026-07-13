@@ -12,8 +12,9 @@ from app.core.database import get_session
 from app.core.deps import get_current_user, get_optional_user
 from app.core.config import settings
 from app.core.cache import cached, invalidate_tags
+from app.core.images import compress_image
 from app.core.slug import unique_user_slug
-from app.models.user import User, Education, Career, Project, Publication, PortfolioLink, ExtraContact, UserLanguage, ResearchInterest, Launch
+from app.models.user import User, Education, Career, Project, Publication, PortfolioLink, ExtraContact, UserLanguage, ResearchInterest, Launch, SocialLink
 from app.schemas.user import (
     UserMe, UserPublic, UserUpdate, UserCard,
     EducationWrite, CareerWrite, GlobePin,
@@ -164,6 +165,7 @@ def _load_me(session: Session, user_id) -> User:
             selectinload(User.languages),
             selectinload(User.research_interests),
             selectinload(User.launches),
+            selectinload(User.social_links),
         )
     ).first()
 
@@ -186,11 +188,31 @@ async def update_me(
     name_changed = ("first_name" in data and data["first_name"] != user.first_name) or \
                    ("last_name" in data and data["last_name"] != user.last_name)
     import json as _json
+    social_changes = {}  # platform -> {"value": ..., "is_public": ...}
     for k, v in data.items():
-        if k in ("hobbies", "activities", "competitions", "experience_camps", "clubs") and isinstance(v, (dict, list)):
-            setattr(user, k, _json.dumps(v))
+        if k in _SOCIAL_WRITE:
+            platform, attr = _SOCIAL_WRITE[k]
+            social_changes.setdefault(platform, {})[attr] = v
+        elif k in ("competitions", "experience_camps", "clubs"):
+            setattr(user, k, v)  # JSONB column stores the list/dict directly
+        elif k in ("hobbies", "activities") and isinstance(v, (dict, list)):
+            setattr(user, k, _json.dumps(v))  # still text columns holding JSON
         else:
             setattr(user, k, v)
+
+    if social_changes:
+        existing = {s.platform: s for s in user.social_links}
+        for platform, changes in social_changes.items():
+            row = existing.get(platform)
+            if row is None:
+                row = SocialLink(user_id=user.id, platform=platform, value="")
+                session.add(row)
+                user.social_links.append(row)
+                existing[platform] = row
+            if "value" in changes:
+                row.value = changes["value"] or ""
+            if "is_public" in changes:
+                row.is_public = bool(changes["is_public"])
     if name_changed:
         user.slug = unique_user_slug(session, user.first_name, user.last_name, exclude_id=user.id)
     if any(k in data for k in ("place", "place_level2", "country")):
@@ -244,17 +266,17 @@ async def upload_profile_pic(
     if file.content_type not in ext_by_type:
         raise HTTPException(400, detail="Only JPG, PNG, and WebP images are supported")
     
-    ext = ext_by_type[file.content_type]
-    key = f"profiles/{current_user.id}/{uuid.uuid4()}.{ext}"
+    body = compress_image(file.file, max_dim=512)
+    key = f"profiles/{current_user.id}/{uuid.uuid4()}.webp"
 
     s3.upload_fileobj(
-        file.file,
+        body,
         settings.S3_BUCKET,
         key,
         ExtraArgs={
-            "ContentType": file.content_type,
-            # Only add this if your S3 provider/bucket supports ACLs:
-            # "ACL": "public-read",
+            "ContentType": "image/webp",
+            "CacheControl": "public, max-age=31536000, immutable",
+            "Metadata": {"compressed": "1"},
         },
     )
 
@@ -296,6 +318,7 @@ def get_user(
             selectinload(User.research_interests),
             selectinload(User.launches),
             selectinload(User.extra_contacts),
+            selectinload(User.social_links),
         )
     ).first()
     if not user or user.is_deleted:
@@ -548,6 +571,35 @@ def _career_list(user: User, public_only: bool = False):
     ]
 
 
+# platform -> (public API url field, public API flag field)
+_SOCIAL_FIELDS = {
+    "facebook": ("facebook_url", "facebook_public"),
+    "linkedin": ("linkedin_url", "linkedin_public"),
+    "instagram": ("instagram_url", "instagram_public"),
+    "website": ("website_url", "website_public"),
+    "line": ("line_id", "line_id_public"),
+}
+
+
+# reverse map: incoming API field -> (platform, SocialLink attribute)
+_SOCIAL_WRITE = {}
+for _p, (_v, _pub) in _SOCIAL_FIELDS.items():
+    _SOCIAL_WRITE[_v] = (_p, "value")
+    _SOCIAL_WRITE[_pub] = (_p, "is_public")
+
+
+def _socials(user: User, is_kvis: bool) -> dict:
+    """Rebuild the flat social_* API fields from social_link rows (contract unchanged)."""
+    by_platform = {s.platform: s for s in user.social_links}
+    out = {}
+    for platform, (vfield, pfield) in _SOCIAL_FIELDS.items():
+        s = by_platform.get(platform)
+        public = s.is_public if s else True
+        out[vfield] = (s.value if s else None) if (public or is_kvis) else None
+        out[pfield] = public
+    return out
+
+
 def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False) -> dict:
     return {
         "id": user.id,
@@ -590,16 +642,7 @@ def _user_to_public(user: User, public_only: bool = True, is_kvis: bool = False)
         # Privacy-gated fields
         "interests": user.interests if (user.interests_public or is_kvis) else None,
         "interests_public": user.interests_public,
-        "facebook_url": user.facebook_url if (getattr(user, 'facebook_public', True) or is_kvis) else None,
-        "facebook_public": getattr(user, 'facebook_public', True),
-        "linkedin_url": user.linkedin_url if (getattr(user, 'linkedin_public', True) or is_kvis) else None,
-        "linkedin_public": getattr(user, 'linkedin_public', True),
-        "instagram_url": user.instagram_url if (getattr(user, 'instagram_public', True) or is_kvis) else None,
-        "instagram_public": getattr(user, 'instagram_public', True),
-        "website_url": user.website_url if (getattr(user, 'website_public', True) or is_kvis) else None,
-        "website_public": getattr(user, 'website_public', True),
-        "line_id": user.line_id if (getattr(user, 'line_id_public', True) or is_kvis) else None,
-        "line_id_public": getattr(user, 'line_id_public', True),
+        **_socials(user, is_kvis),
         "contact_email": user.contact_email if (user.contact_email_public or is_kvis) else None,
         "contact_email_public": user.contact_email_public,
         "is_verified": user.is_verified,
@@ -669,7 +712,6 @@ def _user_to_me(user: User) -> dict:
         **_user_to_public(user, public_only=False, is_kvis=True),
         "email": user.email,
         "expected_grad_year": user.expected_grad_year,
-        "line_id": user.line_id,
         "email_verified": user.email_verified,
         "is_verified": user.is_verified,
         "kvis_email": user.kvis_email,
