@@ -2,7 +2,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = "add_research_public_flags"
-down_revision = "1919d14b75c4"
+down_revision = "a7b8c9d0e1f2"
 branch_labels = None
 depends_on = None
 
