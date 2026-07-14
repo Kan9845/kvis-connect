@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 
-const ADMIN_SLUGS = [
-    "surapa-panjaphakdee",
-    "chayada-pakpoomkamonlert",
-    "naruesorn-prabpon",
-    "popsuk-sumetchoengprachya",
-    "suchart-udomchai",
-];
+const FEEDBACK_PERMISSION = "admin.feedback.read";
 
 const TYPE_COLORS: Record<string, string> = {
   bug: "oklch(55% 0.2 25)",
@@ -38,8 +32,13 @@ export default function FeedbackAdminPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user || !ADMIN_SLUGS.includes(user.slug)) {
-      router.replace("/");
+    if (!user) {
+      router.replace("/auth/login?next=/admin/feedback");
+      return;
+    }
+    if (!user.permissions.includes(FEEDBACK_PERMISSION)) {
+      setError("You do not have permission to view feedback.");
+      setFetching(false);
       return;
     }
     api

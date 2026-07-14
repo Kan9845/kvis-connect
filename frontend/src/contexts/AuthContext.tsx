@@ -36,6 +36,7 @@ const DEV_MOCK_USER: UserMe = {
   extra_contacts: [],
   has_password: false,
   created_at: new Date().toISOString(),
+  permissions: [],
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

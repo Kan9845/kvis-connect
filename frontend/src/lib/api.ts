@@ -3,7 +3,7 @@ import type { BlogComment } from "./types";
 import type {
   UserMe, UserPublic, UserCard, GlobePin,
   BlogRead, BlogDetail, Summary, SearchParams,
-  Education, Career,
+  Education, Career, AdminOverview, AdminUserPage,
 } from "./types";
 import { filterGlobePins } from "./utils";
 
@@ -183,6 +183,17 @@ export const blogApi = {
     api.delete(`/api/blogs/${slug}/comments/${commentId}`),
   toggleComments: (slug: string) =>
     api.patch<{ comments_enabled: boolean }>(`/api/blogs/${slug}/comments/toggle`).then(r => r.data),
+};
+
+export const adminApi = {
+  getOverview: () =>
+    api.get<AdminOverview>("/api/admin/overview").then((r) => r.data),
+  getUsers: (page: number, pageSize: number) =>
+    api
+      .get<AdminUserPage>("/api/admin/users", {
+        params: { page, page_size: pageSize },
+      })
+      .then((r) => r.data),
 };
 
 export default api;

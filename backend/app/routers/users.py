@@ -14,6 +14,7 @@ from app.core.config import settings
 from app.core.cache import cached, invalidate_tags
 from app.core.images import compress_image
 from app.core.slug import unique_user_slug
+from app.core.authorization import get_user_permissions
 from app.models.user import User, Education, Career, Project, Publication, PortfolioLink, ExtraContact, UserLanguage, ResearchInterest, Launch, SocialLink
 from app.schemas.user import (
     UserMe, UserPublic, UserUpdate, UserCard,
@@ -173,7 +174,7 @@ def _load_me(session: Session, user_id) -> User:
 @router.get("/me", response_model=UserMe)
 def get_me(current_user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     user = _load_me(session, current_user.id)
-    return _user_to_me(user)
+    return {**_user_to_me(user), "permissions": get_user_permissions(session, user.id)}
 
 
 @router.patch("/me", response_model=UserMe)
@@ -236,7 +237,11 @@ async def update_me(
     session.add(user)
     session.commit()
     await invalidate_tags("users", f"user:{old_slug}", f"user:{user.slug}", "globe", "search")
-    return _user_to_me(_load_me(session, user.id))
+    updated_user = _load_me(session, user.id)
+    return {
+        **_user_to_me(updated_user),
+        "permissions": get_user_permissions(session, updated_user.id),
+    }
 
 
 @router.post("/me/profile-pic")

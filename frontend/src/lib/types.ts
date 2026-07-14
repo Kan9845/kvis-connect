@@ -174,6 +174,34 @@ export interface UserMe extends UserPublic {
   clubs?: ClubLeadership[] | null;
   extra_contacts: { type: string; value: string; public: boolean }[];
   goose_config?: string;
+  permissions: string[];
+}
+
+export interface AdminOverview {
+  total_users: number;
+  eligible_users: number;
+  completed_profiles: number;
+  recent_users_30d: number;
+}
+
+export interface AdminUserSummary {
+  id: string;
+  slug: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  email_verified: boolean;
+  is_verified: boolean;
+  profile_setup_done: boolean;
+  created_at: string;
+  roles: string[];
+}
+
+export interface AdminUserPage {
+  items: AdminUserSummary[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 export interface GlobePin {

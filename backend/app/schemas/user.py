@@ -259,6 +259,7 @@ class UserMe(UserPublic):
     competitions: Optional[List[Any]] = None
     experience_camps: Optional[List[Any]] = None
     clubs: Optional[List[Any]] = None
+    permissions: List[str] = Field(default_factory=list)
 
 
 class UserUpdate(BaseModel):

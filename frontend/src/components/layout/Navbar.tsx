@@ -349,6 +349,7 @@ type PanelUser = {
   goose_config?: string | null;
   is_verified?: boolean;
   kvis_year?: number | null;
+  permissions?: string[];
 };
 
 function parseGoose(cfg?: string | null) {
@@ -546,6 +547,15 @@ function MobileNavPanel({
           >
             <Settings className="h-4 w-4 shrink-0" /> Edit Profile
           </Link>
+          {user.permissions?.includes("admin.overview.read") && (
+            <Link
+              href="/admin"
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors font-medium"
+              style={{ color: rowColor }}
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" /> Admin
+            </Link>
+          )}
           <button
             onClick={logout}
             className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm transition-colors font-medium"
@@ -656,6 +666,13 @@ export function Navbar() {
               <Settings className="mr-2 h-4 w-4" /> Edit Profile
             </Link>
           </DropdownMenuItem>
+          {user.permissions?.includes("admin.overview.read") && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin" className="cursor-pointer">
+                <ShieldCheck className="mr-2 h-4 w-4" /> Admin
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={logout}

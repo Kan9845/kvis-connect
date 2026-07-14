@@ -1,23 +1,17 @@
 import threading
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 
 from app.core.config import settings
 from app.core.database import get_session
-from app.core.deps import get_current_user, get_optional_user
+from app.core.deps import get_optional_user
+from app.core.authorization import ADMIN_FEEDBACK_READ, require_permission
 from app.models.feedback import Feedback
 from app.models.user import User
 from app.schemas.feedback import FeedbackCreate, FeedbackRead
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
-
-ADMIN_SLUGS = {
-    "surapa-panjaphakdee",
-    "chayada-pakpoomkamonlert",
-    "naruesorn-prabpon",
-    "popsuk-sumetchoengprachya",
-}
 
 TYPE_COLORS = {
     "bug": 0xE53E3E,
@@ -105,8 +99,6 @@ def submit_feedback(
 @router.get("", response_model=list[FeedbackRead])
 def list_feedback(
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user),
+    _admin: User = Depends(require_permission(ADMIN_FEEDBACK_READ)),
 ):
-    if current_user.slug not in ADMIN_SLUGS:
-        raise HTTPException(status_code=403, detail="Forbidden")
     return session.exec(select(Feedback).order_by(Feedback.created_at.desc())).all()
