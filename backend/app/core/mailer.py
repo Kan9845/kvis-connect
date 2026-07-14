@@ -18,6 +18,10 @@ _token_lock = threading.Lock()
 _token_cache: dict[str, float | str] = {"access_token": "", "expires_at": 0.0}
 
 
+class EmailDeliveryError(RuntimeError):
+    """Email delivery failed without exposing provider or message details."""
+
+
 def _get_graph_token() -> str:
     now = time.time()
     with _token_lock:
@@ -43,26 +47,38 @@ def _get_graph_token() -> str:
 
 
 def send_email(to_email: str, subject: str, text: str) -> None:
-    if not settings.MS_TENANT_ID or not settings.MS_CLIENT_ID or not settings.MS_CLIENT_SECRET:
-        logger.warning("MS Graph not configured — email skipped. To: %s | Subject: %s\n%s", to_email, subject, text)
-        return
-    token = _get_graph_token()
-    url = f"https://graph.microsoft.com/v1.0/users/{settings.MS_SENDER}/sendMail"
-    body = {
-        "message": {
-            "subject": subject,
-            "body": {"contentType": "Text", "content": text},
-            "toRecipients": [{"emailAddress": {"address": to_email}}],
-        },
-        "saveToSentItems": False,
-    }
-    resp = httpx.post(
-        url,
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        json=body,
-        timeout=15,
-    )
-    resp.raise_for_status()
+    if not all(
+        (
+            settings.MS_TENANT_ID,
+            settings.MS_CLIENT_ID,
+            settings.MS_CLIENT_SECRET,
+            settings.MS_SENDER,
+        )
+    ):
+        logger.error("Email delivery is unavailable because Microsoft Graph is not configured")
+        raise EmailDeliveryError("Email delivery is not configured")
+
+    try:
+        token = _get_graph_token()
+        url = f"https://graph.microsoft.com/v1.0/users/{settings.MS_SENDER}/sendMail"
+        body = {
+            "message": {
+                "subject": subject,
+                "body": {"contentType": "Text", "content": text},
+                "toRecipients": [{"emailAddress": {"address": to_email}}],
+            },
+            "saveToSentItems": False,
+        }
+        resp = httpx.post(
+            url,
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json=body,
+            timeout=15,
+        )
+        resp.raise_for_status()
+    except (httpx.HTTPError, KeyError, TypeError, ValueError):
+        logger.error("Microsoft Graph email delivery failed")
+        raise EmailDeliveryError("Email delivery failed") from None
 
 
 def send_notification(
@@ -88,5 +104,5 @@ def send_notification(
                 + (f"Open: {settings.FRONTEND_URL}{link}\n\n" if link else "")
                 + "- KVIS Connect",
             )
-        except Exception as e:
-            logger.warning("Failed to send notification email to %s: %s", user.email, e)
+        except EmailDeliveryError:
+            logger.warning("Notification email delivery failed")

@@ -12,7 +12,7 @@ from app.core.database import get_session
 from app.core.security import hash_password, verify_password, create_access_token, create_refresh_token, decode_token
 from app.core.config import settings
 from app.core.deps import get_current_user
-from app.core.mailer import send_email
+from app.core.mailer import EmailDeliveryError, send_email
 from app.core.cache import invalidate_tags
 from app.core.slug import unique_user_slug
 from app.models.user import User
@@ -84,8 +84,8 @@ def _send_otp_email_async(to_email: str, otp: str) -> None:
     def _run():
         try:
             _send_otp_email(to_email, otp)
-        except Exception as e:
-            logging.getLogger(__name__).error(f"Background OTP send failed: {e}")
+        except EmailDeliveryError:
+            logger.error("Background verification email delivery failed")
     threading.Thread(target=_run, daemon=True).start()
 
 
@@ -140,10 +140,13 @@ async def register(body: RegisterRequest, session: Session = Depends(get_session
     }
     try:
         _send_otp_email(body.email, otp)
-    except Exception as e:
+    except EmailDeliveryError:
         del _otp_store[body.email]
-        logging.getLogger(__name__).error(f"SMTP error during registration: {e}")
-        raise HTTPException(500, detail=f"Account created but failed to send verification email: {e}")
+        logger.error("Registration verification email delivery failed")
+        raise HTTPException(
+            503,
+            detail="Account created, but verification email delivery is temporarily unavailable.",
+        )
 
     return {"message": "Account created. Check your email for a verification code.", "email": body.email}
 
@@ -248,9 +251,9 @@ def request_otp(body: OTPRequestBody):
 
     try:
         _send_otp_email(body.email, otp)
-    except Exception:
+    except EmailDeliveryError:
         del _otp_store[body.email]
-        raise HTTPException(500, detail="Failed to send OTP email. Check SMTP configuration.")
+        raise HTTPException(503, detail="Verification email delivery is temporarily unavailable.")
 
     return {"message": f"OTP sent to {body.email}"}
 
@@ -351,9 +354,9 @@ def request_personal_email(
     }
     try:
         _send_otp_email(email, otp)
-    except Exception:
+    except EmailDeliveryError:
         del _otp_store[email]
-        raise HTTPException(500, detail="Failed to send OTP email. Check SMTP configuration.")
+        raise HTTPException(503, detail="Verification email delivery is temporarily unavailable.")
     return {"message": f"OTP sent to {email}"}
 
 
@@ -538,9 +541,9 @@ def password_reset_request(body: PasswordResetRequest, session: Session = Depend
 
     try:
         _send_reset_email(reset_email, token)  # send to the address the user typed
-    except Exception as e:
-        reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?token={token}"
-        logger.warning("Failed to send reset email to %s (%s). Reset URL: %s", body.email, e, reset_url)
+    except EmailDeliveryError:
+        del _reset_store[token]
+        logger.warning("Password reset email delivery failed")
 
     return {"message": "If that email is registered, a reset link has been sent."}
 
