@@ -15,7 +15,7 @@ import sqlmodel
 from sqlalchemy.dialects import postgresql
 
 revision = 'c9d1e2f3a4b5'
-down_revision = ('b2c3d4e5f6a8', 'backfill_hk_coords', 'add_research_public_flags')
+down_revision = ('backfill_hk_coords', 'add_research_public_flags')
 branch_labels = None
 depends_on = None
 
