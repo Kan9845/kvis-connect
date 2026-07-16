@@ -184,6 +184,16 @@ export interface AdminOverview {
   recent_users_30d: number;
 }
 
+export type SiteThemeColors = Record<
+  "background" | "surface" | "foreground" | "primary" | "accent" | "green" | "border" | "danger",
+  string
+>;
+
+export interface SiteTheme {
+  colors: Partial<SiteThemeColors>;
+  updated_at?: string | null;
+}
+
 export interface AdminUserSummary {
   id: string;
   slug: string;
@@ -202,6 +212,29 @@ export interface AdminUserPage {
   total: number;
   page: number;
   page_size: number;
+}
+
+export interface AdminExportField {
+  key: string;
+  label: string;
+  description: string;
+  category: string;
+  sensitive: boolean;
+  default_selected: boolean;
+}
+
+export interface AdminExportRequest {
+  fields: string[];
+  include_deleted: boolean;
+  acknowledge_sensitive: boolean;
+}
+
+export interface AdminExportPreview {
+  columns: string[];
+  rows: string[][];
+  total_rows: number;
+  estimated_size_bytes: number;
+  masked: boolean;
 }
 
 export interface GlobePin {

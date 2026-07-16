@@ -5,9 +5,14 @@
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "dev": "next dev",
+    "dev:staging": "pnpm run staging:check && next dev",
     "build": "next build",
+    "build:staging": "pnpm run staging:check && next build",
     "start": "next start",
-    "lint": "next lint"
+    "start:staging": "pnpm run staging:check && next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "staging:check": "node scripts/validate-staging-env.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

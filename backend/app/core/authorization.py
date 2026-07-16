@@ -13,6 +13,8 @@ from app.models.user import User
 ADMIN_OVERVIEW_READ = "admin.overview.read"
 ADMIN_USERS_READ = "admin.users.read"
 ADMIN_FEEDBACK_READ = "admin.feedback.read"
+ADMIN_SITE_THEME_MANAGE = "admin.site_theme.manage"
+ADMIN_DATA_EXPORT_DOWNLOAD = "admin.data_export.download"
 
 
 def get_user_permissions(session: Session, user_id: uuid.UUID) -> list[str]:

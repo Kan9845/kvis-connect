@@ -6,6 +6,7 @@ import { NavbarVariantProvider } from "@/contexts/NavbarVariantContext";
 import { Providers, RQProviders } from "./providers";
 import { Navbar } from "@/components/layout/NavbarWrapper";
 import { Toaster } from "@/components/layout/Toaster";
+import { SiteThemeLoader } from "@/components/SiteThemeLoader";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const beVietnamPro = Be_Vietnam_Pro({
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className={`${inter.variable} ${beVietnamPro.variable} ${bricolage.variable} ${notoThai.variable}`}>
         <Providers>
+          <SiteThemeLoader />
           <AuthProvider>
             <RQProviders>
               <NavbarVariantProvider>

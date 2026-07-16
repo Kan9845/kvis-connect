@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: kvis-connect-staging-frontend
+    runtime: node
+    repo: https://github.com/l2holV4l2u/KVIS-Connect
+    plan: free
+    region: singapore
+    branch: feature/admin-dashboard
+    rootDir: frontend
+    buildCommand: pnpm install --frozen-lockfile && pnpm run lint && pnpm run type-check && pnpm run build:staging
+    startCommand: pnpm run start:staging
+    healthCheckPath: /auth/login
+    envVars:
+      - key: NODE_VERSION
+        value: ">=20.0.0 <21.0.0"
+      - key: BACKEND_URL
+        value: https://kvis-connect-staging-backend.onrender.com
+      - key: NEXT_PUBLIC_USE_MOCK
+        value: "false"
+      - key: NEXT_PUBLIC_DISABLE_AUTH
+        value: "false"

@@ -11,8 +11,10 @@ import {
   ChevronRight,
   ClipboardCheck,
   FileCheck2,
+  Download,
   Inbox,
   LockKeyhole,
+  Palette,
   Search,
   ShieldCheck,
   SlidersHorizontal,
@@ -27,6 +29,7 @@ import type { AdminOverview, AdminUserPage, AdminUserSummary } from "@/lib/types
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageEntrance } from "@/components/ui/motion";
+import { PopulationGroups } from "./PopulationGroups";
 
 
 const PAGE_SIZE = 25;
@@ -149,9 +152,11 @@ export default function AdminPage() {
   const totalPages = Math.max(1, Math.ceil(users.total / users.page_size));
   const canReadFeedback = (user?.permissions ?? []).includes(FEEDBACK_PERMISSION);
   const hasOverviewPermission = (user?.permissions ?? []).includes(OVERVIEW_PERMISSION);
+  const canManageTheme = (user?.permissions ?? []).includes("admin.site_theme.manage");
+  const canExportData = (user?.permissions ?? []).includes("admin.data_export.download");
 
   return (
-    <PageEntrance className="min-h-full bg-[#f4f1ea] text-[#17251d]">
+    <PageEntrance className="admin-light-surface min-h-full bg-[var(--admin-canvas)] text-[#17251d] transition-colors duration-200">
       <div className="border-b border-[#17251d]/15 bg-[#173b2b] text-[#f4f1ea]">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-4 md:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
@@ -173,6 +178,8 @@ export default function AdminPage() {
             <Button asChild variant="outline" className="border-white/30 bg-transparent text-white hover:bg-white hover:text-[#173b2b]">
               <Link href="/">Exit desk</Link>
             </Button>
+            {canManageTheme && <Button asChild className="bg-[#d7e8b5] text-[#173b2b] hover:bg-white"><Link href="/admin/theme"><Palette className="mr-2 h-4 w-4" />Theme control</Link></Button>}
+            {canExportData && <Button asChild className="bg-[#d7e8b5] text-[#173b2b] hover:bg-white"><Link href="/admin/export"><Download className="mr-2 h-4 w-4" />Data export</Link></Button>}
           </div>
         </div>
       </div>
@@ -214,6 +221,8 @@ export default function AdminPage() {
             );
           })}
         </section>
+
+        <PopulationGroups className="mt-8" />
 
         <section className="mt-10 grid gap-5 xl:grid-cols-[1.4fr_0.9fr]">
           <div className="border border-[#17251d]/15 bg-[#faf8f3]">
@@ -447,7 +456,7 @@ function UserInspectionPanel({ user }: { user: AdminUserSummary | null }) {
 
 function AdminLoading() {
   return (
-    <div className="min-h-screen bg-[#f4f1ea] px-4 py-8 md:px-6">
+    <div className="min-h-screen bg-[var(--admin-canvas)] px-4 py-8 md:px-6">
       <div className="mx-auto max-w-7xl">
         <Skeleton className="h-16 w-full rounded-none" />
         <Skeleton className="mt-10 h-20 w-3/4 max-w-2xl rounded-none" />
@@ -462,7 +471,7 @@ function AdminLoading() {
 
 function CenteredState({ eyebrow, title, body, action }: { eyebrow: string; title: string; body: string; action?: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#f4f1ea] px-4 py-16">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--admin-canvas)] px-4 py-16">
       <div className="max-w-xl border-l-4 border-[#52714f] pl-6 md:pl-8">
         <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#52714f]">{eyebrow}</p>
         <h1 className="mt-3 font-display text-4xl font-black tracking-tight md:text-5xl">{title}</h1>

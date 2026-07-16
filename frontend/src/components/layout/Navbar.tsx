@@ -22,6 +22,7 @@ import {
   User,
   LogOut,
   Settings,
+  Palette,
   Sun,
   Moon,
   ShieldCheck,
@@ -556,6 +557,15 @@ function MobileNavPanel({
               <ShieldCheck className="h-4 w-4 shrink-0" /> Admin
             </Link>
           )}
+          {user.permissions?.includes("admin.site_theme.manage") && (
+            <Link
+              href="/admin/theme"
+              className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors font-medium"
+              style={{ color: rowColor }}
+            >
+              <Palette className="h-4 w-4 shrink-0" /> Theme control
+            </Link>
+          )}
           <button
             onClick={logout}
             className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm transition-colors font-medium"
@@ -594,6 +604,7 @@ export function Navbar() {
   const { variant } = useNavbarVariant();
   const { resolvedTheme } = useTheme();
   const isGlobe = pathname === "/";
+  const isAdminArea = pathname.startsWith("/admin");
   const dark = isGlobe && variant === "dark";
   const isDarkTheme = resolvedTheme === "dark";
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -670,6 +681,13 @@ export function Navbar() {
             <DropdownMenuItem asChild>
               <Link href="/admin" className="cursor-pointer">
                 <ShieldCheck className="mr-2 h-4 w-4" /> Admin
+              </Link>
+            </DropdownMenuItem>
+          )}
+          {user.permissions?.includes("admin.site_theme.manage") && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin/theme" className="cursor-pointer">
+                <Palette className="mr-2 h-4 w-4" /> Theme control
               </Link>
             </DropdownMenuItem>
           )}
@@ -850,7 +868,9 @@ export function Navbar() {
   }
 
   return (
-    <header className="relative z-50 w-full bg-background">
+    <header
+      className={`relative z-50 w-full ${isAdminArea ? "admin-light-nav border-b border-[#17251d]/15 bg-[#faf8f3]" : "bg-background"}`}
+    >
       <div
         className={`${mobileOpen ? "hidden nav:flex" : "flex"} items-center justify-between gap-4 px-4 md:px-6 h-16`}
       >
@@ -951,7 +971,7 @@ export function Navbar() {
       {/* Mobile panel */}
       {mobileOpen && (
         <MobileNavPanel
-          dark={isDarkTheme}
+          dark={isAdminArea ? false : isDarkTheme}
           pathname={pathname}
           user={user}
           logout={logout}

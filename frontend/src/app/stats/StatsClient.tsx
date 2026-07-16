@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/motion";
 import { Separator } from "@/components/ui/separator";
 import { cohortColor, isFaculty, normalizeCountryLabel } from "@/lib/utils";
+import { LOCAL_EXPORT_SNAPSHOT } from "@/app/admin/populationSnapshot";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -340,7 +341,14 @@ function readCssVar(name: string, fallback: string) {
   );
 }
 
-export default function StatsClient({
+export default function StatsClient({ initialPeople = [] }: { initialPeople?: UserCard[] }) {
+  if (process.env.NEXT_PUBLIC_POPULATION_SNAPSHOT === "production-export") {
+    return <LocalExportStats />;
+  }
+  return <LiveStatsClient initialPeople={initialPeople} />;
+}
+
+function LiveStatsClient({
   initialPeople = [],
 }: {
   initialPeople?: UserCard[];
@@ -836,6 +844,61 @@ export default function StatsClient({
               </FadeUp>
             </>
           )}
+        </div>
+      </div>
+    </PageEntrance>
+  );
+}
+
+function LocalExportStats() {
+  const cohorts = Object.entries(LOCAL_EXPORT_SNAPSHOT.alumniByCohort)
+    .map(([year, count]) => ({ year: Number(year), count }))
+    .sort((left, right) => left.year - right.year);
+  const maximum = Math.max(...cohorts.map(({ count }) => count), 1);
+
+  return (
+    <PageEntrance>
+      <div className="min-h-full bg-background">
+        <div className="mx-auto max-w-5xl px-4 py-xl md:px-6 lg:py-layout">
+          <header className="border-b border-[var(--sep-strong)] pb-md">
+            <p className="mb-3 flex text-xs font-bold uppercase tracking-[0.3em] text-[var(--kvis-green-light)]">
+              KVIS Connect <Dot className="h-6 w-6 shrink-0" aria-hidden /> Stats / local export
+            </p>
+            <h1 className="font-display text-5xl font-black leading-[0.95] tracking-[-0.03em] text-foreground md:text-6xl lg:text-7xl">
+              <span className="font-light">By the </span><span style={{ color: "var(--kvis-purple)" }}>Numbers</span>
+            </h1>
+            <p className="mt-4 max-w-[66ch] text-sm leading-relaxed text-muted-foreground md:text-base">
+              Anonymous population totals generated locally from the CSV export. No individual records are displayed here.
+            </p>
+          </header>
+
+          <StatFigures
+            items={[
+              { value: LOCAL_EXPORT_SNAPSHOT.alumniCount, label: "Alumni", sub: "from the local export", color: "var(--kvis-purple-light)" },
+              { value: cohorts.length, label: "Cohorts", sub: "with alumni records", color: "var(--kvis-green-light)" },
+              { value: LOCAL_EXPORT_SNAPSHOT.currentStudentCount, label: "Students", sub: "Grades 10 to 12", color: "var(--kvis-purple-light)" },
+              { value: LOCAL_EXPORT_SNAPSHOT.teacherStaffCount, label: "Staff", sub: "current teachers", color: "var(--kvis-green-light)" },
+            ]}
+          />
+
+          <Separator className="bg-[var(--kvis-border)]" />
+          <section className="py-10">
+            <p className="text-xs font-bold uppercase tracking-[0.26em] text-[var(--kvis-green-light)]">Cohort breakdown</p>
+            <h2 className="mt-3 font-display text-3xl font-black tracking-[-0.04em] text-foreground">Registered alumni by KVIS year.</h2>
+            <div className="mt-8 space-y-4">
+              {cohorts.map(({ year, count }) => (
+                <div key={year} className="grid grid-cols-[3rem_1fr_3rem] items-center gap-4">
+                  <span className="font-mono text-sm text-muted-foreground">K{year}</span>
+                  <div className="h-2 bg-[var(--kvis-rule)]"><div className="h-full" style={{ width: `${(count / maximum) * 100}%`, background: cohortColor(year) }} /></div>
+                  <span className="text-right font-display text-xl font-black tabular-nums text-foreground">{count}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+          <Separator className="bg-[var(--kvis-border)]" />
+          <aside className="my-10 border border-[var(--kvis-border)] bg-[var(--kvis-purple-soft)] p-5 text-sm leading-relaxed text-muted-foreground">
+            This CSV export does not include education, university, degree, field-of-study, or career records. The study-destination charts are intentionally unavailable rather than showing inaccurate data. Use a protected aggregate API backed by the relational database for those analytics.
+          </aside>
         </div>
       </div>
     </PageEntrance>

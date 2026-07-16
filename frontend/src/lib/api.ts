@@ -3,7 +3,8 @@ import type { BlogComment } from "./types";
 import type {
   UserMe, UserPublic, UserCard, GlobePin,
   BlogRead, BlogDetail, Summary, SearchParams,
-  Education, Career, AdminOverview, AdminUserPage,
+  Education, Career, AdminOverview, AdminUserPage, AdminExportField, AdminExportPreview, AdminExportRequest,
+  SiteTheme, SiteThemeColors,
 } from "./types";
 import { filterGlobePins } from "./utils";
 
@@ -194,6 +195,28 @@ export const adminApi = {
         params: { page, page_size: pageSize },
       })
       .then((r) => r.data),
+};
+
+export const adminExportApi = {
+  getFields: () =>
+    api.get<AdminExportField[]>("/api/admin/data-export/fields").then((response) => response.data),
+  preview: (request: AdminExportRequest) =>
+    api.post<AdminExportPreview>("/api/admin/data-export/preview", request).then((response) => response.data),
+  download: async (request: AdminExportRequest) => {
+    const response = await api.post<Blob>("/api/admin/data-export/download", request, { responseType: "blob" });
+    const disposition = response.headers["content-disposition"] as string | undefined;
+    const filename = disposition?.match(/filename="?([^";]+)"?/i)?.[1] ?? "kvis-connect-user-export.csv";
+    const blob = response.data instanceof Blob
+      ? response.data
+      : new Blob([response.data], { type: "text/csv;charset=utf-8" });
+    return { blob, filename };
+  },
+};
+
+export const siteThemeApi = {
+  get: () => api.get<SiteTheme>("/api/site-theme").then((r) => r.data),
+  update: (colors: SiteThemeColors) => api.put<SiteTheme>("/api/admin/site-theme", { colors }).then((r) => r.data),
+  reset: () => api.delete<SiteTheme>("/api/admin/site-theme").then((r) => r.data),
 };
 
 export default api;

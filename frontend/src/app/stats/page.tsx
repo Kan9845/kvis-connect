@@ -24,10 +24,13 @@ async function getStatsPeople(): Promise<UserCard[]> {
 
 export default async function StatsPage() {
   const qc = getQueryClient();
-  const people = await qc.fetchQuery({
-    queryKey: keys.stats.alumni(),
-    queryFn: getStatsPeople,
-  });
+  const useLocalExport = process.env.NEXT_PUBLIC_POPULATION_SNAPSHOT === "production-export";
+  const people = useLocalExport
+    ? []
+    : await qc.fetchQuery({
+        queryKey: keys.stats.alumni(),
+        queryFn: getStatsPeople,
+      });
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>

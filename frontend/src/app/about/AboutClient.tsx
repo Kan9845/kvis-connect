@@ -91,7 +91,7 @@ export function AboutClient() {
   return (
     <PageEntrance>
       <div
-        className="bg-[var(--background)] min-h-full"
+        className="min-h-full bg-background"
         style={{ fontFamily: "var(--font-be-vietnam-pro), sans-serif" }}
       >
         <div className="mx-auto max-w-5xl px-4 md:px-6">
