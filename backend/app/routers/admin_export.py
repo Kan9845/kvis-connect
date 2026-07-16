@@ -77,6 +77,11 @@ EXPORT_FIELDS: dict[str, dict[str, Any]] = {
 
 RELATION_FIELDS = {"education_json", "career_json"}
 
+# Every User column must be explicitly exportable, non-exportable, or forbidden.
+# The exact-partition regression test fails when a new column is unclassified.
+NON_EXPORTABLE_USER_FIELDS: frozenset[str] = frozenset()
+FORBIDDEN_USER_EXPORT_FIELDS = frozenset({"hashed_password", "google_id"})
+
 
 def _validate_fields(fields: list[str]) -> list[str]:
     selected = list(dict.fromkeys(fields))

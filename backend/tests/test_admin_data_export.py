@@ -71,30 +71,47 @@ def test_export_fields_reject_normal_users(monkeypatch):
     assert response.status_code == 403
 
 
-def test_export_allowlist_never_offers_authentication_secrets(monkeypatch):
+@pytest.mark.parametrize("field", sorted(admin_export.FORBIDDEN_USER_EXPORT_FIELDS))
+def test_export_rejects_forbidden_authentication_fields(monkeypatch, field):
     override_session(MagicMock())
     authenticate(make_user())
     monkeypatch.setattr(authorization, "user_has_permission", lambda *_args: True)
 
-    response = client.get("/api/admin/data-export/fields")
+    fields_response = client.get("/api/admin/data-export/fields")
+    preview_response = client.post(
+        "/api/admin/data-export/preview",
+        json={"fields": [field]},
+    )
 
-    assert response.status_code == 200
-    keys = {field["key"] for field in response.json()}
-    assert keys.isdisjoint({"hashed_password", "google_id"})
+    assert fields_response.status_code == 200
+    keys = {item["key"] for item in fields_response.json()}
+    assert field not in keys
     assert "kvis_email" in keys
+    assert preview_response.status_code == 422
 
 
-def test_export_allowlist_covers_every_safe_user_column(monkeypatch):
-    override_session(MagicMock())
-    authenticate(make_user())
-    monkeypatch.setattr(authorization, "user_has_permission", lambda *_args: True)
+def test_every_user_column_has_exactly_one_export_classification():
+    user_columns = set(User.__table__.columns.keys())
+    exportable = set(admin_export.EXPORT_FIELDS) - admin_export.RELATION_FIELDS
+    non_exportable = set(admin_export.NON_EXPORTABLE_USER_FIELDS)
+    forbidden = set(admin_export.FORBIDDEN_USER_EXPORT_FIELDS)
 
-    response = client.get("/api/admin/data-export/fields")
+    classifications = {
+        "exportable": exportable,
+        "non-exportable": non_exportable,
+        "forbidden": forbidden,
+    }
+    for name, fields in classifications.items():
+        assert fields <= user_columns, f"Unknown {name} User fields: {sorted(fields - user_columns)}"
 
-    assert response.status_code == 200
-    keys = {field["key"] for field in response.json()}
-    safe_user_columns = set(User.__table__.columns.keys()) - {"hashed_password", "google_id"}
-    assert safe_user_columns <= keys
+    assert exportable.isdisjoint(non_exportable)
+    assert exportable.isdisjoint(forbidden)
+    assert non_exportable.isdisjoint(forbidden)
+    classified = exportable | non_exportable | forbidden
+    assert classified == user_columns, (
+        "Every User column requires an explicit export classification. "
+        f"Unclassified: {sorted(user_columns - classified)}"
+    )
 
 
 def test_download_requires_sensitive_data_acknowledgement(monkeypatch):

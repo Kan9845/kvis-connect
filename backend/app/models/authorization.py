@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
+from sqlalchemy import Index, text
 from sqlmodel import Field, SQLModel
 
 
@@ -32,6 +33,15 @@ class RolePermission(SQLModel, table=True):
 
 class UserRoleAssignment(SQLModel, table=True):
     __tablename__ = "user_role_assignment"
+    __table_args__ = (
+        Index(
+            "uq_active_user_role_assignment",
+            "user_id",
+            "role_id",
+            unique=True,
+            postgresql_where=text("revoked_at IS NULL"),
+        ),
+    )
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     user_id: uuid.UUID = Field(foreign_key="user.id", index=True)

@@ -1,6 +1,6 @@
 import uuid
 from sqlmodel import SQLModel, Field, Relationship
-from sqlalchemy import Column
+from sqlalchemy import Column, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
 from typing import Optional, List, Any
 from datetime import datetime
@@ -170,7 +170,10 @@ class User(SQLModel, table=True):
     personal_email: Optional[str] = Field(default=None, unique=True, index=True)
 
     is_deleted: bool = False
-    is_deleted_at: Optional[datetime] = None
+    is_deleted_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+    )
 
     # Basic info
     slug: str = Field(unique=True, index=True)

@@ -193,11 +193,16 @@ suppressed small groups and no identities, emails, or contact data.
 & ".\scripts\export-stats-aggregates.ps1"
 ```
 
-The helper prompts for the URL, checks Docker and the database command result,
-then writes `Downloads\kvis-export\stats-aggregates.json` only on success.
-Review that file before using it. Do not paste the connection URL into a source
-file or chat. Use an **External Database URL** for a command run from your
-computer; Render's internal database URLs only work from services within Render.
+The helper asks whether the target is staging or production, requires an exact
+extra confirmation for production, and reads the External Database URL as
+hidden input. It forces TLS and a read-only PostgreSQL transaction with bounded
+timeouts, passes the password to Docker without putting it in command
+arguments, and validates the aggregate JSON before atomically writing
+`Downloads\kvis-export\stats-aggregates.json`. An existing export is preserved
+unless you explicitly type `OVERWRITE`. Review the resulting file before using
+it. Do not paste the connection URL into a source file, command, or chat.
+Render's internal database URLs only work from services within Render and are
+rejected by this local helper.
 
 ### Build and start staging locally
 
