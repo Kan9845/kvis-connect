@@ -84,6 +84,21 @@ server-only `BACKEND_URL`, so authentication cookies remain first-party.
 Production behavior is unchanged when the staging scripts and Blueprint are
 not used.
 
+### Deploy a private Vercel preview
+
+Create a Vercel project from this repository and set its Root Directory to
+`frontend`. Add these Preview environment variables:
+
+```text
+BACKEND_URL=https://kvis-connect-staging-backend.onrender.com
+NEXT_PUBLIC_USE_MOCK=false
+NEXT_PUBLIC_DISABLE_AUTH=false
+```
+
+Keep Deployment Protection enabled while the join and verification-request
+flows are prototypes. The Vercel build uses `pnpm run build:staging`, which
+rejects a missing or non-staging backend URL and rejects the auth bypass.
+
 ### Required environment variables
 
 | Variable | Staging API mode | UI-only mock mode | Purpose |
