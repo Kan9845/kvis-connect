@@ -5,9 +5,11 @@ from app.models.feedback import Feedback
 from app.models.authorization import AccessRole, AccessPermission, RolePermission, UserRoleAssignment
 from app.models.site_theme import SiteThemeSettings
 from app.models.admin_export import AdminDataExportAudit
+from app.models.verification import VerificationRequest, VerificationRateLimit
 
 __all__ = [
     "User", "Education", "Career", "SocialLink", "Blog", "BlogLike", "BlogComment", "Feedback",
     "AccessRole", "AccessPermission", "RolePermission", "UserRoleAssignment", "SiteThemeSettings",
     "AdminDataExportAudit",
+    "VerificationRequest", "VerificationRateLimit",
 ]

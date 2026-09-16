@@ -11,6 +11,7 @@ dist/
 build/
 *.tsbuildinfo
 .venv/
+.venv-*/
 venv/
 *.log
 .DS_Store

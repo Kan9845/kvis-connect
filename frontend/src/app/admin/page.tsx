@@ -180,6 +180,7 @@ export default function AdminPage() {
             </Button>
             {canManageTheme && <Button asChild className="bg-[#d7e8b5] text-[#173b2b] hover:bg-white"><Link href="/admin/theme"><Palette className="mr-2 h-4 w-4" />Theme control</Link></Button>}
             {canExportData && <Button asChild className="bg-[#d7e8b5] text-[#173b2b] hover:bg-white"><Link href="/admin/export"><Download className="mr-2 h-4 w-4" />Data export</Link></Button>}
+            {user?.permissions?.includes("admin.verification.manage") && <Button asChild className="bg-[#d7e8b5] text-[#173b2b] hover:bg-white"><Link href="/admin/verification-requests"><UserCheck className="mr-2 h-4 w-4" />Alumni verification</Link></Button>}
           </div>
         </div>
       </div>

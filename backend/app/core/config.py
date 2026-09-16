@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     S3_PUBLIC_URL: str = ""
 
     FRONTEND_URL: str = "http://localhost:3000"
+    VERIFICATION_FRONTEND_URL: str = ""  # Single trusted origin for emailed activation links
 
     @property
     def cors_origins(self) -> list[str]:

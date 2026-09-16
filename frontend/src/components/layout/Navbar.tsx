@@ -566,6 +566,11 @@ function MobileNavPanel({
               <Palette className="h-4 w-4 shrink-0" /> Theme control
             </Link>
           )}
+          {user.permissions?.includes("admin.verification.manage") && (
+            <Link href="/admin/verification-requests" className="flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition-colors font-medium" style={{ color: rowColor }}>
+              <ShieldCheck className="h-4 w-4 shrink-0" /> Alumni verification
+            </Link>
+          )}
           <button
             onClick={logout}
             className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-sm transition-colors font-medium"
@@ -689,6 +694,11 @@ export function Navbar() {
               <Link href="/admin/theme" className="cursor-pointer">
                 <Palette className="mr-2 h-4 w-4" /> Theme control
               </Link>
+            </DropdownMenuItem>
+          )}
+          {user.permissions?.includes("admin.verification.manage") && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin/verification-requests" className="cursor-pointer"><ShieldCheck className="mr-2 h-4 w-4" /> Alumni verification</Link>
             </DropdownMenuItem>
           )}
           <DropdownMenuSeparator />
