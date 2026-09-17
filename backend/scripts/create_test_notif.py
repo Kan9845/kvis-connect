@@ -16,6 +16,9 @@ with Session(engine) as session:
             type="test",
             title="Test notification",
             body="This is a test notification.",
+            
+            
+            
             link="/profile/edit",
         )
         session.commit()
